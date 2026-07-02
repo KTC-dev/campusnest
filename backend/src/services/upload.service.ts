@@ -21,7 +21,7 @@ if (isConfigured) {
 }
 
 class UploadService {
-  async uploadImage(base64OrUrl: string, folder = "campushaven/properties"): Promise<UploadedImage> {
+  async uploadImage(base64OrUrl: string, folder = "campusnest/properties"): Promise<UploadedImage> {
     if (!isConfigured) {
       // Fails loudly in dev rather than silently no-op-ing, so a missing
       // .env value is caught immediately instead of surfacing as a

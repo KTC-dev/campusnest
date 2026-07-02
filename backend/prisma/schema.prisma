@@ -1,4 +1,4 @@
-// CampusHaven — Database Schema
+// CampusNest — Database Schema
 // Designed for multi-university expansion from day one: every tenant-scoped
 // model carries a universityId so the platform can onboard new universities
 // without a schema rewrite.

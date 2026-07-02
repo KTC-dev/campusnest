@@ -1,4 +1,4 @@
-# CampusHaven — Phase 1
+# CampusNest
 
 Student accommodation platform for Federal University Otuoke, built to expand to more universities later.
 
@@ -56,7 +56,7 @@ npm run dev                # http://localhost:5173
 
 The landing page was rebuilt from a single hero section into a full conversion-focused page: sticky marketing nav, hero with live search (feeds real filters into `/properties`), featured properties (real data, not placeholders), why-choose/how-it-works/roommate-matching/become-a-landlord sections, an animated stats counter backed by a new public `/properties/public-stats` endpoint, a testimonials carousel (placeholder content, clearly marked as such), an FAQ accordion, a final CTA, and a footer linking to new About/Contact/Privacy/Terms/Help pages.
 
-**Note on branding**: the brand name changed from "CampusHaven" to "CampusNest" on the landing page and other user-visible text (nav, login page, page title). The underlying project folder, npm package names, and git history still say `campushaven` — a full rename (package.json `name` fields, repo name, etc.) wasn't done since it's a bigger structural change; flag if you want that completed too.
+**Note on branding**: fully renamed to **CampusNest** — project folder, npm package names (`campusnest-backend` / `campusnest-frontend`), the Cloudinary upload folder path, the localStorage auth key, and all user-visible text. Nothing in the codebase references the old name anymore.
 
 **Deferred to v2** (per the spec this was built from): 3D virtual tours, AI property recommendations, live chat support, interactive campus map, maintenance requests, student marketplace, university announcements.
 
