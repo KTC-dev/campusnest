@@ -2,6 +2,7 @@ import { ListingStatus, Prisma } from "@prisma/client";
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/AppError";
 import { uploadService } from "./upload.service";
+import { notificationService } from "./notification.service";
 
 interface CreatePropertyInput {
   title: string;
@@ -167,13 +168,28 @@ class PropertyService {
   }
 
   async moderate(propertyId: string, status: "APPROVED" | "REJECTED" | "SUSPENDED", rejectionReason?: string) {
-    const property = await prisma.property.findUnique({ where: { id: propertyId } });
+    const property = await prisma.property.findUnique({ where: { id: propertyId }, include: { landlord: true } });
     if (!property) throw AppError.notFound("Listing not found");
 
-    return prisma.property.update({
+    const updated = await prisma.property.update({
       where: { id: propertyId },
       data: { status, rejectionReason: status === "REJECTED" ? rejectionReason ?? "Did not meet listing standards" : null },
     });
+
+    await notificationService.notify({
+      userId: property.landlord.userId,
+      type: "LISTING_STATUS",
+      title:
+        status === "APPROVED" ? "Listing approved ✅" : status === "REJECTED" ? "Listing rejected" : "Listing suspended",
+      body:
+        status === "APPROVED"
+          ? `"${property.title}" is now live and visible to students.`
+          : status === "REJECTED"
+          ? `"${property.title}" was rejected: ${rejectionReason ?? "did not meet listing standards"}`
+          : `"${property.title}" has been suspended by an admin.`,
+    });
+
+    return updated;
   }
 
   async toggleFavourite(studentId: string, propertyId: string) {

@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
+import { NotificationBell } from "./NotificationBell";
 
 export function AppNav() {
   const navigate = useNavigate();
@@ -19,11 +20,17 @@ export function AppNav() {
             Favourites
           </Link>
         )}
+        {user?.role === "STUDENT" && (
+          <Link to="/roommates" className="text-slate-600 hover:text-brand-600">
+            Roommates
+          </Link>
+        )}
         {user?.role === "LANDLORD" && (
           <Link to="/dashboard" className="text-slate-600 hover:text-brand-600">
             My listings
           </Link>
         )}
+        {user && <NotificationBell />}
         {user ? (
           <button
             onClick={() => {

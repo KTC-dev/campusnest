@@ -9,6 +9,8 @@ import PropertyDetailsPage from "@/pages/PropertyDetailsPage";
 import StudentDashboard from "@/pages/StudentDashboard";
 import LandlordDashboard from "@/pages/LandlordDashboard";
 import ListingFormPage from "@/pages/ListingFormPage";
+import RoommateMatchesPage from "@/pages/RoommateMatchesPage";
+import RoommateProfilePage from "@/pages/RoommateProfilePage";
 import NotFoundPage from "@/pages/NotFoundPage";
 
 // A single /dashboard route renders the right dashboard for the logged-in
@@ -37,6 +39,11 @@ export default function App() {
         <Route element={<ProtectedRoute allowedRoles={["LANDLORD"]} />}>
           <Route path="/dashboard/listings/new" element={<ListingFormPage />} />
           <Route path="/dashboard/listings/:id/edit" element={<ListingFormPage />} />
+        </Route>
+
+        <Route element={<ProtectedRoute allowedRoles={["STUDENT"]} />}>
+          <Route path="/roommates" element={<RoommateMatchesPage />} />
+          <Route path="/roommates/profile" element={<RoommateProfilePage />} />
         </Route>
 
         {/* Reserved for Phase 4: <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>

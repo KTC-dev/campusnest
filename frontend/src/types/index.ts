@@ -72,7 +72,60 @@ export interface PropertyFilters {
   page?: number;
 }
 
-export interface CreatePropertyPayload {
+export type BookingStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" | "COMPLETED";
+
+export interface Booking {
+  id: string;
+  status: BookingStatus;
+  moveInDate: string;
+  message?: string | null;
+  createdAt: string;
+  property: {
+    id?: string;
+    title: string;
+    images?: { url: string }[];
+  };
+  student?: {
+    firstName: string;
+    lastName: string;
+    phone?: string | null;
+  };
+}
+
+export type SleepSchedule = "EARLY_BIRD" | "NIGHT_OWL" | "FLEXIBLE";
+export type CleanlinessLevel = "RELAXED" | "MODERATE" | "VERY_CLEAN";
+export type NoiseTolerance = "LOW" | "MEDIUM" | "HIGH";
+
+export interface RoommateProfile {
+  id: string;
+  budgetMin: string;
+  budgetMax: string;
+  genderPreference: Gender;
+  sleepSchedule: SleepSchedule;
+  cleanliness: CleanlinessLevel;
+  isSmoker: boolean;
+  noiseTolerance: NoiseTolerance;
+  bio?: string | null;
+  isActive: boolean;
+}
+
+export interface RoommateMatch {
+  score: number;
+  profile: RoommateProfile & {
+    student: { firstName: string; lastName: string; faculty?: string | null; level?: string | null; avatarUrl?: string | null };
+  };
+}
+
+export type NotificationType = "BOOKING_UPDATE" | "MESSAGE" | "LISTING_STATUS" | "ROOMMATE_MATCH" | "SYSTEM";
+
+export interface Notification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  readAt?: string | null;
+  createdAt: string;
+}
   title: string;
   description: string;
   price: number;

@@ -46,12 +46,18 @@ npm run dev                # http://localhost:5173
 - **Landlord dashboard**: listings table with status badges, occupancy stats (occupied / total / rate), inline availability toggle, edit and delete.
 - **Frontend**: `PropertyCard`, `PropertyFiltersBar`, listing/detail pages wired to TanStack Query, a shared `AppNav`, and a create/edit listing form that base64-encodes selected images client-side before posting.
 
-## Suggested next steps (Phase 3)
+## What's in Phase 3
 
-- Booking system: student booking requests, landlord approve/reject, status shown on the student dashboard (the "Request to book" button on the details page is currently disabled with a placeholder note).
-- Roommate matching: profile creation + compatibility scoring.
-- Notifications: wire the existing `Notification` model to booking/listing status changes.
-- Wire the `role` chosen at register-time through to a proper university picker once a second university exists.
+- **Booking system**: students send a booking request (move-in date + optional message) on approved, available properties. Landlords approve or reject from their dashboard. Approving a request automatically marks the property unavailable and auto-rejects any other pending requests for that same property (in a single DB transaction, so it can't half-apply). Students can cancel their own pending requests; both sides see live status.
+- **Roommate matching**: students fill out a lifestyle profile (budget, gender preference, sleep schedule, cleanliness, smoking, noise tolerance) and get ranked matches against every other active profile at their university. The scoring in `roommate.service.ts` is a weighted sum (budget overlap 25%, gender fit 20%, sleep schedule 15%, cleanliness 15%, smoking 15%, noise tolerance 10%) producing a 0–100 compatibility score — weights are named constants so they're easy to tune later.
+- **Notifications**: every booking status change and listing moderation decision creates a `Notification` row through one shared `notification.service.ts`, so a future email/push channel is a single integration point rather than scattered `sendEmail()` calls. The nav bar's bell shows unread count and marks-as-read on open.
+
+## Suggested next steps (Phase 4)
+
+- Admin dashboard: stats endpoint already exists (`/admin/stats` from Phase 1) — build the UI, plus a pending-listings moderation queue backed by the already-built `/properties/pending/all` and `/properties/:id/moderate` endpoints.
+- Testing: no automated tests yet. Prioritize the booking transaction (approve/auto-reject) and roommate scoring function — both have the most business-logic surface area.
+- Known gap: `Student` has no `gender` field, so roommate gender-preference matching currently compares preference-to-preference rather than preference-to-actual-gender (documented in `roommate.service.ts`). Worth a schema migration if this MVP moves toward a real launch.
+- Optimization pass: add indexes/pagination review, and a stricter rate limit on `POST /properties` and `POST /bookings` (the two most abuse-prone write endpoints).
 
 ## A note on this codebase specifically
 

@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { AppNav } from "@/components/AppNav";
 import { propertyService } from "@/services/property.service";
+import { bookingService } from "@/services/booking.service";
 import { ListingStatus } from "@/types";
 
 const statusStyles: Record<ListingStatus, string> = {
@@ -18,6 +19,18 @@ export default function LandlordDashboard() {
     queryKey: ["my-properties"],
     queryFn: propertyService.listMine,
   });
+
+  const { data: bookings = [] } = useQuery({
+    queryKey: ["landlord-bookings"],
+    queryFn: bookingService.listForLandlord,
+  });
+  const pendingBookings = bookings.filter((b) => b.status === "PENDING");
+
+  async function handleBookingResponse(id: string, status: "APPROVED" | "REJECTED") {
+    await bookingService.respond(id, status);
+    queryClient.invalidateQueries({ queryKey: ["landlord-bookings"] });
+    queryClient.invalidateQueries({ queryKey: ["my-properties"] });
+  }
 
   const occupied = properties.filter((p) => !p.isAvailable).length;
   const occupancyRate = properties.length ? Math.round((occupied / properties.length) * 100) : 0;
@@ -62,6 +75,38 @@ export default function LandlordDashboard() {
             <p className="mt-1 text-xl font-bold text-brand-900">{occupancyRate}%</p>
           </div>
         </div>
+
+        {pendingBookings.length > 0 && (
+          <section className="mt-6">
+            <h2 className="font-semibold text-slate-900">Booking requests awaiting your response</h2>
+            <div className="mt-3 space-y-2">
+              {pendingBookings.map((booking) => (
+                <div key={booking.id} className="flex items-center gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-slate-900 truncate">{booking.property.title}</p>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      {booking.student?.firstName} {booking.student?.lastName} · Move-in{" "}
+                      {new Date(booking.moveInDate).toLocaleDateString()}
+                    </p>
+                    {booking.message && <p className="text-xs text-slate-500 mt-1 italic">"{booking.message}"</p>}
+                  </div>
+                  <button
+                    onClick={() => handleBookingResponse(booking.id, "APPROVED")}
+                    className="rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-600"
+                  >
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => handleBookingResponse(booking.id, "REJECTED")}
+                    className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700"
+                  >
+                    Decline
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {isLoading && <p className="mt-6 text-sm text-slate-500">Loading…</p>}
 

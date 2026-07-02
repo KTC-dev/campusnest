@@ -2,7 +2,9 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { AppNav } from "@/components/AppNav";
+import { BookingRequestModal } from "@/components/BookingRequestModal";
 import { propertyService } from "@/services/property.service";
+import { useAuthStore } from "@/store/authStore";
 
 function formatNaira(price: string) {
   return new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(
@@ -13,6 +15,9 @@ function formatNaira(price: string) {
 export default function PropertyDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const [activeImage, setActiveImage] = useState(0);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [bookingSent, setBookingSent] = useState(false);
+  const user = useAuthStore((s) => s.user);
 
   const { data: property, isLoading, isError } = useQuery({
     queryKey: ["property", id],
@@ -108,14 +113,30 @@ export default function PropertyDetailsPage() {
           )}
 
           <button
-            disabled={!property.isAvailable}
+            disabled={!property.isAvailable || user?.role !== "STUDENT" || bookingSent}
+            onClick={() => setShowBookingModal(true)}
             className="mt-5 w-full rounded-lg bg-brand-500 py-2.5 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {property.isAvailable ? "Request to book" : "Fully booked"}
+            {bookingSent ? "Request sent ✓" : property.isAvailable ? "Request to book" : "Fully booked"}
           </button>
-          <p className="mt-2 text-center text-xs text-slate-400">Booking requests arrive in Phase 3.</p>
+          {!user && <p className="mt-2 text-center text-xs text-slate-400">Log in as a student to request a booking.</p>}
+          {user && user.role !== "STUDENT" && (
+            <p className="mt-2 text-center text-xs text-slate-400">Only students can request bookings.</p>
+          )}
         </aside>
       </main>
+
+      {showBookingModal && (
+        <BookingRequestModal
+          propertyId={property.id}
+          propertyTitle={property.title}
+          onClose={() => setShowBookingModal(false)}
+          onSuccess={() => {
+            setShowBookingModal(false);
+            setBookingSent(true);
+          }}
+        />
+      )}
     </div>
   );
 }
