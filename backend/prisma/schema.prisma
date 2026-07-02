@@ -1,0 +1,367 @@
+// CampusHaven — Database Schema
+// Designed for multi-university expansion from day one: every tenant-scoped
+// model carries a universityId so the platform can onboard new universities
+// without a schema rewrite.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Role {
+  STUDENT
+  LANDLORD
+  ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  ANY
+}
+
+enum RoomType {
+  SELF_CONTAIN
+  SHARED
+  ONE_BEDROOM
+  TWO_BEDROOM
+  HOSTEL
+}
+
+enum ListingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+enum SleepSchedule {
+  EARLY_BIRD
+  NIGHT_OWL
+  FLEXIBLE
+}
+
+enum CleanlinessLevel {
+  RELAXED
+  MODERATE
+  VERY_CLEAN
+}
+
+enum NoiseTolerance {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum NotificationType {
+  BOOKING_UPDATE
+  MESSAGE
+  LISTING_STATUS
+  ROOMMATE_MATCH
+  SYSTEM
+}
+
+// ---------------------------------------------------------------------------
+// Core identity
+// ---------------------------------------------------------------------------
+
+model University {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  city      String
+  country   String   @default("Nigeria")
+  createdAt DateTime @default(now())
+
+  students   Student[]
+  properties Property[]
+
+  @@map("universities")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         Role
+  isVerified   Boolean  @default(false)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  student  Student?
+  landlord Landlord?
+  admin    Admin?
+
+  notifications     Notification[]
+  sentMessages      Message[]        @relation("MessageSender")
+  receivedMessages   Message[]        @relation("MessageRecipient")
+  refreshTokens      RefreshToken[]
+
+  @@index([role])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  revoked   Boolean  @default(false)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ---------------------------------------------------------------------------
+// Role profiles
+// ---------------------------------------------------------------------------
+
+model Student {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName    String
+  lastName     String
+  phone        String?
+  university   University @relation(fields: [universityId], references: [id])
+  universityId String
+  faculty      String?
+  level        String?
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  bookings        Booking[]
+  favourites      Favourite[]
+  roommateProfile RoommateProfile?
+  reviews         Review[]
+
+  @@index([universityId])
+  @@map("students")
+}
+
+model Landlord {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName    String
+  lastName     String
+  phone        String
+  businessName String?
+  isVerified   Boolean  @default(false)
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  properties Property[]
+
+  @@map("landlords")
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName String
+  lastName  String
+  createdAt DateTime @default(now())
+
+  @@map("admins")
+}
+
+// ---------------------------------------------------------------------------
+// Properties
+// ---------------------------------------------------------------------------
+
+model Property {
+  id                String        @id @default(cuid())
+  landlordId        String
+  landlord          Landlord      @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+  universityId      String
+  university        University    @relation(fields: [universityId], references: [id])
+
+  title             String
+  description       String
+  price             Decimal       @db.Decimal(10, 2)
+  location          String
+  distanceFromCampusKm Decimal    @db.Decimal(5, 2)
+  bedrooms          Int
+  bathrooms         Int
+  roomType          RoomType
+  genderRestriction Gender        @default(ANY)
+  isAvailable       Boolean       @default(true)
+  status            ListingStatus @default(PENDING)
+  rejectionReason   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  images     PropertyImage[]
+  amenities  PropertyAmenity[]
+  bookings   Booking[]
+  favourites Favourite[]
+  reviews    Review[]
+
+  @@index([universityId, status])
+  @@index([landlordId])
+  @@map("properties")
+}
+
+model PropertyImage {
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  url        String
+  publicId   String   // Cloudinary public_id, needed for deletion
+  isPrimary  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([propertyId])
+  @@map("property_images")
+}
+
+model Amenity {
+  id   String @id @default(cuid())
+  name String @unique // e.g. "WiFi", "Water Supply", "Security", "Parking"
+
+  properties PropertyAmenity[]
+
+  @@map("amenities")
+}
+
+// Explicit join table (rather than an implicit m-n) so we can extend it
+// later (e.g. per-property notes on an amenity) without a migration that
+// breaks existing data.
+model PropertyAmenity {
+  propertyId String
+  amenityId  String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  amenity    Amenity  @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+
+  @@id([propertyId, amenityId])
+  @@map("property_amenities")
+}
+
+// ---------------------------------------------------------------------------
+// Bookings & reviews
+// ---------------------------------------------------------------------------
+
+model Booking {
+  id         String        @id @default(cuid())
+  studentId  String
+  student    Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  propertyId String
+  property   Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  status     BookingStatus @default(PENDING)
+  moveInDate DateTime
+  message    String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@index([propertyId, status])
+  @@index([studentId])
+  @@map("bookings")
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  studentId  String
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  rating     Int      // 1-5, validated at the application layer
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  @@unique([studentId, propertyId])
+  @@map("reviews")
+}
+
+model Favourite {
+  studentId  String
+  propertyId String
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@id([studentId, propertyId])
+  @@map("favourites")
+}
+
+// ---------------------------------------------------------------------------
+// Roommate matching
+// ---------------------------------------------------------------------------
+
+model RoommateProfile {
+  id               String           @id @default(cuid())
+  studentId        String           @unique
+  student          Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  budgetMin        Decimal          @db.Decimal(10, 2)
+  budgetMax        Decimal          @db.Decimal(10, 2)
+  genderPreference Gender           @default(ANY)
+  sleepSchedule    SleepSchedule
+  cleanliness      CleanlinessLevel
+  isSmoker         Boolean          @default(false)
+  noiseTolerance   NoiseTolerance
+  bio              String?
+  isActive         Boolean          @default(true)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@map("roommate_profiles")
+}
+
+// ---------------------------------------------------------------------------
+// Messaging (placeholder structure — enough to build a chat UI against)
+// ---------------------------------------------------------------------------
+
+model Message {
+  id          String   @id @default(cuid())
+  senderId    String
+  sender      User     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  recipientId String
+  recipient   User     @relation("MessageRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  content     String
+  readAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([senderId, recipientId])
+  @@map("messages")
+}
+
+// ---------------------------------------------------------------------------
+// Notifications
+// ---------------------------------------------------------------------------
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  body      String
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, readAt])
+  @@map("notifications")
+}
