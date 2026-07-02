@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useAuthStore } from "@/store/authStore";
 import LandingPage from "@/pages/LandingPage";
@@ -11,6 +11,7 @@ import LandlordDashboard from "@/pages/LandlordDashboard";
 import ListingFormPage from "@/pages/ListingFormPage";
 import RoommateMatchesPage from "@/pages/RoommateMatchesPage";
 import RoommateProfilePage from "@/pages/RoommateProfilePage";
+import AdminDashboard from "@/pages/AdminDashboard";
 import NotFoundPage from "@/pages/NotFoundPage";
 
 // A single /dashboard route renders the right dashboard for the logged-in
@@ -18,6 +19,7 @@ import NotFoundPage from "@/pages/NotFoundPage";
 // nav links to "/dashboard" regardless of who's logged in.
 function RoleDashboard() {
   const user = useAuthStore((s) => s.user);
+  if (user?.role === "ADMIN") return <Navigate to="/admin" replace />;
   if (user?.role === "LANDLORD") return <LandlordDashboard />;
   return <StudentDashboard />;
 }
@@ -46,8 +48,9 @@ export default function App() {
           <Route path="/roommates/profile" element={<RoommateProfilePage />} />
         </Route>
 
-        {/* Reserved for Phase 4: <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
-              <Route path="/admin" element={<AdminDashboard />} /> </Route> */}
+        <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
+          <Route path="/admin" element={<AdminDashboard />} />
+        </Route>
 
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

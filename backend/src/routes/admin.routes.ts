@@ -1,41 +1,25 @@
 import { Router } from "express";
 import { Role } from "@prisma/client";
+import * as adminController from "../controllers/admin.controller";
 import { authenticate } from "../middleware/authenticate";
 import { requireRole } from "../middleware/requireRole";
-import { catchAsync } from "../utils/catchAsync";
-import { prisma } from "../config/prisma";
+import { validate } from "../middleware/validate";
+import { paginationSchema, setUserActiveSchema } from "../utils/validation/admin.schema";
 
 const router = Router();
 
-// Every route below requires a valid access token AND the ADMIN role.
-// Phase 4 will flesh this out into a full dashboard controller/service;
-// this stub exists now to prove the role-guard pattern end-to-end.
-router.get(
-  "/stats",
-  authenticate,
-  requireRole(Role.ADMIN),
-  catchAsync(async (_req, res) => {
-    const [totalStudents, totalLandlords, totalProperties, pendingApprovals, totalBookings] = await Promise.all([
-      prisma.student.count(),
-      prisma.landlord.count(),
-      prisma.property.count(),
-      prisma.property.count({ where: { status: "PENDING" } }),
-      prisma.booking.count(),
-    ]);
+// Every route in this file requires a valid ADMIN session.
+router.use(authenticate, requireRole(Role.ADMIN));
 
-    res.status(200).json({
-      success: true,
-      data: {
-        totalUsers: totalStudents + totalLandlords,
-        totalStudents,
-        totalLandlords,
-        totalProperties,
-        pendingApprovals,
-        totalBookings,
-        revenue: 0, // placeholder until payments are integrated
-      },
-    });
-  })
-);
+router.get("/stats", adminController.getStats);
+router.get("/analytics", adminController.getAnalytics);
+
+router.get("/students", validate(paginationSchema), adminController.listStudents);
+router.get("/landlords", validate(paginationSchema), adminController.listLandlords);
+router.get("/bookings", validate(paginationSchema), adminController.listBookings);
+router.get("/properties/pending", adminController.listPendingProperties);
+
+router.patch("/users/:userId/active", validate(setUserActiveSchema), adminController.setUserActive);
+router.delete("/properties/:id", adminController.removeFraudulentListing);
 
 export default router;

@@ -30,6 +30,11 @@ export function AppNav() {
             My listings
           </Link>
         )}
+        {user?.role === "ADMIN" && (
+          <Link to="/admin" className="text-slate-600 hover:text-brand-600">
+            Admin
+          </Link>
+        )}
         {user && <NotificationBell />}
         {user ? (
           <button

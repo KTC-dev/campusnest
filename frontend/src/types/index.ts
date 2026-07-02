@@ -126,9 +126,8 @@ export interface Notification {
   readAt?: string | null;
   createdAt: string;
 }
+export interface CreatePropertyPayload {
   title: string;
-  description: string;
-  price: number;
   location: string;
   distanceFromCampusKm: number;
   bedrooms: number;
@@ -137,4 +136,55 @@ export interface Notification {
   genderRestriction: Gender;
   amenityIds: string[];
   images: string[]; // base64 data URLs
+}
+
+export interface AdminStats {
+  totalUsers: number;
+  totalStudents: number;
+  totalLandlords: number;
+  totalProperties: number;
+  pendingApprovals: number;
+  totalBookings: number;
+  approvedBookings: number;
+  revenue: number;
+}
+
+export interface TrendPoint {
+  date: string;
+  count: number;
+}
+
+export interface PaginatedResult<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface AdminStudentRow {
+  id: string;
+  firstName: string;
+  lastName: string;
+  university: { name: string };
+  user: { email: string; isActive: boolean; createdAt: string };
+}
+
+export interface AdminLandlordRow {
+  id: string;
+  firstName: string;
+  lastName: string;
+  businessName?: string | null;
+  isVerified: boolean;
+  user: { email: string; isActive: boolean; createdAt: string };
+  _count: { properties: number };
+}
+
+export interface AdminBookingRow {
+  id: string;
+  status: BookingStatus;
+  moveInDate: string;
+  createdAt: string;
+  property: { title: string };
+  student: { firstName: string; lastName: string };
 }

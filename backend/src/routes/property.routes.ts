@@ -4,6 +4,7 @@ import * as propertyController from "../controllers/property.controller";
 import { authenticate } from "../middleware/authenticate";
 import { requireRole } from "../middleware/requireRole";
 import { validate } from "../middleware/validate";
+import { createPropertyRateLimit } from "../middleware/rateLimiters";
 import {
   createPropertySchema,
   updatePropertySchema,
@@ -23,7 +24,7 @@ router.post("/:id/favourite", authenticate, requireRole(Role.STUDENT), propertyC
 
 // --- Landlord ---------------------------------------------------------------
 router.get("/mine", authenticate, requireRole(Role.LANDLORD), propertyController.listMyProperties);
-router.post("/", authenticate, requireRole(Role.LANDLORD), validate(createPropertySchema), propertyController.createProperty);
+router.post("/", authenticate, requireRole(Role.LANDLORD), createPropertyRateLimit, validate(createPropertySchema), propertyController.createProperty);
 router.patch("/:id", authenticate, requireRole(Role.LANDLORD), validate(updatePropertySchema), propertyController.updateProperty);
 router.delete("/:id", authenticate, requireRole(Role.LANDLORD), propertyController.deleteProperty);
 

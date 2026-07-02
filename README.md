@@ -52,12 +52,28 @@ npm run dev                # http://localhost:5173
 - **Roommate matching**: students fill out a lifestyle profile (budget, gender preference, sleep schedule, cleanliness, smoking, noise tolerance) and get ranked matches against every other active profile at their university. The scoring in `roommate.service.ts` is a weighted sum (budget overlap 25%, gender fit 20%, sleep schedule 15%, cleanliness 15%, smoking 15%, noise tolerance 10%) producing a 0–100 compatibility score — weights are named constants so they're easy to tune later.
 - **Notifications**: every booking status change and listing moderation decision creates a `Notification` row through one shared `notification.service.ts`, so a future email/push channel is a single integration point rather than scattered `sendEmail()` calls. The nav bar's bell shows unread count and marks-as-read on open.
 
-## Suggested next steps (Phase 4)
+## What's in Phase 4
 
-- Admin dashboard: stats endpoint already exists (`/admin/stats` from Phase 1) — build the UI, plus a pending-listings moderation queue backed by the already-built `/properties/pending/all` and `/properties/:id/moderate` endpoints.
-- Testing: no automated tests yet. Prioritize the booking transaction (approve/auto-reject) and roommate scoring function — both have the most business-logic surface area.
-- Known gap: `Student` has no `gender` field, so roommate gender-preference matching currently compares preference-to-preference rather than preference-to-actual-gender (documented in `roommate.service.ts`). Worth a schema migration if this MVP moves toward a real launch.
-- Optimization pass: add indexes/pagination review, and a stricter rate limit on `POST /properties` and `POST /bookings` (the two most abuse-prone write endpoints).
+- **Admin dashboard**: overview (stats + 30-day listings/bookings trend charts via Recharts), pending-listings moderation queue (approve/reject/remove-as-fraudulent), and paginated student/landlord/booking tables with an active/deactivate toggle per user.
+- **Analytics**: `GET /admin/analytics` buckets listings and bookings created per day over the trailing 30 days — the query building block (`bucketByDay`) is generic enough to extend to other metrics later.
+- **User management**: admins deactivate rather than delete accounts, preserving booking/listing history for audit purposes; admin accounts themselves can't be deactivated from the panel.
+- **Testing**: `vitest` unit tests for the two highest-risk pieces of business logic — `roommate.service.ts`'s compatibility scoring (identical profiles score near 100, mismatches score lower, output always 0–100) and `booking.service.ts`'s approval flow (ownership checks, double-response guard, and that approval/auto-reject runs inside one transaction). Run with `npm test` in `backend/`.
+- **Optimization / hardening**: named rate limiters (`rateLimiters.ts`) on login (10/15min — brute-force), listing creation (20/hour — image-upload abuse), and booking creation (30/hour — spam), on top of the blanket API limit from Phase 1.
+
+## Running the test suite
+```
+cd backend
+npm install
+npm test
+```
+
+## Launch checklist (beyond this MVP)
+
+- Add `Student.gender` to the schema so roommate matching can enforce actual gender fit rather than preference-to-preference (flagged in Phase 3).
+- Real payment integration (Stripe/Paystack/Flutterwave) behind the mocked service layer boundary already in place.
+- A second university: add it via `prisma.university.create()`, then replace the hardcoded `findFirstOrThrow()` default in `property.controller.ts`'s `createProperty` with a `universityId` field on the listing form.
+- Real-time chat: the `Message` model exists in the schema from Phase 1 but has no endpoints yet — same pattern as `/bookings` would work.
+- CI: wire `npm test` (backend) into a GitHub Actions workflow so the test suite in `__tests__/` actually gates merges.
 
 ## A note on this codebase specifically
 

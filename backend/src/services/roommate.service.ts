@@ -75,7 +75,7 @@ function noiseToleranceScore(a: RoommateProfile, b: RoommateProfile): number {
   return distance === 0 ? 1 : distance === 1 ? 0.6 : 0.3;
 }
 
-function compatibilityScore(a: RoommateProfile, b: RoommateProfile): number {
+export function compatibilityScore(a: RoommateProfile, b: RoommateProfile): number {
   const raw =
     budgetOverlapScore(a, b) * WEIGHTS.budget +
     genderScore(a, b) * WEIGHTS.gender +

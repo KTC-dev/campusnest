@@ -4,13 +4,14 @@ import * as bookingController from "../controllers/booking.controller";
 import { authenticate } from "../middleware/authenticate";
 import { requireRole } from "../middleware/requireRole";
 import { validate } from "../middleware/validate";
+import { createBookingRateLimit } from "../middleware/rateLimiters";
 import { createBookingSchema, respondToBookingSchema } from "../utils/validation/booking.schema";
 
 const router = Router();
 
 router.use(authenticate);
 
-router.post("/", requireRole(Role.STUDENT), validate(createBookingSchema), bookingController.createBooking);
+router.post("/", requireRole(Role.STUDENT), createBookingRateLimit, validate(createBookingSchema), bookingController.createBooking);
 router.get("/mine", requireRole(Role.STUDENT), bookingController.listMyBookings);
 router.patch("/:id/cancel", requireRole(Role.STUDENT), bookingController.cancelBooking);
 
