@@ -6,7 +6,7 @@ import { prisma } from "./config/prisma";
 const app = createApp();
 
 const server = app.listen(env.PORT, () => {
-  logger.info(`🚀 CampusHaven API listening on port ${env.PORT} [${env.NODE_ENV}]`);
+  logger.info(`🚀 CampusNest API listening on port ${env.PORT} [${env.NODE_ENV}]`);
 });
 
 async function shutdown(signal: string) {

@@ -1,9 +1,14 @@
 import { api } from "./api";
-import { ApiResponse, Amenity, CreatePropertyPayload, Property, PropertyFilters, PropertyListResult } from "@/types";
+import { ApiResponse, Amenity, CreatePropertyPayload, Property, PropertyFilters, PropertyListResult, PublicStats } from "@/types";
 
 export const propertyService = {
   async list(filters: PropertyFilters) {
     const { data } = await api.get<ApiResponse<PropertyListResult>>("/properties", { params: filters });
+    return data.data;
+  },
+
+  async getPublicStats() {
+    const { data } = await api.get<ApiResponse<PublicStats>>("/properties/public-stats");
     return data.data;
   },
 

@@ -52,6 +52,14 @@ npm run dev                # http://localhost:5173
 - **Roommate matching**: students fill out a lifestyle profile (budget, gender preference, sleep schedule, cleanliness, smoking, noise tolerance) and get ranked matches against every other active profile at their university. The scoring in `roommate.service.ts` is a weighted sum (budget overlap 25%, gender fit 20%, sleep schedule 15%, cleanliness 15%, smoking 15%, noise tolerance 10%) producing a 0–100 compatibility score — weights are named constants so they're easy to tune later.
 - **Notifications**: every booking status change and listing moderation decision creates a `Notification` row through one shared `notification.service.ts`, so a future email/push channel is a single integration point rather than scattered `sendEmail()` calls. The nav bar's bell shows unread count and marks-as-read on open.
 
+## Landing page rebuild (post-Phase 4)
+
+The landing page was rebuilt from a single hero section into a full conversion-focused page: sticky marketing nav, hero with live search (feeds real filters into `/properties`), featured properties (real data, not placeholders), why-choose/how-it-works/roommate-matching/become-a-landlord sections, an animated stats counter backed by a new public `/properties/public-stats` endpoint, a testimonials carousel (placeholder content, clearly marked as such), an FAQ accordion, a final CTA, and a footer linking to new About/Contact/Privacy/Terms/Help pages.
+
+**Note on branding**: the brand name changed from "CampusHaven" to "CampusNest" on the landing page and other user-visible text (nav, login page, page title). The underlying project folder, npm package names, and git history still say `campushaven` — a full rename (package.json `name` fields, repo name, etc.) wasn't done since it's a bigger structural change; flag if you want that completed too.
+
+**Deferred to v2** (per the spec this was built from): 3D virtual tours, AI property recommendations, live chat support, interactive campus map, maintenance requests, student marketplace, university announcements.
+
 ## What's in Phase 4
 
 - **Admin dashboard**: overview (stats + 30-day listings/bookings trend charts via Recharts), pending-listings moderation queue (approve/reject/remove-as-fraudulent), and paginated student/landlord/booking tables with an active/deactivate toggle per user.

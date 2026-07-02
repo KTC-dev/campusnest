@@ -188,3 +188,10 @@ export interface AdminBookingRow {
   property: { title: string };
   student: { firstName: string; lastName: string };
 }
+
+export interface PublicStats {
+  studentsRegistered: number;
+  verifiedProperties: number;
+  verifiedLandlords: number;
+  successfulBookings: number;
+}

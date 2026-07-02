@@ -12,6 +12,11 @@ import ListingFormPage from "@/pages/ListingFormPage";
 import RoommateMatchesPage from "@/pages/RoommateMatchesPage";
 import RoommateProfilePage from "@/pages/RoommateProfilePage";
 import AdminDashboard from "@/pages/AdminDashboard";
+import AboutPage from "@/pages/AboutPage";
+import ContactPage from "@/pages/ContactPage";
+import PrivacyPage from "@/pages/PrivacyPage";
+import TermsPage from "@/pages/TermsPage";
+import HelpPage from "@/pages/HelpPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 
 // A single /dashboard route renders the right dashboard for the logged-in
@@ -33,6 +38,11 @@ export default function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/properties" element={<PropertyListingPage />} />
         <Route path="/properties/:id" element={<PropertyDetailsPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/help" element={<HelpPage />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<RoleDashboard />} />

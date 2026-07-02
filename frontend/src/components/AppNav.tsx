@@ -9,7 +9,7 @@ export function AppNav() {
   return (
     <header className="flex items-center justify-between px-6 py-4 border-b border-slate-100 md:px-12">
       <Link to="/" className="text-lg font-bold text-brand-900">
-        CampusHaven
+        CampusNest
       </Link>
       <nav className="flex items-center gap-4 text-sm">
         <Link to="/properties" className="text-slate-600 hover:text-brand-600">

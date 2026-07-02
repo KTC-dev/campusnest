@@ -30,7 +30,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center px-6 bg-slate-50">
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
         <h1 className="text-2xl font-bold text-brand-900">Welcome back</h1>
-        <p className="mt-1 text-sm text-slate-500">Log in to your CampusHaven account.</p>
+        <p className="mt-1 text-sm text-slate-500">Log in to your CampusNest account.</p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>

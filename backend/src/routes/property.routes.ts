@@ -17,6 +17,7 @@ const router = Router();
 // --- Public ---------------------------------------------------------------
 router.get("/", validate(listPropertiesSchema), propertyController.listProperties);
 router.get("/amenities", propertyController.listAmenities);
+router.get("/public-stats", propertyController.getPublicStats);
 
 // --- Student ---------------------------------------------------------------
 router.get("/favourites", authenticate, requireRole(Role.STUDENT), propertyController.listFavourites);

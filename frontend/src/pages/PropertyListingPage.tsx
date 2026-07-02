@@ -1,14 +1,31 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AppNav } from "@/components/AppNav";
 import { PropertyCard } from "@/components/PropertyCard";
 import { PropertyFiltersBar } from "@/components/PropertyFiltersBar";
 import { propertyService } from "@/services/property.service";
 import { useAuthStore } from "@/store/authStore";
-import { PropertyFilters } from "@/types";
+import { Gender, PropertyFilters, RoomType } from "@/types";
+
+function filtersFromSearchParams(params: URLSearchParams): PropertyFilters {
+  const maxPrice = params.get("maxPrice");
+  const roomType = params.get("roomType");
+  const gender = params.get("gender");
+  return {
+    availableOnly: true,
+    page: 1,
+    ...(maxPrice ? { maxPrice: Number(maxPrice) } : {}),
+    ...(roomType ? { roomType: roomType as RoomType } : {}),
+    ...(gender ? { gender: gender as Gender } : {}),
+  };
+}
 
 export default function PropertyListingPage() {
-  const [filters, setFilters] = useState<PropertyFilters>({ availableOnly: true, page: 1 });
+  const [searchParams] = useSearchParams();
+  // Seeds filters from the landing page's hero search (?maxPrice=&roomType=&gender=)
+  // on first render only — the filters bar takes over from there.
+  const [filters, setFilters] = useState<PropertyFilters>(() => filtersFromSearchParams(searchParams));
   const user = useAuthStore((s) => s.user);
   const queryClient = useQueryClient();
 

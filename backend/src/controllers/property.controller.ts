@@ -87,3 +87,8 @@ export const listAmenities = catchAsync(async (_req: Request, res: Response) => 
   const amenities = await prisma.amenity.findMany({ orderBy: { name: "asc" } });
   res.status(200).json({ success: true, data: amenities });
 });
+
+export const getPublicStats = catchAsync(async (_req: Request, res: Response) => {
+  const stats = await propertyService.getPublicStats();
+  res.status(200).json({ success: true, data: stats });
+});

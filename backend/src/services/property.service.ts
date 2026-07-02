@@ -215,6 +215,17 @@ class PropertyService {
     return favourites.map((f) => f.property);
   }
 
+  /** Public, unauthenticated counts for the landing page's stats section — deliberately minimal (no revenue/PII), safe to expose to anyone. */
+  async getPublicStats() {
+    const [studentsRegistered, verifiedProperties, verifiedLandlords, successfulBookings] = await Promise.all([
+      prisma.student.count(),
+      prisma.property.count({ where: { status: "APPROVED" } }),
+      prisma.landlord.count({ where: { isVerified: true } }),
+      prisma.booking.count({ where: { status: { in: ["APPROVED", "COMPLETED"] } } }),
+    ]);
+    return { studentsRegistered, verifiedProperties, verifiedLandlords, successfulBookings };
+  }
+
   private async assertOwnership(propertyId: string, landlordId: string) {
     const property = await prisma.property.findUnique({ where: { id: propertyId } });
     if (!property) throw AppError.notFound("Listing not found");

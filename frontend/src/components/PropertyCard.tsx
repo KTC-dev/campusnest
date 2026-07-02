@@ -44,6 +44,10 @@ export function PropertyCard({ property, isFavourited, onToggleFavourite }: Prop
             Fully booked
           </span>
         )}
+
+        <span className="absolute bottom-3 right-3 rounded-full bg-emerald-500/90 px-2.5 py-1 text-xs font-medium text-white flex items-center gap-1">
+          ✓ Verified
+        </span>
       </div>
 
       <Link to={`/properties/${property.id}`} className="block p-4">
