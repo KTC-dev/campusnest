@@ -17,7 +17,7 @@ export function createApp() {
   app.use(helmet());
   app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
   app.use(compression());
-  app.use(express.json({ limit: "10kb" }));
+  app.use(express.json({ limit: "15mb" }));
   app.use(cookieParser());
   app.use(
     morgan("combined", {

@@ -1,10 +1,24 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { useAuthStore } from "@/store/authStore";
 import LandingPage from "@/pages/LandingPage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
-import DashboardPlaceholder from "@/pages/DashboardPlaceholder";
+import PropertyListingPage from "@/pages/PropertyListingPage";
+import PropertyDetailsPage from "@/pages/PropertyDetailsPage";
+import StudentDashboard from "@/pages/StudentDashboard";
+import LandlordDashboard from "@/pages/LandlordDashboard";
+import ListingFormPage from "@/pages/ListingFormPage";
 import NotFoundPage from "@/pages/NotFoundPage";
+
+// A single /dashboard route renders the right dashboard for the logged-in
+// role. This keeps the URL stable across roles and matches how the app's
+// nav links to "/dashboard" regardless of who's logged in.
+function RoleDashboard() {
+  const user = useAuthStore((s) => s.user);
+  if (user?.role === "LANDLORD") return <LandlordDashboard />;
+  return <StudentDashboard />;
+}
 
 export default function App() {
   return (
@@ -13,16 +27,20 @@ export default function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/properties" element={<PropertyListingPage />} />
+        <Route path="/properties/:id" element={<PropertyDetailsPage />} />
 
-        {/* Any authenticated role can reach /dashboard; it renders a
-            role-specific view once StudentDashboard/LandlordDashboard/
-            AdminDashboard ship in Phase 2/4. */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<DashboardPlaceholder />} />
+          <Route path="/dashboard" element={<RoleDashboard />} />
         </Route>
 
-        {/* Example of a role-restricted route, ready for Phase 4's
-            AdminDashboard: <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}> */}
+        <Route element={<ProtectedRoute allowedRoles={["LANDLORD"]} />}>
+          <Route path="/dashboard/listings/new" element={<ListingFormPage />} />
+          <Route path="/dashboard/listings/:id/edit" element={<ListingFormPage />} />
+        </Route>
+
+        {/* Reserved for Phase 4: <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
+              <Route path="/admin" element={<AdminDashboard />} /> </Route> */}
 
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

@@ -37,10 +37,20 @@ npm run dev                # http://localhost:5173
 - **Validation at the edge**: Zod schemas in `backend/src/utils/validation` run before any controller code, so bad input never reaches business logic.
 - **Explicit join table for amenities** (`PropertyAmenity`) instead of an implicit Prisma many-to-many, so it's extensible later (e.g. per-property amenity notes) without a breaking migration.
 
-## Suggested next steps (Phase 2)
+## What's in Phase 2
 
-- Property CRUD (landlord create/edit/delete, image upload via Cloudinary, admin approval workflow) and public search/filter endpoints.
-- Student dashboard (browse, save favourites, view booking status) and Landlord dashboard (listings, booking requests, occupancy).
+- **Property CRUD**: landlords create/edit/delete listings; every create or content edit resets status to `PENDING` for re-review (toggling availability alone does not, so "no vacancy" doesn't need re-approval). Images upload through `upload.service.ts`, a thin wrapper around Cloudinary — swapping storage providers later means editing one file.
+- **Public search**: `GET /properties` filters by price range, distance from campus, gender, room type, amenities, and availability, with pagination. Only `APPROVED` listings are ever returned publicly — `PENDING`/`REJECTED`/`SUSPENDED` listings are invisible outside the owning landlord's and admin's views.
+- **Favourites**: students can save/unsave listings (`POST /properties/:id/favourite`), backed by the `Favourite` join table from Phase 1.
+- **Student dashboard**: saved favourites grid, with a link out to full search.
+- **Landlord dashboard**: listings table with status badges, occupancy stats (occupied / total / rate), inline availability toggle, edit and delete.
+- **Frontend**: `PropertyCard`, `PropertyFiltersBar`, listing/detail pages wired to TanStack Query, a shared `AppNav`, and a create/edit listing form that base64-encodes selected images client-side before posting.
+
+## Suggested next steps (Phase 3)
+
+- Booking system: student booking requests, landlord approve/reject, status shown on the student dashboard (the "Request to book" button on the details page is currently disabled with a placeholder note).
+- Roommate matching: profile creation + compatibility scoring.
+- Notifications: wire the existing `Notification` model to booking/listing status changes.
 - Wire the `role` chosen at register-time through to a proper university picker once a second university exists.
 
 ## A note on this codebase specifically
