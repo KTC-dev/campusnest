@@ -139,7 +139,7 @@ export default function RoommateProfilePage() {
             >
               {sleepOptions.map((s) => (
                 <option key={s} value={s}>
-                  {s.replaceAll("_", " ").toLowerCase()}
+                  {s.replace(/_/g, " ").toLowerCase()}
                 </option>
               ))}
             </select>
@@ -154,7 +154,7 @@ export default function RoommateProfilePage() {
             >
               {cleanlinessOptions.map((c) => (
                 <option key={c} value={c}>
-                  {c.replaceAll("_", " ").toLowerCase()}
+                  {c.replace(/_/g, " ").toLowerCase()}
                 </option>
               ))}
             </select>

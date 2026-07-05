@@ -17,26 +17,37 @@ export function PropertyCard({ property, isFavourited, onToggleFavourite }: Prop
   const primaryImage = property.images.find((i) => i.isPrimary) ?? property.images[0];
 
   return (
-    <div className="group rounded-2xl border border-slate-100 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-      <div className="relative aspect-[4/3] bg-slate-100 overflow-hidden">
+    <div className="group overflow-hidden rounded-[24px] border border-brand-900/10 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-soft">
+      <div className="relative aspect-[4/3] overflow-hidden bg-cream-100">
         {primaryImage ? (
           <img
             src={primaryImage.url}
             alt={property.title}
-            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
           />
         ) : (
-          <div className="h-full w-full flex items-center justify-center text-slate-400 text-sm">No image</div>
+          <div className="flex h-full items-center justify-center text-sm text-slate-400">No image</div>
         )}
 
         {onToggleFavourite && (
           <button
             onClick={() => onToggleFavourite(property.id)}
             aria-label={isFavourited ? "Remove from favourites" : "Save to favourites"}
-            className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/90 backdrop-blur flex items-center justify-center text-lg shadow-sm"
+            className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-lg shadow-sm backdrop-blur"
           >
             {isFavourited ? "❤️" : "🤍"}
           </button>
+        )}
+
+        {property.status === "APPROVED" && property.landlord?.isVerified ? (
+          <span className="absolute left-3 top-3 rounded-full border border-white/70 bg-white/90 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-900">
+            Verified
+          </span>
+        ) : (
+          <span className="absolute left-3 top-3 rounded-full border border-slate-200 bg-white/80 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-600">
+            New landlord
+          </span>
         )}
 
         {!property.isAvailable && (
@@ -44,29 +55,26 @@ export function PropertyCard({ property, isFavourited, onToggleFavourite }: Prop
             Fully booked
           </span>
         )}
-
-        <span className="absolute bottom-3 right-3 rounded-full bg-emerald-500/90 px-2.5 py-1 text-xs font-medium text-white flex items-center gap-1">
-          ✓ Verified
-        </span>
       </div>
 
-      <Link to={`/properties/${property.id}`} className="block p-4">
+      <Link to={`/properties/${property.id}`} className="block p-5">
         <div className="flex items-start justify-between gap-2">
           <h3 className="font-semibold text-slate-900 line-clamp-1">{property.title}</h3>
         </div>
-        <p className="mt-0.5 text-sm text-slate-500 line-clamp-1">{property.location}</p>
+        <p className="mt-1 text-sm text-slate-500 line-clamp-1">{property.location}</p>
 
-        <div className="mt-2 flex items-center gap-3 text-xs text-slate-500">
-          <span>{property.bedrooms} bed</span>
-          <span>·</span>
-          <span>{property.bathrooms} bath</span>
-          <span>·</span>
-          <span>{Number(property.distanceFromCampusKm)}km from campus</span>
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+          <span className="rounded-full bg-cream-50 px-2.5 py-1">{property.bedrooms} bed</span>
+          <span className="rounded-full bg-cream-50 px-2.5 py-1">{property.bathrooms} bath</span>
+          <span className="rounded-full bg-cream-50 px-2.5 py-1">{Number(property.distanceFromCampusKm)}km</span>
         </div>
 
-        <p className="mt-3 font-bold text-brand-600">
-          {formatNaira(property.price)} <span className="text-xs font-normal text-slate-400">/ year</span>
-        </p>
+        <div className="mt-4 flex items-center justify-between">
+          <p className="font-bold text-brand-900">
+            {formatNaira(property.price)} <span className="text-xs font-normal text-slate-400">/ year</span>
+          </p>
+          <span className="text-sm font-semibold text-brand-900">View details →</span>
+        </div>
       </Link>
     </div>
   );

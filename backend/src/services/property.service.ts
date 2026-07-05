@@ -16,6 +16,8 @@ interface CreatePropertyInput {
   genderRestriction: string;
   amenityIds: string[];
   images: string[];
+  // Landlord affirmation before publishing
+  ownerConfirmation?: boolean;
 }
 
 interface UpdatePropertyInput extends Partial<Omit<CreatePropertyInput, "images">> {
@@ -80,17 +82,20 @@ class PropertyService {
     const onlyAvailabilityChanged =
       Object.keys(input).length === 1 && Object.prototype.hasOwnProperty.call(input, "isAvailable");
 
+    const { amenityIds, roomType, genderRestriction, ...scalarInput } = input;
+    const data: Prisma.PropertyUpdateInput = {
+      ...scalarInput,
+      ...(roomType !== undefined ? { roomType: roomType as any } : {}),
+      ...(genderRestriction !== undefined ? { genderRestriction: genderRestriction as any } : {}),
+      ...(onlyAvailabilityChanged ? {} : { status: ListingStatus.PENDING, rejectionReason: null }),
+      ...(amenityIds
+        ? { amenities: { deleteMany: {}, create: amenityIds.map((amenityId) => ({ amenityId })) } }
+        : {}),
+    };
+
     return prisma.property.update({
       where: { id: property.id },
-      data: {
-        ...input,
-        roomType: input.roomType as any,
-        genderRestriction: input.genderRestriction as any,
-        ...(onlyAvailabilityChanged ? {} : { status: ListingStatus.PENDING, rejectionReason: null }),
-        ...(input.amenityIds
-          ? { amenities: { deleteMany: {}, create: input.amenityIds.map((amenityId) => ({ amenityId })) } }
-          : {}),
-      },
+      data,
       include: publicPropertyInclude,
     });
   }
@@ -185,8 +190,8 @@ class PropertyService {
         status === "APPROVED"
           ? `"${property.title}" is now live and visible to students.`
           : status === "REJECTED"
-          ? `"${property.title}" was rejected: ${rejectionReason ?? "did not meet listing standards"}`
-          : `"${property.title}" has been suspended by an admin.`,
+            ? `"${property.title}" was rejected: ${rejectionReason ?? "did not meet listing standards"}`
+            : `"${property.title}" has been suspended by an admin.`,
     });
 
     return updated;

@@ -30,9 +30,9 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
   }
 
   if (!isOperational) {
-    logger.error("Unhandled error", { err, path: req.path, method: req.method });
+    logger.error("Unhandled error", { err, path: req.path, method: req.method, statusCode });
   } else {
-    logger.warn(message, { path: req.path, method: req.method });
+    logger.warn(message, { path: req.path, method: req.method, statusCode });
   }
 
   res.status(statusCode).json({

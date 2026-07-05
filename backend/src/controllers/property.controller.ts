@@ -28,6 +28,10 @@ export const createProperty = catchAsync(async (req: Request, res: Response) => 
   // default is replaced by req.body.universityId.
   const university = await prisma.university.findFirstOrThrow();
 
+  if (!req.body?.ownerConfirmation) throw AppError.badRequest("You must confirm you have the right to advertise this property");
+
+  if (!req.body?.ownerConfirmation) throw AppError.badRequest("You must confirm you have the right to advertise this property");
+
   const property = await propertyService.create(landlordId, university.id, req.body);
   res.status(201).json({ success: true, data: property });
 });

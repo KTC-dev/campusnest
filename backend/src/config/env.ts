@@ -6,6 +6,8 @@ import { z } from "zod";
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().default(4000),
+  TRUST_PROXY: z.coerce.number().default(1),
+  APP_VERSION: z.string().default("1.0.0"),
 
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
 
@@ -14,7 +16,7 @@ const envSchema = z.object({
   JWT_ACCESS_EXPIRES_IN: z.string().default("15m"),
   JWT_REFRESH_EXPIRES_IN: z.string().default("7d"),
 
-  CORS_ORIGIN: z.string().default("http://localhost:5173"),
+  CORS_ORIGIN: z.string().default("http://localhost:5173,http://127.0.0.1:5173"),
 
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),

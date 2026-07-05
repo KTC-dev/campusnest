@@ -64,9 +64,8 @@ export function PropertyFiltersBar({ filters, amenities, onChange }: PropertyFil
             <button
               key={g}
               onClick={() => set("gender", filters.gender === g ? undefined : g)}
-              className={`rounded-full border px-3 py-1 text-xs font-medium capitalize transition-colors ${
-                filters.gender === g ? "border-brand-500 bg-brand-50 text-brand-600" : "border-slate-300 text-slate-600"
-              }`}
+              className={`rounded-full border px-3 py-1 text-xs font-medium capitalize transition-colors ${filters.gender === g ? "border-brand-500 bg-brand-50 text-brand-600" : "border-slate-300 text-slate-600"
+                }`}
             >
               {g.toLowerCase()}
             </button>
@@ -84,7 +83,7 @@ export function PropertyFiltersBar({ filters, amenities, onChange }: PropertyFil
           <option value="">Any</option>
           {roomTypes.map((r) => (
             <option key={r} value={r}>
-              {r.replaceAll("_", " ").toLowerCase()}
+              {r.replace(/_/g, " ").toLowerCase()}
             </option>
           ))}
         </select>
@@ -98,11 +97,10 @@ export function PropertyFiltersBar({ filters, amenities, onChange }: PropertyFil
               <button
                 key={a.id}
                 onClick={() => toggleAmenity(a.id)}
-                className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                  filters.amenityIds?.includes(a.id)
+                className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${filters.amenityIds?.includes(a.id)
                     ? "border-brand-500 bg-brand-50 text-brand-600"
                     : "border-slate-300 text-slate-600"
-                }`}
+                  }`}
               >
                 {a.name}
               </button>

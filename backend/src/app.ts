@@ -13,14 +13,29 @@ import { AppError } from "./utils/AppError";
 
 export function createApp() {
   const app = express();
+  const allowedOrigins = env.CORS_ORIGIN.split(",").map((origin) => origin.trim()).filter(Boolean);
 
+  app.set("trust proxy", env.TRUST_PROXY);
+  app.disable("x-powered-by");
   app.use(helmet());
-  app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+          return;
+        }
+
+        callback(null, false);
+      },
+      credentials: true,
+    })
+  );
   app.use(compression());
   app.use(express.json({ limit: "15mb" }));
   app.use(cookieParser());
   app.use(
-    morgan("combined", {
+    morgan(env.NODE_ENV === "production" ? "combined" : "dev", {
       stream: { write: (msg) => logger.http?.(msg.trim()) ?? logger.info(msg.trim()) },
     })
   );
@@ -36,7 +51,13 @@ export function createApp() {
     })
   );
 
-  app.get("/health", (_req, res) => res.status(200).json({ status: "ok" }));
+  app.get("/health", (_req, res) =>
+    res.status(200).json({
+      status: "ok",
+      version: env.APP_VERSION,
+      environment: env.NODE_ENV,
+    })
+  );
 
   app.use("/api/v1", routes);
 

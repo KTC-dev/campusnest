@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import jwt, { type Secret, type SignOptions } from "jsonwebtoken";
 import { Role } from "@prisma/client";
 import { env } from "../config/env";
 
@@ -17,11 +17,11 @@ export interface RefreshTokenPayload {
 // access tokens. This split limits the damage window if an access token
 // leaks (e.g. via XSS) while keeping the user logged in for longer.
 export function signAccessToken(payload: AccessTokenPayload): string {
-  return jwt.sign(payload, env.JWT_ACCESS_SECRET, { expiresIn: env.JWT_ACCESS_EXPIRES_IN });
+  return jwt.sign(payload, env.JWT_ACCESS_SECRET as Secret, { expiresIn: env.JWT_ACCESS_EXPIRES_IN } as SignOptions);
 }
 
 export function signRefreshToken(payload: RefreshTokenPayload): string {
-  return jwt.sign(payload, env.JWT_REFRESH_SECRET, { expiresIn: env.JWT_REFRESH_EXPIRES_IN });
+  return jwt.sign(payload, env.JWT_REFRESH_SECRET as Secret, { expiresIn: env.JWT_REFRESH_EXPIRES_IN } as SignOptions);
 }
 
 export function verifyAccessToken(token: string): AccessTokenPayload {

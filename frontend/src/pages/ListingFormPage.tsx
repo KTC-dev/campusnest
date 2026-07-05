@@ -2,9 +2,12 @@ import { FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { AppNav } from "@/components/AppNav";
+import { Upload } from "@/components/Upload";
 import { propertyService } from "@/services/property.service";
+import { useToastStore } from "@/store/toastStore";
 import { fileToBase64 } from "@/utils/file";
 import { Gender, RoomType } from "@/types";
+import { getFriendlyErrorMessage } from "@/utils/error";
 
 const roomTypes: RoomType[] = ["SELF_CONTAIN", "SHARED", "ONE_BEDROOM", "TWO_BEDROOM", "HOSTEL"];
 const genders: Gender[] = ["ANY", "MALE", "FEMALE"];
@@ -13,6 +16,7 @@ export default function ListingFormPage() {
   const { id } = useParams<{ id: string }>();
   const isEditing = Boolean(id);
   const navigate = useNavigate();
+  const addToast = useToastStore((state) => state.addToast);
 
   const { data: amenities = [] } = useQuery({ queryKey: ["amenities"], queryFn: propertyService.listAmenities });
   const { data: existing } = useQuery({
@@ -34,6 +38,7 @@ export default function ListingFormPage() {
   });
   const [amenityIds, setAmenityIds] = useState<string[]>([]);
   const [images, setImages] = useState<string[]>([]);
+  const [ownerConfirmed, setOwnerConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -62,12 +67,6 @@ export default function ListingFormPage() {
     setAmenityIds((prev) => (prev.includes(amenityId) ? prev.filter((a) => a !== amenityId) : [...prev, amenityId]));
   }
 
-  async function handleImagesSelected(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []);
-    const encoded = await Promise.all(files.map(fileToBase64));
-    setImages((prev) => [...prev, ...encoded].slice(0, 10));
-  }
-
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
@@ -92,14 +91,23 @@ export default function ListingFormPage() {
         amenityIds,
       };
 
+      if (!isEditing && !ownerConfirmed) {
+        setError("You must confirm you have the right to publish this listing.");
+        setIsSubmitting(false);
+        return;
+      }
+
       if (isEditing) {
         await propertyService.update(id!, payload);
       } else {
-        await propertyService.create({ ...payload, images });
+        await propertyService.create({ ...payload, images, ownerConfirmation: ownerConfirmed });
       }
+      addToast({ type: "success", title: isEditing ? "Listing updated" : "Listing submitted", message: isEditing ? "Your changes are saved and pending review." : "Your listing is now pending review." });
       navigate("/dashboard");
     } catch (err: any) {
-      setError(err?.response?.data?.message ?? "Something went wrong. Please try again.");
+      const message = getFriendlyErrorMessage(err);
+      setError(message);
+      addToast({ type: "error", title: "Save failed", message });
     } finally {
       setIsSubmitting(false);
     }
@@ -181,7 +189,7 @@ export default function ListingFormPage() {
             <select value={form.roomType} onChange={update("roomType")} className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
               {roomTypes.map((r) => (
                 <option key={r} value={r}>
-                  {r.replaceAll("_", " ").toLowerCase()}
+                  {r.replace(/_/g, " ").toLowerCase()}
                 </option>
               ))}
             </select>
@@ -206,9 +214,8 @@ export default function ListingFormPage() {
                   type="button"
                   key={a.id}
                   onClick={() => toggleAmenity(a.id)}
-                  className={`rounded-full border px-3 py-1 text-xs font-medium ${
-                    amenityIds.includes(a.id) ? "border-brand-500 bg-brand-50 text-brand-600" : "border-slate-300 text-slate-600"
-                  }`}
+                  className={`rounded-full border px-3 py-1 text-xs font-medium ${amenityIds.includes(a.id) ? "border-brand-500 bg-brand-50 text-brand-600" : "border-slate-300 text-slate-600"
+                    }`}
                 >
                   {a.name}
                 </button>
@@ -219,14 +226,31 @@ export default function ListingFormPage() {
           {!isEditing && (
             <div>
               <p className="text-sm font-medium text-slate-700">Photos</p>
-              <input type="file" accept="image/*" multiple onChange={handleImagesSelected} className="mt-2 text-sm" />
+              <Upload
+                label="Property images"
+                helperText="Upload listing photos"
+                accept="image/jpeg,image/png,image/webp"
+                maxSizeMb={10}
+                multiple
+                onChange={(files) => setImages(files)}
+                onFileAdded={async (file) => fileToBase64(file)}
+              />
               {images.length > 0 && (
-                <div className="mt-2 flex gap-2 flex-wrap">
+                <div className="mt-3 flex gap-2 flex-wrap">
                   {images.map((src, i) => (
                     <img key={i} src={src} alt="" className="h-16 w-16 rounded-lg object-cover" />
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {!isEditing && (
+            <div className="mt-4">
+              <label className="flex items-start gap-3">
+                <input type="checkbox" checked={ownerConfirmed} onChange={(e) => setOwnerConfirmed(e.target.checked)} />
+                <span className="text-sm text-slate-700">I confirm that this listing is truthful, accurate, and that I have the legal right to advertise this property.</span>
+              </label>
             </div>
           )}
 

@@ -23,10 +23,7 @@ if (isConfigured) {
 class UploadService {
   async uploadImage(base64OrUrl: string, folder = "campusnest/properties"): Promise<UploadedImage> {
     if (!isConfigured) {
-      // Fails loudly in dev rather than silently no-op-ing, so a missing
-      // .env value is caught immediately instead of surfacing as a
-      // confusing "image never appears" bug later.
-      throw AppError.internal("Image storage is not configured (missing Cloudinary env vars)");
+      throw AppError.badRequest("Image upload is not configured on the server. Please contact support.");
     }
 
     const result = await cloudinary.uploader.upload(base64OrUrl, { folder });

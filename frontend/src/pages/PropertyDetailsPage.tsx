@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { AppNav } from "@/components/AppNav";
 import { BookingRequestModal } from "@/components/BookingRequestModal";
 import { propertyService } from "@/services/property.service";
+import { conversationService } from "@/services/conversation.service";
 import { useAuthStore } from "@/store/authStore";
 
 function formatNaira(price: string) {
@@ -14,9 +15,11 @@ function formatNaira(price: string) {
 
 export default function PropertyDetailsPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [activeImage, setActiveImage] = useState(0);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [bookingSent, setBookingSent] = useState(false);
+  const [isCreatingConversation, setIsCreatingConversation] = useState(false);
   const user = useAuthStore((s) => s.user);
 
   const { data: property, isLoading, isError } = useQuery({
@@ -24,6 +27,18 @@ export default function PropertyDetailsPage() {
     queryFn: () => propertyService.getById(id!),
     enabled: Boolean(id),
   });
+
+  async function handleContactLandlord() {
+    if (!id || !user || user.role !== "STUDENT" || isCreatingConversation) return;
+
+    setIsCreatingConversation(true);
+    try {
+      const conversation = await conversationService.create({ propertyId: id, initialMessage: "Hello, I would like to know more about this property." });
+      navigate(`/conversations/${conversation.id}`);
+    } finally {
+      setIsCreatingConversation(false);
+    }
+  }
 
   if (isLoading) {
     return (
@@ -62,9 +77,8 @@ export default function PropertyDetailsPage() {
                 <button
                   key={img.id}
                   onClick={() => setActiveImage(i)}
-                  className={`h-16 w-16 shrink-0 rounded-lg overflow-hidden border-2 ${
-                    i === activeImage ? "border-brand-500" : "border-transparent"
-                  }`}
+                  className={`h-16 w-16 shrink-0 rounded-lg overflow-hidden border-2 ${i === activeImage ? "border-brand-500" : "border-transparent"
+                    }`}
                 >
                   <img src={img.url} alt="" className="h-full w-full object-cover" />
                 </button>
@@ -119,6 +133,15 @@ export default function PropertyDetailsPage() {
           >
             {bookingSent ? "Request sent ✓" : property.isAvailable ? "Request to book" : "Fully booked"}
           </button>
+          {user?.role === "STUDENT" && (
+            <button
+              onClick={handleContactLandlord}
+              disabled={isCreatingConversation}
+              className="mt-3 w-full rounded-lg border border-brand-200 bg-white py-2.5 text-sm font-semibold text-brand-700 hover:bg-brand-50 transition-colors disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isCreatingConversation ? "Opening chat..." : "Contact landlord"}
+            </button>
+          )}
           {!user && <p className="mt-2 text-center text-xs text-slate-400">Log in as a student to request a booking.</p>}
           {user && user.role !== "STUDENT" && (
             <p className="mt-2 text-center text-xs text-slate-400">Only students can request bookings.</p>

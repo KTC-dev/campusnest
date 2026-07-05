@@ -1,5 +1,5 @@
 import { api } from "./api";
-import { ApiResponse, AuthTokens } from "@/types";
+import { ApiResponse, AuthTokens, University } from "@/types";
 
 export interface RegisterStudentPayload {
   email: string;
@@ -8,6 +8,9 @@ export interface RegisterStudentPayload {
   lastName: string;
   universityId: string;
   phone?: string;
+  acceptedTerms?: boolean;
+  acceptedTermsVersion?: string;
+  acceptedTermsAt?: string;
 }
 
 export interface RegisterLandlordPayload {
@@ -17,6 +20,9 @@ export interface RegisterLandlordPayload {
   lastName: string;
   phone: string;
   businessName?: string;
+  acceptedTerms?: boolean;
+  acceptedTermsVersion?: string;
+  acceptedTermsAt?: string;
 }
 
 export const authService = {
@@ -32,6 +38,11 @@ export const authService = {
 
   async registerLandlord(payload: RegisterLandlordPayload) {
     const { data } = await api.post<ApiResponse<AuthTokens>>("/auth/register/landlord", payload);
+    return data.data;
+  },
+
+  async listUniversities() {
+    const { data } = await api.get<ApiResponse<University[]>>("/universities");
     return data.data;
   },
 

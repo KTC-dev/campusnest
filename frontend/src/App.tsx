@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { useAuthStore } from "@/store/authStore";
 import LandingPage from "@/pages/LandingPage";
 import LoginPage from "@/pages/LoginPage";
@@ -17,6 +18,8 @@ import ContactPage from "@/pages/ContactPage";
 import PrivacyPage from "@/pages/PrivacyPage";
 import TermsPage from "@/pages/TermsPage";
 import HelpPage from "@/pages/HelpPage";
+import ProfilePage from "@/pages/ProfilePage";
+import ConversationsPage from "@/pages/ConversationsPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 
 // A single /dashboard route renders the right dashboard for the logged-in
@@ -46,9 +49,9 @@ export default function App() {
 
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<RoleDashboard />} />
-        </Route>
-
-        <Route element={<ProtectedRoute allowedRoles={["LANDLORD"]} />}>
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/conversations" element={<ConversationsPage />} />
+          <Route path="/conversations/:id" element={<ConversationsPage />} />
           <Route path="/dashboard/listings/new" element={<ListingFormPage />} />
           <Route path="/dashboard/listings/:id/edit" element={<ListingFormPage />} />
         </Route>
@@ -64,6 +67,7 @@ export default function App() {
 
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+      <CookieConsentBanner />
     </BrowserRouter>
   );
 }

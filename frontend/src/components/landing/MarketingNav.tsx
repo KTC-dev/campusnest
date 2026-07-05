@@ -14,34 +14,40 @@ export function MarketingNav() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-100">
-      <div className="flex items-center justify-between px-6 py-4 md:px-12">
-        <Link to="/" className="text-xl font-bold text-brand-900">
-          CampusNest
+    <header className="sticky top-0 z-40 border-b border-brand-900/10 bg-cream-50/90 backdrop-blur-xl shadow-[0_8px_30px_-20px_rgba(20,83,45,0.35)]">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-6 lg:px-8">
+        <Link to="/" className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-brand-900/15 bg-white text-lg font-semibold text-brand-900 shadow-sm">
+            C
+          </div>
+          <div>
+            <p className="font-display text-lg font-semibold text-brand-950">CampusNest</p>
+            <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Student homes</p>
+          </div>
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-slate-600">
+        <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 lg:flex">
           {navLinks.map((link) => (
-            <Link key={link.label} to={link.to} className="hover:text-brand-600 transition-colors">
+            <Link key={link.label} to={link.to} className="transition-colors hover:text-brand-900">
               {link.label}
             </Link>
           ))}
         </nav>
 
-        <div className="hidden lg:flex items-center gap-3">
-          <Link to="/login" className="text-sm font-medium text-slate-600 hover:text-brand-600">
-            Log in
+        <div className="hidden items-center gap-3 lg:flex">
+          <Link to="/login" className="text-sm font-medium text-slate-600 transition-colors hover:text-brand-900">
+            Login
           </Link>
           <Link
             to="/register"
-            className="rounded-full bg-brand-500 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600 transition-colors"
+            className="rounded-full bg-brand-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-950"
           >
             Sign up
           </Link>
         </div>
 
         <button
-          className="lg:hidden text-slate-600"
+          className="rounded-full border border-brand-900/10 bg-white p-2 text-slate-700 lg:hidden"
           onClick={() => setMobileOpen((o) => !o)}
           aria-label="Toggle menu"
         >
@@ -50,17 +56,22 @@ export function MarketingNav() {
       </div>
 
       {mobileOpen && (
-        <div className="lg:hidden border-t border-slate-100 px-6 py-4 space-y-3">
+        <div className="border-t border-brand-900/10 bg-white/95 px-5 py-4 lg:hidden">
           {navLinks.map((link) => (
-            <Link key={link.label} to={link.to} className="block text-sm font-medium text-slate-600" onClick={() => setMobileOpen(false)}>
+            <Link
+              key={link.label}
+              to={link.to}
+              className="block py-2 text-sm font-medium text-slate-600"
+              onClick={() => setMobileOpen(false)}
+            >
               {link.label}
             </Link>
           ))}
-          <div className="flex gap-3 pt-2 border-t border-slate-100">
+          <div className="mt-3 flex gap-3 border-t border-brand-900/10 pt-3">
             <Link to="/login" className="text-sm font-medium text-slate-600">
-              Log in
+              Login
             </Link>
-            <Link to="/register" className="text-sm font-semibold text-brand-600">
+            <Link to="/register" className="text-sm font-semibold text-brand-900">
               Sign up
             </Link>
           </div>

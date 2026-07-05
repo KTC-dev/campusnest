@@ -3,8 +3,11 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { AppNav } from "@/components/AppNav";
 import { adminService } from "@/services/admin.service";
+import { useToastStore } from "@/store/toastStore";
+import { verificationService } from "@/services/verification.service";
+import { getFriendlyErrorMessage } from "@/utils/error";
 
-type Tab = "overview" | "moderation" | "students" | "landlords" | "bookings";
+type Tab = "overview" | "moderation" | "students" | "landlords" | "bookings" | "verifications";
 
 const tabs: { id: Tab; label: string }[] = [
   { id: "overview", label: "Overview" },
@@ -12,6 +15,7 @@ const tabs: { id: Tab; label: string }[] = [
   { id: "students", label: "Students" },
   { id: "landlords", label: "Landlords" },
   { id: "bookings", label: "Bookings" },
+  { id: "verifications", label: "Verifications" },
 ];
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
@@ -83,22 +87,40 @@ function OverviewTab() {
 
 function ModerationTab() {
   const queryClient = useQueryClient();
+  const addToast = useToastStore((state) => state.addToast);
+  const [processingId, setProcessingId] = useState<string | null>(null);
   const { data: pending = [], isLoading } = useQuery({
     queryKey: ["admin-pending-properties"],
     queryFn: adminService.listPendingProperties,
   });
 
   async function handleDecision(id: string, status: "APPROVED" | "REJECTED") {
-    const rejectionReason = status === "REJECTED" ? prompt("Reason for rejection (shown to the landlord):") ?? undefined : undefined;
-    await adminService.moderateProperty(id, status, rejectionReason);
-    queryClient.invalidateQueries({ queryKey: ["admin-pending-properties"] });
-    queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+    setProcessingId(id);
+    try {
+      const rejectionReason = status === "REJECTED" ? window.prompt("Reason for rejection (shown to the landlord):") ?? undefined : undefined;
+      await adminService.moderateProperty(id, status, rejectionReason);
+      queryClient.invalidateQueries({ queryKey: ["admin-pending-properties"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+      addToast({ type: "success", title: status === "APPROVED" ? "Listing approved" : "Listing rejected", message: "The decision has been saved." });
+    } catch (error) {
+      addToast({ type: "error", title: "Decision failed", message: getFriendlyErrorMessage(error) });
+    } finally {
+      setProcessingId(null);
+    }
   }
 
   async function handleRemoveFraudulent(id: string) {
-    if (!confirm("Permanently remove this listing as fraudulent? This cannot be undone.")) return;
-    await adminService.removeFraudulentListing(id);
-    queryClient.invalidateQueries({ queryKey: ["admin-pending-properties"] });
+    if (!window.confirm("Permanently remove this listing as fraudulent? This cannot be undone.")) return;
+    setProcessingId(id);
+    try {
+      await adminService.removeFraudulentListing(id);
+      queryClient.invalidateQueries({ queryKey: ["admin-pending-properties"] });
+      addToast({ type: "warning", title: "Listing removed", message: "The fraudulent listing has been removed." });
+    } catch (error) {
+      addToast({ type: "error", title: "Removal failed", message: getFriendlyErrorMessage(error) });
+    } finally {
+      setProcessingId(null);
+    }
   }
 
   if (isLoading) return <p className="text-sm text-slate-500">Loading…</p>;
@@ -119,18 +141,20 @@ function ModerationTab() {
           </div>
           <button
             onClick={() => handleDecision(property.id, "APPROVED")}
-            className="rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-600"
+            disabled={processingId === property.id}
+            className="rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            Approve
+            {processingId === property.id ? "Working…" : "Approve"}
           </button>
           <button
             onClick={() => handleDecision(property.id, "REJECTED")}
-            className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700"
+            disabled={processingId === property.id}
+            className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            Reject
+            {processingId === property.id ? "Working…" : "Reject"}
           </button>
-          <button onClick={() => handleRemoveFraudulent(property.id)} className="text-xs font-medium text-red-500 hover:underline">
-            Remove (fraud)
+          <button onClick={() => handleRemoveFraudulent(property.id)} disabled={processingId === property.id} className="text-xs font-medium text-red-500 hover:underline disabled:cursor-not-allowed disabled:opacity-70">
+            {processingId === property.id ? "Working…" : "Remove (fraud)"}
           </button>
         </div>
       ))}
@@ -228,6 +252,60 @@ function LandlordsTab() {
   );
 }
 
+function VerificationsTab() {
+  const queryClient = useQueryClient();
+  const addToast = useToastStore((state) => state.addToast);
+  const [processingId, setProcessingId] = useState<string | null>(null);
+  const { data = [], isLoading } = useQuery({ queryKey: ["admin-verifications"], queryFn: verificationService.listForAdmin });
+
+  async function handleDecision(id: string, decision: "approve" | "reject") {
+    setProcessingId(id);
+    try {
+      if (decision === "reject") {
+        const notes = window.prompt("Add admin notes for the rejection:") ?? undefined;
+        await verificationService.reject(id, notes);
+      } else {
+        await verificationService.approve(id);
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["admin-verifications"] });
+      addToast({ type: "success", title: decision === "approve" ? "Verification approved" : "Verification rejected", message: "The update has been saved." });
+    } catch (error) {
+      addToast({ type: "error", title: "Decision failed", message: getFriendlyErrorMessage(error) });
+    } finally {
+      setProcessingId(null);
+    }
+  }
+
+  if (isLoading) return <p className="text-sm text-slate-500">Loading…</p>;
+
+  return (
+    <div className="space-y-3">
+      {data.map((item) => (
+        <div key={item.id} className="rounded-2xl border border-slate-100 bg-white p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="font-medium text-slate-900">{item.id}</p>
+              <p className="text-sm text-slate-500">{item.idDocumentUrl}</p>
+            </div>
+            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600">
+              {item.status}
+            </span>
+          </div>
+          <div className="mt-3 flex gap-2">
+            <button onClick={() => handleDecision(item.id, "approve")} disabled={processingId === item.id} className="rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-70">
+              {processingId === item.id ? "Working…" : "Approve"}
+            </button>
+            <button onClick={() => handleDecision(item.id, "reject")} disabled={processingId === item.id} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-70">
+              {processingId === item.id ? "Working…" : "Reject"}
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function BookingsTab() {
   const { data, isLoading } = useQuery({ queryKey: ["admin-bookings"], queryFn: () => adminService.listBookings() });
 
@@ -272,9 +350,8 @@ export default function AdminDashboard() {
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`rounded-md px-3 py-1.5 transition-colors ${
-                tab === t.id ? "bg-white shadow-sm text-brand-600" : "text-slate-500"
-              }`}
+              className={`rounded-md px-3 py-1.5 transition-colors ${tab === t.id ? "bg-white shadow-sm text-brand-600" : "text-slate-500"
+                }`}
             >
               {t.label}
             </button>
@@ -287,6 +364,7 @@ export default function AdminDashboard() {
           {tab === "students" && <StudentsTab />}
           {tab === "landlords" && <LandlordsTab />}
           {tab === "bookings" && <BookingsTab />}
+          {tab === "verifications" && <VerificationsTab />}
         </div>
       </main>
     </div>

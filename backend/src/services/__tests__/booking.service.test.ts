@@ -2,17 +2,20 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock Prisma and the notification service before importing bookingService,
 // so the service under test never touches a real database.
-const mockPrisma = {
-  property: { findUnique: vi.fn(), update: vi.fn() },
-  booking: { findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), updateMany: vi.fn() },
-  $transaction: vi.fn(),
-};
+const { mockPrisma, notificationServiceMock } = vi.hoisted(() => ({
+  mockPrisma: {
+    property: { findUnique: vi.fn(), update: vi.fn() },
+    booking: { findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), updateMany: vi.fn() },
+    $transaction: vi.fn(),
+  },
+  notificationServiceMock: { notify: vi.fn() },
+}));
 
 vi.mock("../../config/prisma", () => ({ prisma: mockPrisma }));
-vi.mock("../notification.service", () => ({ notificationService: { notify: vi.fn() } }));
+vi.mock("../notification.service", () => ({ notificationService: notificationServiceMock }));
 
-const { bookingService } = await import("../booking.service");
-const { notificationService } = await import("../notification.service");
+import { bookingService } from "../booking.service";
+import { notificationService } from "../notification.service";
 
 beforeEach(() => {
   vi.clearAllMocks();

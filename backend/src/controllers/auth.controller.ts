@@ -15,6 +15,11 @@ export const registerLandlord = catchAsync(async (req: Request, res: Response) =
   res.status(201).json({ success: true, data: tokens });
 });
 
+export const listUniversities = catchAsync(async (_req: Request, res: Response) => {
+  const universities = await authService.listUniversities();
+  res.status(200).json({ success: true, data: universities });
+});
+
 export const login = catchAsync(async (req: Request, res: Response) => {
   const { email, password } = req.body;
   const tokens = await authService.login(email, password);
@@ -36,4 +41,10 @@ export const logout = catchAsync(async (req: Request, res: Response) => {
 export const me = catchAsync(async (req: Request, res: Response) => {
   // req.user is guaranteed by the `authenticate` middleware on this route.
   res.status(200).json({ success: true, data: req.user });
+});
+
+export const acceptTerms = catchAsync(async (req: Request, res: Response) => {
+  const { acceptedTermsVersion } = req.body;
+  const result = await authService.acceptTerms(req.user!.id, acceptedTermsVersion);
+  res.status(200).json({ success: true, data: result });
 });

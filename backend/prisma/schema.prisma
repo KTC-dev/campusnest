@@ -75,6 +75,18 @@ enum NotificationType {
   LISTING_STATUS
   ROOMMATE_MATCH
   SYSTEM
+  PROPERTY_INQUIRY
+  INSPECTION_CONFIRMED
+  VERIFICATION_APPROVED
+  PROPERTY_APPROVED
+}
+
+enum VerificationStatus {
+  PENDING
+  UNDER_REVIEW
+  VERIFIED
+  REJECTED
+  SUSPENDED
 }
 
 // ---------------------------------------------------------------------------
@@ -102,6 +114,10 @@ model User {
   role         Role
   isVerified   Boolean  @default(false)
   isActive     Boolean  @default(true)
+  // Legal consent tracking
+  acceptedTerms Boolean? @default(false)
+  acceptedTermsVersion String?
+  acceptedTermsAt DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -109,9 +125,9 @@ model User {
   landlord Landlord?
   admin    Admin?
 
+  verificationRequests LandlordVerification[]
   notifications     Notification[]
   sentMessages      Message[]        @relation("MessageSender")
-  receivedMessages   Message[]        @relation("MessageRecipient")
   refreshTokens      RefreshToken[]
 
   @@index([role])
@@ -154,6 +170,7 @@ model Student {
   favourites      Favourite[]
   roommateProfile RoommateProfile?
   reviews         Review[]
+  conversations   Conversation[]
 
   @@index([universityId])
   @@map("students")
@@ -173,8 +190,31 @@ model Landlord {
   updatedAt    DateTime @updatedAt
 
   properties Property[]
+  conversations Conversation[]
+  verificationRequests LandlordVerification[]
 
   @@map("landlords")
+}
+
+model LandlordVerification {
+  id                    String             @id @default(cuid())
+  userId                String
+  user                  User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  landlordId            String?
+  landlord              Landlord?          @relation(fields: [landlordId], references: [id], onDelete: SetNull)
+  idDocumentUrl         String
+  selfieUrl             String?
+  proofOfOwnershipUrl   String?
+  status                VerificationStatus @default(PENDING)
+  adminNotes            String?
+  createdAt             DateTime           @default(now())
+  reviewedAt            DateTime?
+  // whether the submitter confirmed authenticity at submission time
+  submitterConfirmation Boolean? 
+
+  @@index([userId])
+  @@index([status])
+  @@map("landlord_verifications")
 }
 
 model Admin {
@@ -220,6 +260,7 @@ model Property {
   bookings   Booking[]
   favourites Favourite[]
   reviews    Review[]
+  conversations Conversation[]
 
   @@index([universityId, status])
   @@index([landlordId])
@@ -331,21 +372,67 @@ model RoommateProfile {
 }
 
 // ---------------------------------------------------------------------------
-// Messaging (placeholder structure — enough to build a chat UI against)
+// Property-based conversations
 // ---------------------------------------------------------------------------
 
-model Message {
-  id          String   @id @default(cuid())
-  senderId    String
-  sender      User     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
-  recipientId String
-  recipient   User     @relation("MessageRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
-  content     String
-  readAt      DateTime?
-  createdAt   DateTime @default(now())
+model Conversation {
+  id           String    @id @default(cuid())
+  propertyId   String
+  property     Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  landlordId   String
+  landlord     Landlord  @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  isArchived   Boolean   @default(false)
 
-  @@index([senderId, recipientId])
+  messages     Message[]
+
+  @@index([propertyId])
+  @@index([studentId])
+  @@index([landlordId])
+  @@map("conversations")
+}
+
+model Message {
+  id              String               @id @default(cuid())
+  conversationId  String
+  conversation    Conversation         @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId        String
+  sender          User                 @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  content         String
+  messageType     MessageType          @default(TEXT)
+  isRead          Boolean             @default(false)
+  createdAt       DateTime            @default(now())
+
+  attachments     MessageAttachment[]
+
+  @@index([conversationId, createdAt])
   @@map("messages")
+}
+
+model MessageAttachment {
+  id         String   @id @default(cuid())
+  messageId  String
+  message    Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  url        String
+  type       AttachmentType @default(IMAGE)
+  createdAt  DateTime @default(now())
+
+  @@index([messageId])
+  @@map("message_attachments")
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  SYSTEM
+}
+
+enum AttachmentType {
+  IMAGE
+  PDF
 }
 
 // ---------------------------------------------------------------------------

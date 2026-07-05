@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { catchAsync } from "../utils/catchAsync";
 import { adminService } from "../services/admin.service";
 import { propertyService } from "../services/property.service";
+import { verificationService } from "../services/verification.service";
 
 export const getStats = catchAsync(async (_req: Request, res: Response) => {
   const stats = await adminService.getStats();
@@ -44,4 +45,24 @@ export const setUserActive = catchAsync(async (req: Request, res: Response) => {
 export const removeFraudulentListing = catchAsync(async (req: Request, res: Response) => {
   await adminService.removeFraudulentListing(req.params.id);
   res.status(200).json({ success: true, data: null });
+});
+
+export const listVerifications = catchAsync(async (_req: Request, res: Response) => {
+  const verifications = await verificationService.listVerifications();
+  res.status(200).json({ success: true, data: verifications });
+});
+
+export const getVerification = catchAsync(async (req: Request, res: Response) => {
+  const verification = await verificationService.getVerification(req.params.id);
+  res.status(200).json({ success: true, data: verification });
+});
+
+export const approveVerification = catchAsync(async (req: Request, res: Response) => {
+  const verification = await verificationService.approveVerification(req.params.id);
+  res.status(200).json({ success: true, data: verification });
+});
+
+export const rejectVerification = catchAsync(async (req: Request, res: Response) => {
+  const verification = await verificationService.rejectVerification(req.params.id, req.body?.adminNotes);
+  res.status(200).json({ success: true, data: verification });
 });

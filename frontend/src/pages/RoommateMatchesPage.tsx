@@ -79,8 +79,8 @@ export default function RoommateMatchesPage() {
                 <span className="rounded-full bg-slate-100 px-2.5 py-1">
                   ₦{Number(profile.budgetMin).toLocaleString()}–{Number(profile.budgetMax).toLocaleString()}/yr
                 </span>
-                <span className="rounded-full bg-slate-100 px-2.5 py-1">{profile.sleepSchedule.replaceAll("_", " ").toLowerCase()}</span>
-                <span className="rounded-full bg-slate-100 px-2.5 py-1">{profile.cleanliness.replaceAll("_", " ").toLowerCase()}</span>
+                <span className="rounded-full bg-slate-100 px-2.5 py-1">{profile.sleepSchedule.replace(/_/g, " ").toLowerCase()}</span>
+                <span className="rounded-full bg-slate-100 px-2.5 py-1">{profile.cleanliness.replace(/_/g, " ").toLowerCase()}</span>
                 <span className="rounded-full bg-slate-100 px-2.5 py-1">{profile.isSmoker ? "Smoker" : "Non-smoker"}</span>
                 <span className="rounded-full bg-slate-100 px-2.5 py-1">{profile.noiseTolerance.toLowerCase()} noise tolerance</span>
               </div>

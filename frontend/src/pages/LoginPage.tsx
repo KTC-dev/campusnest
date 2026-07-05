@@ -2,10 +2,13 @@ import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { authService } from "@/services/auth.service";
 import { useAuthStore } from "@/store/authStore";
+import { useToastStore } from "@/store/toastStore";
+import { getFriendlyErrorMessage } from "@/utils/error";
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const setTokens = useAuthStore((s) => s.setTokens);
+  const addToast = useToastStore((s) => s.addToast);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -18,9 +21,12 @@ export default function LoginPage() {
     try {
       const tokens = await authService.loginStudentOrLandlord(email, password);
       setTokens(tokens);
+      addToast({ type: "success", title: "Signed in successfully", message: "Welcome back to CampusNest." });
       navigate("/dashboard");
     } catch (err: any) {
-      setError(err?.response?.data?.message ?? "Something went wrong. Please try again.");
+      const message = getFriendlyErrorMessage(err);
+      setError(message);
+      addToast({ type: "error", title: "Login failed", message });
     } finally {
       setIsSubmitting(false);
     }

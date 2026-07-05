@@ -35,6 +35,16 @@ export function AppNav() {
             Admin
           </Link>
         )}
+        {user && (
+          <Link to="/conversations" className="text-slate-600 hover:text-brand-600">
+            Messages
+          </Link>
+        )}
+        {user && (
+          <Link to="/profile" className="text-slate-600 hover:text-brand-600">
+            Profile
+          </Link>
+        )}
         {user && <NotificationBell />}
         {user ? (
           <button

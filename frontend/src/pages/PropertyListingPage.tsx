@@ -6,7 +6,9 @@ import { PropertyCard } from "@/components/PropertyCard";
 import { PropertyFiltersBar } from "@/components/PropertyFiltersBar";
 import { propertyService } from "@/services/property.service";
 import { useAuthStore } from "@/store/authStore";
+import { useToastStore } from "@/store/toastStore";
 import { Gender, PropertyFilters, RoomType } from "@/types";
+import { getFriendlyErrorMessage } from "@/utils/error";
 
 function filtersFromSearchParams(params: URLSearchParams): PropertyFilters {
   const maxPrice = params.get("maxPrice");
@@ -28,6 +30,7 @@ export default function PropertyListingPage() {
   const [filters, setFilters] = useState<PropertyFilters>(() => filtersFromSearchParams(searchParams));
   const user = useAuthStore((s) => s.user);
   const queryClient = useQueryClient();
+  const addToast = useToastStore((state) => state.addToast);
 
   const { data: amenities = [] } = useQuery({
     queryKey: ["amenities"],
@@ -48,8 +51,13 @@ export default function PropertyListingPage() {
 
   async function handleToggleFavourite(id: string) {
     if (user?.role !== "STUDENT") return;
-    await propertyService.toggleFavourite(id);
-    queryClient.invalidateQueries({ queryKey: ["favourites"] });
+    try {
+      await propertyService.toggleFavourite(id);
+      queryClient.invalidateQueries({ queryKey: ["favourites"] });
+      addToast({ type: "success", title: "Saved property", message: "Your favourites have been updated." });
+    } catch (error) {
+      addToast({ type: "error", title: "Unable to update favourites", message: getFriendlyErrorMessage(error) });
+    }
   }
 
   return (
@@ -66,7 +74,11 @@ export default function PropertyListingPage() {
           <PropertyFiltersBar filters={filters} amenities={amenities} onChange={setFilters} />
 
           <div>
-            {isLoading && <p className="text-sm text-slate-500">Loading…</p>}
+            {isLoading && (
+              <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
+                Applying filters and loading listings…
+              </div>
+            )}
             {isError && <p className="text-sm text-red-600">Couldn't load listings. Please try again.</p>}
 
             {data && data.items.length === 0 && (
@@ -92,9 +104,8 @@ export default function PropertyListingPage() {
                   <button
                     key={p}
                     onClick={() => setFilters((f) => ({ ...f, page: p }))}
-                    className={`h-8 w-8 rounded-full text-sm font-medium ${
-                      p === filters.page ? "bg-brand-500 text-white" : "text-slate-600 hover:bg-slate-100"
-                    }`}
+                    className={`h-8 w-8 rounded-full text-sm font-medium ${p === filters.page ? "bg-brand-500 text-white" : "text-slate-600 hover:bg-slate-100"
+                      }`}
                   >
                     {p}
                   </button>

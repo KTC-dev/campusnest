@@ -4,8 +4,10 @@ import { useAuthStore } from "@/store/authStore";
 // Single axios instance for the whole app. All feature services
 // (properties, bookings, roommates...) import this rather than creating
 // their own client, so auth headers and error handling stay consistent.
+const apiBaseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api/v1";
+
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:4000/api/v1",
+  baseURL: apiBaseUrl,
 });
 
 api.interceptors.request.use((config) => {

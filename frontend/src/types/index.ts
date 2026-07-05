@@ -11,6 +11,46 @@ export interface AuthTokens {
   refreshToken: string;
 }
 
+export interface UserProfile {
+  id: string;
+  email: string;
+  role: Role;
+  isVerified: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  student?: {
+    id: string;
+    firstName?: string | null;
+    lastName?: string | null;
+    phone?: string | null;
+    faculty?: string | null;
+    level?: string | null;
+    avatarUrl?: string | null;
+    universityId?: string | null;
+  } | null;
+  landlord?: {
+    id: string;
+    firstName?: string | null;
+    lastName?: string | null;
+    phone?: string | null;
+    avatarUrl?: string | null;
+    businessName?: string | null;
+    isVerified: boolean;
+  } | null;
+  admin?: {
+    id: string;
+    firstName?: string | null;
+    lastName?: string | null;
+    avatarUrl?: string | null;
+  } | null;
+}
+
+export interface University {
+  id: string;
+  name: string;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data: T;
@@ -20,6 +60,7 @@ export interface ApiResponse<T> {
 export type RoomType = "SELF_CONTAIN" | "SHARED" | "ONE_BEDROOM" | "TWO_BEDROOM" | "HOSTEL";
 export type Gender = "MALE" | "FEMALE" | "ANY";
 export type ListingStatus = "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED";
+export type VerificationStatus = "PENDING" | "UNDER_REVIEW" | "VERIFIED" | "REJECTED" | "SUSPENDED";
 
 export interface Amenity {
   id: string;
@@ -128,6 +169,8 @@ export interface Notification {
 }
 export interface CreatePropertyPayload {
   title: string;
+  description: string;
+  price: number;
   location: string;
   distanceFromCampusKm: number;
   bedrooms: number;
@@ -136,6 +179,7 @@ export interface CreatePropertyPayload {
   genderRestriction: Gender;
   amenityIds: string[];
   images: string[]; // base64 data URLs
+  ownerConfirmation?: boolean;
 }
 
 export interface AdminStats {

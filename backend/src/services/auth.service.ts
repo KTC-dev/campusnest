@@ -11,6 +11,9 @@ interface RegisterStudentInput {
   lastName: string;
   universityId: string;
   phone?: string;
+  acceptedTerms?: boolean;
+  acceptedTermsVersion?: string;
+  acceptedTermsAt?: string;
 }
 
 interface RegisterLandlordInput {
@@ -20,6 +23,9 @@ interface RegisterLandlordInput {
   lastName: string;
   phone: string;
   businessName?: string;
+  acceptedTerms?: boolean;
+  acceptedTermsVersion?: string;
+  acceptedTermsAt?: string;
 }
 
 interface AuthTokens {
@@ -45,6 +51,9 @@ class AuthService {
         email: input.email,
         passwordHash,
         role: Role.STUDENT,
+        acceptedTerms: input.acceptedTerms ?? false,
+        acceptedTermsVersion: input.acceptedTermsVersion ?? null,
+        acceptedTermsAt: input.acceptedTermsAt ? new Date(input.acceptedTermsAt) : null,
         student: {
           create: {
             firstName: input.firstName,
@@ -60,6 +69,13 @@ class AuthService {
     return this.issueTokensFor(user.id, user.role, user.email);
   }
 
+  async listUniversities() {
+    return prisma.university.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    });
+  }
+
   async registerLandlord(input: RegisterLandlordInput) {
     const existing = await prisma.user.findUnique({ where: { email: input.email } });
     if (existing) throw AppError.conflict("An account with this email already exists");
@@ -71,6 +87,9 @@ class AuthService {
         email: input.email,
         passwordHash,
         role: Role.LANDLORD,
+        acceptedTerms: input.acceptedTerms ?? false,
+        acceptedTermsVersion: input.acceptedTermsVersion ?? null,
+        acceptedTermsAt: input.acceptedTermsAt ? new Date(input.acceptedTermsAt) : null,
         landlord: {
           create: {
             firstName: input.firstName,
@@ -132,6 +151,24 @@ class AuthService {
       where: { token: refreshToken },
       data: { revoked: true },
     });
+  }
+
+  async acceptTerms(userId: string, acceptedTermsVersion: string) {
+    const currentVersion = acceptedTermsVersion || "1.0";
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        acceptedTerms: true,
+        acceptedTermsVersion: currentVersion,
+        acceptedTermsAt: new Date(),
+      },
+    });
+
+    return {
+      acceptedTerms: updatedUser.acceptedTerms,
+      acceptedTermsVersion: updatedUser.acceptedTermsVersion,
+      acceptedTermsAt: updatedUser.acceptedTermsAt,
+    };
   }
 
   private async issueTokensFor(id: string, role: Role, email: string): Promise<AuthTokens> {
