@@ -1,16 +1,17 @@
 FROM node:20-alpine
 
-WORKDIR /app/backend
-COPY backend/package*.json ./
-RUN npm ci
+WORKDIR /app
+COPY . /app
 
-COPY backend/ ./
-RUN npx prisma generate
-RUN npm run build
+RUN if [ -f /app/backend/package.json ]; then \
+    cd /app/backend && npm ci && npx prisma generate && npm run build; \
+    else \
+    npm ci && npx prisma generate && npm run build; \
+    fi
 
 ENV NODE_ENV=production
 ENV PORT=4000
 
 EXPOSE 4000
 
-CMD ["npm", "run", "start"]
+CMD ["sh", "-c", "if [ -f /app/backend/package.json ]; then cd /app/backend && npm run start; else npm run start; fi"]
