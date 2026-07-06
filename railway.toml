@@ -4,4 +4,4 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "sh -c 'if [ -f /app/backend/package.json ]; then cd /app/backend && npm run start; else npm run start; fi'"
+startCommand = "sh -c 'cd /app/backend && npm run start'"
