@@ -1,0 +1,6 @@
+backend/
+backend/**
+Dockerfile
+railway.toml
+DEPLOYMENT.md
+README.md

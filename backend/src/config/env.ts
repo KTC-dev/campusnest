@@ -1,5 +1,25 @@
-import "dotenv/config";
+import path from "node:path";
+import dotenv from "dotenv";
 import { z } from "zod";
+
+const envName = process.env.NODE_ENV || "development";
+const envFiles = [
+  `.env.${envName}.local`,
+  `.env.local`,
+  `.env.${envName}`,
+  ".env",
+];
+
+for (const envFile of envFiles) {
+  const candidatePaths = [
+    path.resolve(process.cwd(), envFile),
+    path.resolve(__dirname, "..", "..", envFile),
+  ];
+
+  for (const candidatePath of candidatePaths) {
+    dotenv.config({ path: candidatePath });
+  }
+}
 
 // Fail fast: if required env vars are missing or malformed, the process
 // should not start rather than fail unpredictably later at request time.
