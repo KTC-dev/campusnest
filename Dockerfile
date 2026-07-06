@@ -4,9 +4,9 @@ WORKDIR /app
 COPY . /app
 
 RUN if [ -f /app/backend/package.json ]; then \
-    cd /app/backend && npm ci && npx prisma generate && npm run build; \
+    cd /app/backend && npm ci --ignore-scripts && npx prisma generate && npm run build; \
     else \
-    npm ci && npx prisma generate && npm run build; \
+    npm ci --ignore-scripts && npx prisma generate && npm run build; \
     fi
 
 ENV NODE_ENV=production
