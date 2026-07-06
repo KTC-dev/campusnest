@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY backend/package*.json ./backend/
 WORKDIR /app/backend
-RUN npm ci --omit=dev
+RUN npm ci
 
 COPY backend/ ./
 RUN npx prisma generate
