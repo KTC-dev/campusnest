@@ -5,8 +5,10 @@ COPY . /app
 
 RUN if [ -f /app/backend/package.json ]; then \
     cd /app/backend && npm ci --ignore-scripts && npx prisma generate && npm run build; \
-    else \
+    elif [ -f /app/package.json ]; then \
     npm ci --ignore-scripts && npx prisma generate && npm run build; \
+    else \
+    echo "No backend package.json found" && exit 1; \
     fi
 
 ENV NODE_ENV=production
@@ -14,4 +16,4 @@ ENV PORT=4000
 
 EXPOSE 4000
 
-CMD ["sh", "-c", "if [ -f /app/backend/package.json ]; then cd /app/backend && npm run start; else npm run start; fi"]
+CMD ["sh", "-c", "if [ -f /app/backend/package.json ]; then cd /app/backend && npm run start; elif [ -f /app/package.json ]; then npm run start; else echo 'No backend package.json found' && exit 1; fi"]
