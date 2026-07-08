@@ -1,5 +1,6 @@
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { LandlordMobileShell } from "@/components/LandlordMobileShell";
 import { StudentMobileShell } from "@/components/StudentMobileShell";
 import { Upload } from "@/components/Upload";
@@ -67,7 +68,9 @@ function getInitialFormState(profile?: UserProfile): ProfileFormState {
 
 export default function ProfilePage() {
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
     const user = useAuthStore((state) => state.user);
+    const logout = useAuthStore((state) => state.logout);
     const accessToken = useAuthStore((state) => state.accessToken);
     const addToast = useToastStore((state) => state.addToast);
 
@@ -89,6 +92,18 @@ export default function ProfilePage() {
         selfie: "",
         proofOfOwnership: "",
     });
+    const avatarInputRef = useRef<HTMLInputElement | null>(null);
+
+    const displayName = useMemo(() => {
+        const firstName = profile?.student?.firstName || profile?.landlord?.firstName || profile?.admin?.firstName || "";
+        const lastName = profile?.student?.lastName || profile?.landlord?.lastName || profile?.admin?.lastName || "";
+        return `${firstName} ${lastName}`.trim() || user?.email.split("@")[0] || "CampusNest";
+    }, [profile, user?.email]);
+
+    const initials = useMemo(() => {
+        const parts = displayName.split(" ").filter(Boolean);
+        return (parts[0]?.[0] ?? "C") + (parts[1]?.[0] ?? "N");
+    }, [displayName]);
 
     useEffect(() => {
         setForm(getInitialFormState(profile));
@@ -155,8 +170,66 @@ export default function ProfilePage() {
                                 Update the information that appears on your account and in your listings.
                             </p>
                         </div>
-                        <div className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-600">
-                            {profile?.role?.toLowerCase()}
+                        <div className="flex flex-col items-end gap-2">
+                            <div className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-600">
+                                {profile?.role?.toLowerCase()}
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    logout();
+                                    navigate("/");
+                                }}
+                                className="rounded-full border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-brand-400 hover:text-brand-900"
+                            >
+                                Log out
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="mt-5 flex flex-col items-center gap-2.5 text-center md:mt-6 md:items-start md:text-left">
+                        <div className="relative">
+                            <button
+                                type="button"
+                                onClick={() => avatarInputRef.current?.click()}
+                                aria-label="Change profile picture"
+                                className="group relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2 border-brand-900/15 bg-brand-900/10 text-xl font-bold text-brand-900 shadow-sm transition-all duration-200 hover:border-brand-900/30 hover:brightness-[0.98] active:scale-95 sm:h-28 sm:w-28 sm:text-2xl"
+                            >
+                                {form.avatarUrl ? (
+                                    <img src={form.avatarUrl} alt={`${displayName} profile picture`} className="h-full w-full object-cover" />
+                                ) : (
+                                    <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-900/15 via-cream-100 to-gold-400/20 text-brand-900">
+                                        {initials}
+                                    </span>
+                                )}
+                                <span className="absolute inset-0 bg-slate-900/0 transition-colors duration-200 group-hover:bg-slate-900/20 group-active:bg-slate-900/20" />
+                                <span className="absolute bottom-1.5 right-1.5 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-brand-900 text-white shadow-sm transition-transform duration-200 group-hover:scale-105 sm:bottom-2 sm:right-2 sm:h-9 sm:w-9">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-3.5 w-3.5 sm:h-4 sm:w-4">
+                                        <path fill="currentColor" d="M12 5.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9Zm0 1.5a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm7.5-.75h-1.88l-.76-1.52A2.25 2.25 0 0 0 15.84 3.5H8.16c-.86 0-1.65.49-2.03 1.23l-.76 1.52H3.5A2.25 2.25 0 0 0 1.25 8.5v8A2.25 2.25 0 0 0 3.5 18.75h17A2.25 2.25 0 0 0 22.75 16.5v-8A2.25 2.25 0 0 0 19.5 6.25Zm1.25 10.25a.75.75 0 0 1-.75.75h-17a.75.75 0 0 1-.75-.75v-8A.75.75 0 0 1 3.5 7.75h2.2a.75.75 0 0 0 .67-.42l.97-1.94c.13-.27.4-.44.7-.44h7.72c.3 0 .57.17.7.44l.97 1.94c.13.25.38.42.67.42h2.2a.75.75 0 0 1 .75.75v8Z" />
+                                    </svg>
+                                </span>
+                            </button>
+                            <input
+                                ref={avatarInputRef}
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                className="hidden"
+                                onChange={(event) => {
+                                    const file = event.target.files?.[0];
+                                    if (!file) return;
+                                    const reader = new FileReader();
+                                    reader.onload = () => {
+                                        const avatarUrl = reader.result as string;
+                                        setForm((current) => ({ ...current, avatarUrl }));
+                                        mutation.mutate({ avatarUrl });
+                                    };
+                                    reader.readAsDataURL(file);
+                                }}
+                            />
+                        </div>
+                        <div className="max-w-sm">
+                            <p className="text-sm font-semibold text-slate-800 sm:text-base">{displayName}</p>
+                            <p className="mt-1 text-xs text-slate-500 sm:text-sm">Tap the camera badge to change your profile picture.</p>
                         </div>
                     </div>
 
@@ -336,11 +409,10 @@ export default function ProfilePage() {
                                 </label>
                             )}
 
-                            <div>
-                                <p className="text-sm font-medium text-slate-700">Profile picture</p>
+                            <div className="space-y-3">
                                 <Upload
                                     label="Profile picture"
-                                    helperText="Drag & drop your profile photo"
+                                    helperText="Upload or browse for your profile photo"
                                     accept="image/jpeg,image/png,image/webp"
                                     maxSizeMb={5}
                                     onChange={(files) => {
@@ -361,11 +433,17 @@ export default function ProfilePage() {
                                     }}
                                 />
                                 {form.avatarUrl ? (
-                                    <div className="mt-3 flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                                        <img src={form.avatarUrl} alt="Profile preview" className="h-14 w-14 rounded-full object-cover" />
-                                        <div>
-                                            <p className="text-sm font-semibold text-slate-800">Photo ready</p>
-                                            <p className="text-xs text-slate-500">Changes save automatically after upload.</p>
+                                    <div className="rounded-[18px] bg-emerald-50 px-4 py-3 text-emerald-800">
+                                        <div className="flex items-center gap-3">
+                                            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-emerald-600 text-white">
+                                                <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4">
+                                                    <path fill="currentColor" d="M12 2.25A9.75 9.75 0 1 0 21.75 12 9.76 9.76 0 0 0 12 2.25Zm4.72 7.97-5.25 5.5a.75.75 0 0 1-1.07.02l-2.85-2.85a.75.75 0 0 1 1.06-1.06l2.3 2.3 4.72-4.95a.75.75 0 0 1 1.09 1.04Z" />
+                                                </svg>
+                                            </span>
+                                            <div>
+                                                <p className="text-sm font-semibold text-emerald-900">Photo ready</p>
+                                                <p className="text-xs text-emerald-700">Changes save automatically after upload.</p>
+                                            </div>
                                         </div>
                                     </div>
                                 ) : null}
