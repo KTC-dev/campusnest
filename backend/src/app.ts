@@ -11,9 +11,24 @@ import routes from "./routes";
 import { errorHandler } from "./middleware/errorHandler";
 import { AppError } from "./utils/AppError";
 
-export function createApp() {
-  const app = express();
-  const allowedOrigins = env.CORS_ORIGIN.split(",").map((origin) => origin.trim()).filter(Boolean);
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+
+      const isAllowed = allowedOrigins.some((allowed) => {
+        if (allowed.includes("*")) {
+          const pattern = "^" + allowed.replace(/[.]/g, "\\.").replace(/\*/g, "[^.]+") + "$";
+          return new RegExp(pattern).test(origin);
+        }
+        return allowed === origin;
+      });
+
+      callback(null, isAllowed);
+    },
+    credentials: true,
+  })
+);
 
   app.set("trust proxy", env.TRUST_PROXY);
   app.disable("x-powered-by");
