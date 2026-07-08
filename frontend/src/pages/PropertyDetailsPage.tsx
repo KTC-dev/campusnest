@@ -96,8 +96,8 @@ export default function PropertyDetailsPage() {
           <p className="mt-6 whitespace-pre-line leading-relaxed text-slate-700">{property.description}</p>
 
           {property.amenities.length > 0 && (
-              <div className="mt-6">
-                <h2 className="font-semibold text-slate-900">Amenities</h2>
+            <div className="mt-6">
+              <h2 className="font-semibold text-slate-900">Amenities</h2>
               <div className="mt-2 flex flex-wrap gap-2">
                 {property.amenities.map(({ amenity }) => (
                   <span key={amenity.id} className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">

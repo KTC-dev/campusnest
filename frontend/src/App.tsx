@@ -58,7 +58,7 @@ export default function App() {
           <Route path="/dashboard/listings/:id/edit" element={<ListingFormPage />} />
         </Route>
 
-        <Route element={<ProtectedRoute allowedRoles={["LANDLORD"]} />}> 
+        <Route element={<ProtectedRoute allowedRoles={["LANDLORD"]} />}>
           <Route path="/dashboard/properties" element={<MyPropertiesPage />} />
           <Route path="/verification" element={<VerificationPage />} />
         </Route>
