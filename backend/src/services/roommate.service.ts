@@ -88,6 +88,36 @@ export function compatibilityScore(a: RoommateProfile, b: RoommateProfile): numb
 }
 
 class RoommateService {
+  async ensureMatch(studentAId: string, studentBId: string) {
+    const [firstStudentId, secondStudentId] = [studentAId, studentBId].sort();
+    const existing = await prisma.roommateMatch.findUnique({
+      where: { studentAId_studentBId: { studentAId: firstStudentId, studentBId: secondStudentId } },
+    });
+
+    if (existing) {
+      return existing;
+    }
+
+    const [studentA, studentB] = await Promise.all([
+      prisma.roommateProfile.findUnique({ where: { studentId: firstStudentId } }),
+      prisma.roommateProfile.findUnique({ where: { studentId: secondStudentId } }),
+    ]);
+
+    if (!studentA || !studentB) {
+      throw AppError.badRequest("Both students need a roommate profile before starting a chat");
+    }
+
+    const score = compatibilityScore(studentA, studentB);
+
+    return prisma.roommateMatch.create({
+      data: {
+        studentAId: firstStudentId,
+        studentBId: secondStudentId,
+        score,
+      },
+    });
+  }
+
   async upsertProfile(studentId: string, input: UpsertRoommateProfileInput) {
     return prisma.roommateProfile.upsert({
       where: { studentId },
@@ -115,7 +145,7 @@ class RoommateService {
         student: { universityId: me.student.universityId },
       },
       include: {
-        student: { select: { firstName: true, lastName: true, faculty: true, level: true, avatarUrl: true } },
+        student: { select: { id: true, firstName: true, lastName: true, faculty: true, level: true, avatarUrl: true, university: { select: { id: true, name: true } } } },
       },
     });
 

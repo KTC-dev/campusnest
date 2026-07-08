@@ -2,10 +2,9 @@ import { FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { LandlordMobileShell } from "@/components/LandlordMobileShell";
-import { Upload } from "@/components/Upload";
+import { PropertyImageUploader } from "@/components/PropertyImageUploader";
 import { propertyService } from "@/services/property.service";
 import { useToastStore } from "@/store/toastStore";
-import { fileToBase64 } from "@/utils/file";
 import { Gender, RoomType } from "@/types";
 import { getFriendlyErrorMessage } from "@/utils/error";
 
@@ -39,6 +38,7 @@ export default function ListingFormPage() {
   });
   const [amenityIds, setAmenityIds] = useState<string[]>([]);
   const [images, setImages] = useState<string[]>([]);
+  const [imagesBusy, setImagesBusy] = useState(false);
   const [ownerConfirmed, setOwnerConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -72,6 +72,11 @@ export default function ListingFormPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (!isEditing && imagesBusy) {
+      setError("Please wait for the images to finish optimizing before submitting.");
+      return;
+    }
 
     if (!isEditing && images.length === 0) {
       setError("Add at least one photo of the property.");
@@ -236,23 +241,14 @@ export default function ListingFormPage() {
 
           {!isEditing && (
             <div>
-              <p className="text-sm font-medium text-slate-700">Photos</p>
-              <Upload
+              <PropertyImageUploader
                 label="Property images"
-                helperText="Upload listing photos"
-                accept="image/jpeg,image/png,image/webp"
-                maxSizeMb={10}
-                multiple
+                helperText="Upload up to 5 photos. The first image becomes the cover photo shown to students."
+                maxImages={5}
+                maxSizeMb={8}
                 onChange={(files) => setImages(files)}
-                onFileAdded={async (file) => fileToBase64(file)}
+                onBusyChange={setImagesBusy}
               />
-              {images.length > 0 && (
-                <div className="mt-3 flex gap-2 flex-wrap">
-                  {images.map((src, i) => (
-                    <img key={i} src={src} alt="" className="h-16 w-16 rounded-lg object-cover" />
-                  ))}
-                </div>
-              )}
             </div>
           )}
 
@@ -288,7 +284,7 @@ export default function ListingFormPage() {
 
           <button
             type="submit"
-            disabled={isSubmitting || (!isEditing && !ownerConfirmed)}
+            disabled={isSubmitting || imagesBusy || (!isEditing && !ownerConfirmed)}
             className="w-full rounded-2xl bg-brand-900 py-3 text-sm font-semibold text-white hover:bg-brand-950 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSubmitting ? "Saving…" : isEditing ? "Save changes" : "Submit for review"}

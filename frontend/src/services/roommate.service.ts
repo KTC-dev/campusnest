@@ -1,5 +1,5 @@
 import { api } from "./api";
-import { ApiResponse, RoommateMatch, RoommateProfile } from "@/types";
+import { ApiResponse, RoommateProfile } from "@/types";
 
 export interface RoommateProfilePayload {
   budgetMin: number;
@@ -11,6 +11,21 @@ export interface RoommateProfilePayload {
   noiseTolerance: string;
   bio?: string;
   isActive: boolean;
+}
+
+export interface RoommateMatchCandidate {
+  score: number;
+  profile: RoommateProfile & {
+    student: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      faculty?: string | null;
+      level?: string | null;
+      avatarUrl?: string | null;
+      university?: { id: string; name: string };
+    };
+  };
 }
 
 export const roommateService = {
@@ -25,7 +40,7 @@ export const roommateService = {
   },
 
   async getMatches() {
-    const { data } = await api.get<ApiResponse<RoommateMatch[]>>("/roommates/matches");
+    const { data } = await api.get<ApiResponse<RoommateMatchCandidate[]>>("/roommates/matches");
     return data.data;
   },
 };

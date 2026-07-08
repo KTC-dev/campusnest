@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { LandlordMobileShell } from "@/components/LandlordMobileShell";
+import { PropertyGallery } from "@/components/PropertyGallery";
 import { StudentMobileShell } from "@/components/StudentMobileShell";
 import { BookingRequestModal } from "@/components/BookingRequestModal";
 import { propertyService } from "@/services/property.service";
@@ -17,7 +18,6 @@ function formatNaira(price: string) {
 export default function PropertyDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [activeImage, setActiveImage] = useState(0);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [bookingSent, setBookingSent] = useState(false);
   const [isCreatingConversation, setIsCreatingConversation] = useState(false);
@@ -62,26 +62,7 @@ export default function PropertyDetailsPage() {
     <Shell>
       <main className="page-transition grid grid-cols-1 gap-4">
         <div>
-          <div className="aspect-[4/3] overflow-hidden rounded-[20px] bg-slate-100">
-            {property.images[activeImage] ? (
-              <img src={property.images[activeImage].url} alt={property.title} className="h-full w-full object-cover" />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-slate-400">No image</div>
-            )}
-          </div>
-          {property.images.length > 1 && (
-            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-              {property.images.map((img, i) => (
-                <button
-                  key={img.id}
-                  onClick={() => setActiveImage(i)}
-                  className={`h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 ${i === activeImage ? "border-brand-900" : "border-transparent"}`}
-                >
-                  <img src={img.url} alt="" className="h-full w-full object-cover" />
-                </button>
-              ))}
-            </div>
-          )}
+          <PropertyGallery title={property.title} images={property.images} />
 
           <h1 className="mt-5 text-2xl font-display font-bold text-slate-800">{property.title}</h1>
           <p className="text-slate-500">{property.location}</p>

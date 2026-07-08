@@ -90,6 +90,11 @@ enum VerificationStatus {
   SUSPENDED
 }
 
+enum ConversationType {
+  PROPERTY_CHAT
+  ROOMMATE_CHAT
+}
+
 // ---------------------------------------------------------------------------
 // Core identity
 // ---------------------------------------------------------------------------
@@ -171,7 +176,10 @@ model Student {
   favourites      Favourite[]
   roommateProfile RoommateProfile?
   reviews         Review[]
-  conversations   Conversation[]
+  conversationsAsPrimary   Conversation[] @relation("ConversationPrimaryStudent")
+  conversationsAsSecondary Conversation[] @relation("ConversationSecondaryStudent")
+  roommateMatchesAsStudentA RoommateMatch[] @relation("RoommateMatchStudentA")
+  roommateMatchesAsStudentB RoommateMatch[] @relation("RoommateMatchStudentB")
 
   @@index([universityId])
   @@map("students")
@@ -191,7 +199,7 @@ model Landlord {
   updatedAt    DateTime @updatedAt
 
   properties Property[]
-  conversations Conversation[]
+  conversations Conversation[] @relation("ConversationLandlord")
   verificationRequests LandlordVerification[]
 
   @@map("landlords")
@@ -372,42 +380,77 @@ model RoommateProfile {
   @@map("roommate_profiles")
 }
 
+model RoommateMatch {
+  id          String   @id @default(cuid())
+  studentAId  String
+  studentA    Student  @relation("RoommateMatchStudentA", fields: [studentAId], references: [id], onDelete: Cascade)
+  studentBId  String
+  studentB    Student  @relation("RoommateMatchStudentB", fields: [studentBId], references: [id], onDelete: Cascade)
+  score       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  conversation Conversation?
+
+  @@unique([studentAId, studentBId])
+  @@index([studentAId])
+  @@index([studentBId])
+  @@map("roommate_matches")
+}
+
 // ---------------------------------------------------------------------------
 // Property-based conversations
 // ---------------------------------------------------------------------------
 
 model Conversation {
-  id           String    @id @default(cuid())
-  propertyId   String
-  property     Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  studentId    String
-  student      Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  landlordId   String
-  landlord     Landlord  @relation(fields: [landlordId], references: [id], onDelete: Cascade)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  isArchived   Boolean   @default(false)
+  id                String           @id @default(cuid())
+  type              ConversationType @default(PROPERTY_CHAT)
+  propertyId        String?
+  property          Property?        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  roommateMatchId   String?          @unique
+  roommateMatch     RoommateMatch?   @relation(fields: [roommateMatchId], references: [id], onDelete: Cascade)
+  primaryStudentId  String?
+  primaryStudent    Student?         @relation("ConversationPrimaryStudent", fields: [primaryStudentId], references: [id], onDelete: Cascade)
+  secondaryStudentId String?
+  secondaryStudent  Student?         @relation("ConversationSecondaryStudent", fields: [secondaryStudentId], references: [id], onDelete: SetNull)
+  landlordId        String?
+  landlord          Landlord?        @relation("ConversationLandlord", fields: [landlordId], references: [id], onDelete: Cascade)
+  lastMessageId     String?
+  lastMessageContent String?
+  lastMessageType   MessageType?
+  lastMessageAt     DateTime?
+  lastMessageSenderId String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  isArchived        Boolean          @default(false)
 
-  messages     Message[]
+  messages          Message[]
 
+  @@unique([propertyId, primaryStudentId, landlordId])
+  @@index([type, updatedAt])
   @@index([propertyId])
-  @@index([studentId])
+  @@index([primaryStudentId])
+  @@index([secondaryStudentId])
   @@index([landlordId])
   @@map("conversations")
 }
 
 model Message {
-  id              String               @id @default(cuid())
-  conversationId  String
-  conversation    Conversation         @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  senderId        String
-  sender          User                 @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
-  content         String
-  messageType     MessageType          @default(TEXT)
-  isRead          Boolean             @default(false)
-  createdAt       DateTime            @default(now())
+  id             String             @id @default(cuid())
+  conversationId String
+  conversation   Conversation       @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User               @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  content        String
+  messageType    MessageType        @default(TEXT)
+  isRead         Boolean            @default(false)
+  readAt         DateTime?
+  deliveredAt    DateTime?          @default(now())
+  deletedAt      DateTime?
+  deletedByUserId String?
+  createdAt      DateTime            @default(now())
 
-  attachments     MessageAttachment[]
+  attachments    MessageAttachment[]
 
   @@index([conversationId, createdAt])
   @@map("messages")
@@ -418,6 +461,10 @@ model MessageAttachment {
   messageId  String
   message    Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
   url        String
+  publicId   String?
+  fileName   String?
+  mimeType   String?
+  fileSize   Int?
   type       AttachmentType @default(IMAGE)
   createdAt  DateTime @default(now())
 

@@ -61,6 +61,9 @@ export type RoomType = "SELF_CONTAIN" | "SHARED" | "ONE_BEDROOM" | "TWO_BEDROOM"
 export type Gender = "MALE" | "FEMALE" | "ANY";
 export type ListingStatus = "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED";
 export type VerificationStatus = "PENDING" | "UNDER_REVIEW" | "VERIFIED" | "REJECTED" | "SUSPENDED";
+export type ConversationType = "PROPERTY_CHAT" | "ROOMMATE_CHAT";
+export type MessageAttachmentType = "IMAGE" | "PDF";
+export type MessageType = "TEXT" | "IMAGE" | "SYSTEM";
 
 export interface Amenity {
   id: string;
@@ -157,8 +160,119 @@ export interface RoommateProfile {
 export interface RoommateMatch {
   score: number;
   profile: RoommateProfile & {
-    student: { firstName: string; lastName: string; faculty?: string | null; level?: string | null; avatarUrl?: string | null };
+    student: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      faculty?: string | null;
+      level?: string | null;
+      avatarUrl?: string | null;
+      university?: { id: string; name: string };
+    };
   };
+}
+
+export interface ConversationAttachment {
+  id?: string;
+  url: string;
+  publicId?: string | null;
+  fileName?: string | null;
+  mimeType?: string | null;
+  fileSize?: number | null;
+  type: MessageAttachmentType;
+}
+
+export interface ConversationSenderSummary {
+  id: string;
+  email: string;
+  role: Role;
+  isVerified: boolean;
+}
+
+export interface ConversationMessage {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  content: string;
+  messageType: MessageType;
+  isRead: boolean;
+  readAt?: string | null;
+  deliveredAt?: string | null;
+  createdAt: string;
+  attachments: ConversationAttachment[];
+  sender: ConversationSenderSummary;
+}
+
+export interface ConversationParticipantSummary {
+  id: string;
+  userId: string;
+  user: ConversationSenderSummary;
+}
+
+export interface PropertyConversationContext {
+  id: string;
+  title: string;
+  location: string;
+  price: string;
+  university?: { id: string; name: string };
+  images: { id: string; url: string; isPrimary: boolean }[];
+  landlord: { firstName: string; lastName: string; businessName?: string | null; isVerified: boolean; phone: string };
+}
+
+export interface RoommateConversationContext {
+  id: string;
+  studentA: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    avatarUrl?: string | null;
+    university?: { id: string; name: string };
+    user: ConversationSenderSummary;
+    roommateProfile?: {
+      budgetMin: string;
+      budgetMax: string;
+      genderPreference: Gender;
+      sleepSchedule: SleepSchedule;
+      cleanliness: CleanlinessLevel;
+      isSmoker: boolean;
+      noiseTolerance: NoiseTolerance;
+      bio?: string | null;
+    } | null;
+  };
+  studentB: RoommateConversationContext["studentA"];
+  score: number;
+}
+
+export interface ConversationSummary {
+  id: string;
+  type: ConversationType;
+  propertyId?: string | null;
+  roommateMatchId?: string | null;
+  primaryStudentId?: string | null;
+  secondaryStudentId?: string | null;
+  landlordId?: string | null;
+  unreadCount: number;
+  isArchived: boolean;
+  lastMessageId?: string | null;
+  lastMessageContent?: string | null;
+  lastMessageType?: MessageType | null;
+  lastMessageAt?: string | null;
+  lastMessageSenderId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  messages?: ConversationMessage[];
+  primaryStudent?: ConversationParticipantSummary | null;
+  secondaryStudent?: ConversationParticipantSummary | null;
+  landlord?: ConversationParticipantSummary | null;
+  property?: PropertyConversationContext | null;
+  roommateMatch?: RoommateConversationContext | null;
+  context?: { type: ConversationType; property?: PropertyConversationContext | null; roommateMatch?: RoommateConversationContext | null; landlord?: ConversationParticipantSummary | null };
+}
+
+export interface ConversationMessagesPage {
+  items: ConversationMessage[];
+  hasMore: boolean;
+  nextCursor?: string | null;
 }
 
 export type NotificationType = "BOOKING_UPDATE" | "MESSAGE" | "LISTING_STATUS" | "ROOMMATE_MATCH" | "SYSTEM";
@@ -236,6 +350,35 @@ export interface AdminBookingRow {
   createdAt: string;
   property: { title: string };
   student: { firstName: string; lastName: string };
+}
+
+export interface VerificationUserSummary {
+  email: string;
+  role: Role;
+}
+
+export interface VerificationLandlordSummary {
+  id: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  businessName?: string | null;
+  isVerified?: boolean;
+}
+
+export interface VerificationRequest {
+  id: string;
+  userId: string;
+  landlordId?: string | null;
+  idDocumentUrl: string;
+  selfieUrl?: string | null;
+  proofOfOwnershipUrl?: string | null;
+  status: VerificationStatus;
+  adminNotes?: string | null;
+  submitterConfirmation?: boolean | null;
+  createdAt: string;
+  reviewedAt?: string | null;
+  user?: VerificationUserSummary;
+  landlord?: VerificationLandlordSummary | null;
 }
 
 export interface PublicStats {

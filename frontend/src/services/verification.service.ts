@@ -1,5 +1,5 @@
 import { api } from "./api";
-import { ApiResponse, VerificationStatus } from "@/types";
+import { ApiResponse, VerificationRequest as VerificationRequestType } from "@/types";
 
 export interface VerificationSubmissionPayload {
     idDocument: string;
@@ -7,17 +7,7 @@ export interface VerificationSubmissionPayload {
     proofOfOwnership?: string;
 }
 
-export interface VerificationRequest {
-    id: string;
-    userId: string;
-    idDocumentUrl: string;
-    selfieUrl?: string | null;
-    proofOfOwnershipUrl?: string | null;
-    status: VerificationStatus;
-    adminNotes?: string | null;
-    createdAt: string;
-    reviewedAt?: string | null;
-}
+export type VerificationRequest = VerificationRequestType;
 
 export const verificationService = {
     async submit(payload: VerificationSubmissionPayload) {

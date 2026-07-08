@@ -17,9 +17,22 @@ export const getConversation = catchAsync(async (req: Request, res: Response) =>
     res.status(200).json({ success: true, data: conversation });
 });
 
+export const listMessages = catchAsync(async (req: Request, res: Response) => {
+    const messages = await conversationService.listMessages(req.user!.id, req.params.id, {
+        cursor: typeof req.query.cursor === "string" ? req.query.cursor : undefined,
+        limit: typeof req.query.limit === "string" ? Number(req.query.limit) : undefined,
+    });
+    res.status(200).json({ success: true, data: messages });
+});
+
 export const sendMessage = catchAsync(async (req: Request, res: Response) => {
     const message = await conversationService.sendMessage(req.user!.id, req.params.id, req.body);
     res.status(201).json({ success: true, data: message });
+});
+
+export const uploadMessageFile = catchAsync(async (req: Request, res: Response) => {
+    const uploaded = await conversationService.uploadMessageFile(req.user!.id, req.body);
+    res.status(201).json({ success: true, data: uploaded });
 });
 
 export const markMessageRead = catchAsync(async (req: Request, res: Response) => {

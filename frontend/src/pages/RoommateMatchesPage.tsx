@@ -1,7 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { StudentMobileShell } from "@/components/StudentMobileShell";
 import { roommateService } from "@/services/roommate.service";
+import { conversationService } from "@/services/conversation.service";
+import { useToastStore } from "@/store/toastStore";
+import { getFriendlyErrorMessage } from "@/utils/error";
 
 function scoreColor(score: number) {
   if (score >= 80) return "bg-emerald-100 text-emerald-700";
@@ -11,6 +14,8 @@ function scoreColor(score: number) {
 }
 
 export default function RoommateMatchesPage() {
+  const navigate = useNavigate();
+  const addToast = useToastStore((state) => state.addToast);
   const { data: myProfile, isLoading: loadingProfile } = useQuery({
     queryKey: ["roommate-profile"],
     queryFn: roommateService.getMyProfile,
@@ -21,6 +26,15 @@ export default function RoommateMatchesPage() {
     queryFn: roommateService.getMatches,
     enabled: Boolean(myProfile),
   });
+
+  async function startRoommateChat(studentId: string) {
+    try {
+      const conversation = await conversationService.create({ roommateStudentId: studentId });
+      navigate(`/conversations/${conversation.id}`);
+    } catch (error) {
+      addToast({ type: "error", title: "Could not start chat", message: getFriendlyErrorMessage(error) });
+    }
+  }
 
   return (
     <StudentMobileShell>
@@ -87,6 +101,14 @@ export default function RoommateMatchesPage() {
                 <span className="rounded-full bg-slate-100 px-2.5 py-1">{profile.isSmoker ? "Smoker" : "Non-smoker"}</span>
                 <span className="rounded-full bg-slate-100 px-2.5 py-1">{profile.noiseTolerance.toLowerCase()} noise tolerance</span>
               </div>
+
+              <button
+                type="button"
+                onClick={() => startRoommateChat(profile.student.id)}
+                className="mt-4 inline-flex items-center rounded-full bg-brand-900 px-4 py-2 text-sm font-semibold text-white transition active:scale-95"
+              >
+                Message
+              </button>
             </div>
           ))}
         </div>

@@ -19,7 +19,7 @@ export function LandlordPropertyCard({ property }: LandlordPropertyCardProps) {
             <div className="grid grid-cols-[104px_1fr] gap-3 p-3">
                 <div className="h-[104px] overflow-hidden rounded-[18px] bg-cream-100">
                     {primaryImage ? (
-                        <img src={primaryImage.url} alt={property.title} className="h-full w-full object-cover" />
+                        <img src={primaryImage.url} alt={property.title} className="h-full w-full object-cover" loading="lazy" />
                     ) : (
                         <div className="flex h-full items-center justify-center text-xs text-slate-400">No image</div>
                     )}
@@ -33,12 +33,12 @@ export function LandlordPropertyCard({ property }: LandlordPropertyCardProps) {
                         </div>
                         <span
                             className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${property.status === "APPROVED"
-                                    ? "bg-emerald-100 text-emerald-700"
-                                    : property.status === "REJECTED"
-                                        ? "bg-red-100 text-red-700"
-                                        : property.status === "SUSPENDED"
-                                            ? "bg-slate-200 text-slate-600"
-                                            : "bg-amber-100 text-amber-700"
+                                ? "bg-emerald-100 text-emerald-700"
+                                : property.status === "REJECTED"
+                                    ? "bg-red-100 text-red-700"
+                                    : property.status === "SUSPENDED"
+                                        ? "bg-slate-200 text-slate-600"
+                                        : "bg-amber-100 text-amber-700"
                                 }`}
                         >
                             {property.status.toLowerCase()}

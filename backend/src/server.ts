@@ -5,7 +5,7 @@ import { env } from "./config/env";
 import { logger } from "./config/logger";
 import { prisma } from "./config/prisma";
 import { verifyAccessToken } from "./utils/jwt";
-import { notificationService } from "./services/notification.service";
+import { conversationService } from "./services/conversation.service";
 
 const app = createApp();
 const httpServer = createServer(app);
@@ -54,64 +54,33 @@ function setupSocketServer() {
         where: { id: payload.conversationId },
         select: {
           id: true,
-          student: { select: { userId: true } },
+          primaryStudent: { select: { userId: true } },
+          secondaryStudent: { select: { userId: true } },
           landlord: { select: { userId: true } },
         },
       });
 
       if (!conversation) return;
 
-      const participantIds = [conversation.student.userId, conversation.landlord.userId];
+      const participantIds = [conversation.primaryStudent?.userId, conversation.secondaryStudent?.userId, conversation.landlord?.userId].filter(Boolean);
       if (!participantIds.includes(currentUser.id)) return;
 
       socket.join(`conversation:${payload.conversationId}`);
       socket.emit("conversation:joined", { conversationId: payload.conversationId });
     });
 
-    socket.on("send_message", async (payload: { conversationId?: string; content?: string; messageType?: string }) => {
-      if (!payload?.conversationId || !payload.content?.trim()) return;
+    socket.on("send_message", async (payload: { conversationId?: string; content?: string; messageType?: string; attachments?: Array<{ url: string; publicId?: string; fileName?: string; mimeType?: string; fileSize?: number; type?: "IMAGE" | "PDF" }> }) => {
+      if (!payload?.conversationId) return;
 
-      const conversation = await prisma.conversation.findUnique({
-        where: { id: payload.conversationId },
-        select: {
-          id: true,
-          student: { select: { userId: true } },
-          landlord: { select: { userId: true } },
-        },
+      const message = await conversationService.sendMessage(currentUser.id, payload.conversationId, {
+        content: payload.content,
+        messageType: (payload.messageType as "TEXT" | "IMAGE" | "SYSTEM") ?? undefined,
+        attachments: payload.attachments,
       });
-
-      if (!conversation) return;
-
-      const participantIds = [conversation.student.userId, conversation.landlord.userId];
-      if (!participantIds.includes(currentUser.id)) return;
-
-      const message = await prisma.message.create({
-        data: {
-          conversationId: payload.conversationId,
-          senderId: currentUser.id,
-          content: payload.content.trim(),
-          messageType: (payload.messageType as "TEXT" | "IMAGE" | "SYSTEM") ?? "TEXT",
-          isRead: false,
-        },
-        include: {
-          sender: { select: { id: true, email: true, role: true } },
-        },
-      });
-
-      const recipientId = conversation.student.userId === currentUser.id ? conversation.landlord.userId : conversation.student.userId;
-      await prisma.conversation.update({ where: { id: payload.conversationId }, data: { updatedAt: new Date() } });
 
       io.to(`conversation:${payload.conversationId}`).emit("conversation:message", {
         ...message,
         createdAt: message.createdAt.toISOString(),
-        sender: message.sender,
-      });
-
-      await notificationService.notify({
-        userId: recipientId,
-        type: "MESSAGE",
-        title: "New message",
-        body: payload.content.trim(),
       });
     });
 

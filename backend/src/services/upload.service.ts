@@ -10,6 +10,12 @@ export interface UploadedImage {
   publicId: string;
 }
 
+export interface UploadedFile extends UploadedImage {
+  mimeType?: string;
+  fileName?: string;
+  bytes?: number;
+}
+
 const isConfigured = Boolean(env.CLOUDINARY_CLOUD_NAME && env.CLOUDINARY_API_KEY && env.CLOUDINARY_API_SECRET);
 
 if (isConfigured) {
@@ -30,9 +36,33 @@ class UploadService {
     return { url: result.secure_url, publicId: result.public_id };
   }
 
+  async uploadFile(
+    base64OrUrl: string,
+    folder = "campusnest/messages",
+    resourceType: "image" | "raw" | "auto" = "auto"
+  ): Promise<UploadedFile> {
+    if (!isConfigured) {
+      throw AppError.badRequest("File upload is not configured on the server. Please contact support.");
+    }
+
+    const result = await cloudinary.uploader.upload(base64OrUrl, { folder, resource_type: resourceType });
+    return {
+      url: result.secure_url,
+      publicId: result.public_id,
+      mimeType: result.resource_type === "image" ? result.format : undefined,
+      fileName: result.original_filename,
+      bytes: result.bytes,
+    };
+  }
+
   async deleteImage(publicId: string): Promise<void> {
     if (!isConfigured) return;
     await cloudinary.uploader.destroy(publicId);
+  }
+
+  async deleteFile(publicId: string, resourceType: "image" | "raw" | "video" = "image"): Promise<void> {
+    if (!isConfigured) return;
+    await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
   }
 }
 
