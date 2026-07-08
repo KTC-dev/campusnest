@@ -1,11 +1,12 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { AppNav } from "@/components/AppNav";
+import { StudentMobileShell } from "@/components/StudentMobileShell";
 import { PropertyCard } from "@/components/PropertyCard";
 import { propertyService } from "@/services/property.service";
 import { bookingService } from "@/services/booking.service";
+import { userService } from "@/services/user.service";
 import { useAuthStore } from "@/store/authStore";
-import { BookingStatus } from "@/types";
+import { BookingStatus, Property, PropertyListResult } from "@/types";
 
 const statusStyles: Record<BookingStatus, string> = {
   PENDING: "bg-amber-100 text-amber-700",
@@ -19,6 +20,12 @@ export default function StudentDashboard() {
   const user = useAuthStore((s) => s.user);
   const queryClient = useQueryClient();
 
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: userService.getMe,
+    enabled: Boolean(user),
+  });
+
   const { data: favourites = [], isLoading: loadingFavourites } = useQuery({
     queryKey: ["favourites"],
     queryFn: propertyService.listFavourites,
@@ -28,6 +35,19 @@ export default function StudentDashboard() {
     queryKey: ["my-bookings"],
     queryFn: bookingService.listMine,
   });
+
+  const { data: featuredProperties, isLoading: loadingFeatured } = useQuery({
+    queryKey: ["featured-properties"],
+    queryFn: () => propertyService.list({ availableOnly: true, page: 1 }) as Promise<PropertyListResult>,
+  });
+
+  const featuredVerified: Property[] =
+    featuredProperties?.items?.filter((property) => property.status === "APPROVED" && property.landlord?.isVerified).slice(0, 3) ?? [];
+
+  const firstName = profile?.student?.firstName || profile?.landlord?.firstName || user?.email.split("@")[0] || "there";
+  const bookingCount = bookings.length;
+  const savedCount = favourites.length;
+  const featuredCount = featuredVerified.length;
 
   async function handleToggleFavourite(id: string) {
     await propertyService.toggleFavourite(id);
@@ -40,64 +60,149 @@ export default function StudentDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <AppNav />
-
-      <main className="px-6 py-8 md:px-12 max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold text-brand-900">Welcome back{user ? `, ${user.email.split("@")[0]}` : ""}</h1>
-        <p className="mt-1 text-sm text-slate-500">Track your booking requests and saved listings.</p>
-
-        <section className="mt-6">
-          <h2 className="font-semibold text-slate-900">Your booking requests</h2>
-          {loadingBookings && <p className="mt-2 text-sm text-slate-500">Loading…</p>}
-          {!loadingBookings && bookings.length === 0 && (
-            <p className="mt-2 text-sm text-slate-500">No booking requests yet.</p>
-          )}
-          <div className="mt-3 space-y-2">
-            {bookings.map((booking) => (
-              <div key={booking.id} className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-white p-4">
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-slate-900 truncate">{booking.property.title}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Move-in: {new Date(booking.moveInDate).toLocaleDateString()}
-                  </p>
-                </div>
-                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusStyles[booking.status]}`}>
-                  {booking.status.toLowerCase()}
-                </span>
-                {booking.status === "PENDING" && (
-                  <button onClick={() => handleCancel(booking.id)} className="text-xs font-medium text-red-500 hover:underline">
-                    Cancel
-                  </button>
-                )}
-              </div>
-            ))}
+    <StudentMobileShell>
+      <div className="page-transition space-y-4">
+        <section className="mobile-card overflow-hidden bg-[radial-gradient(circle_at_top_right,_rgba(212,160,23,0.16),_transparent_36%),linear-gradient(160deg,_#14532d_0%,_#1f2937_100%)] p-5 text-white shadow-soft">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cream-100/80">CampusNest</p>
+              <h1 className="mt-2 text-[28px] font-display font-bold leading-tight">Welcome back, {firstName}.</h1>
+              <p className="mt-2 max-w-[26ch] text-sm text-cream-100/90">
+                Your bookings, saved places, and best verified options are all in one calm, mobile-first space.
+              </p>
+            </div>
+            <div className="rounded-[18px] bg-white/10 px-3 py-2 text-right text-xs backdrop-blur-sm">
+              <p className="text-cream-100/70">Today</p>
+              <p className="mt-0.5 font-semibold text-white">Student hub</p>
+            </div>
+          </div>
+          <div className="mt-5 grid grid-cols-3 gap-3">
+            <div className="rounded-[18px] bg-white/10 p-3">
+              <p className="text-[11px] text-cream-100/80">Bookings</p>
+              <p className="mt-1 text-2xl font-bold text-white">{bookingCount}</p>
+            </div>
+            <div className="rounded-[18px] bg-white/10 p-3">
+              <p className="text-[11px] text-cream-100/80">Saved</p>
+              <p className="mt-1 text-2xl font-bold text-white">{savedCount}</p>
+            </div>
+            <div className="rounded-[18px] bg-white/10 p-3">
+              <p className="text-[11px] text-cream-100/80">Verified</p>
+              <p className="mt-1 text-2xl font-bold text-white">{featuredCount}</p>
+            </div>
           </div>
         </section>
 
-        <section className="mt-8">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-slate-900">Favourites</h2>
-            <Link to="/properties" className="text-sm font-medium text-brand-600 hover:underline">
-              Browse more listings →
+        <section className="mobile-card-compact p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">Quick stats</p>
+              <h2 className="mt-1 text-lg font-display font-bold text-slate-800">Track what matters</h2>
+            </div>
+            <Link to="/properties" className="text-sm font-semibold text-brand-900">
+              Browse →
+            </Link>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="rounded-[18px] bg-cream-50 p-4">
+              <p className="text-xs text-slate-500">Bookings</p>
+              <p className="mt-1 text-2xl font-bold text-slate-800">{bookingCount}</p>
+              <p className="mt-1 text-xs text-slate-500">Requests and updates</p>
+            </div>
+            <div className="rounded-[18px] bg-cream-50 p-4">
+              <p className="text-xs text-slate-500">Saved listings</p>
+              <p className="mt-1 text-2xl font-bold text-slate-800">{savedCount}</p>
+              <p className="mt-1 text-xs text-slate-500">Ready to revisit</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="space-y-3" id="saved-listings">
+          <div className="flex items-center justify-between px-1">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">Saved listings</p>
+              <h2 className="mt-1 text-lg font-display font-bold text-slate-800">Your favourites</h2>
+            </div>
+            <Link to="/properties" className="text-sm font-semibold text-brand-900">
+              More →
             </Link>
           </div>
 
-          {loadingFavourites && <p className="mt-4 text-sm text-slate-500">Loading…</p>}
+          {loadingFavourites && <p className="px-1 text-sm text-slate-500">Loading…</p>}
 
           {!loadingFavourites && favourites.length === 0 && (
-            <div className="mt-4 rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500">
-              No saved listings yet. Tap the heart on any property to save it here.
+            <div className="mobile-card-compact p-5 text-center text-slate-500">
+              No saved listings yet. Tap the heart on any property to keep it here.
             </div>
           )}
 
-          <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="space-y-4">
             {favourites.map((property) => (
               <PropertyCard key={property.id} property={property} isFavourited onToggleFavourite={handleToggleFavourite} />
             ))}
           </div>
         </section>
-      </main>
-    </div>
+
+        <section className="space-y-3">
+          <div className="flex items-center justify-between px-1">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">Booking requests</p>
+              <h2 className="mt-1 text-lg font-display font-bold text-slate-800">Recent status</h2>
+            </div>
+          </div>
+
+          {loadingBookings && <p className="px-1 text-sm text-slate-500">Loading…</p>}
+          {!loadingBookings && bookings.length === 0 && (
+            <div className="mobile-card-compact p-5 text-center text-slate-500">No booking requests yet.</div>
+          )}
+
+          <div className="space-y-3">
+            {bookings.map((booking) => (
+              <div key={booking.id} className="mobile-card-compact flex items-start gap-3 p-4">
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-slate-800 line-clamp-1">{booking.property.title}</p>
+                  <p className="mt-1 text-xs text-slate-500">Move-in {new Date(booking.moveInDate).toLocaleDateString()}</p>
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <span className={`rounded-full px-3 py-1 text-[11px] font-semibold ${statusStyles[booking.status]}`}>
+                    {booking.status.toLowerCase()}
+                  </span>
+                  {booking.status === "PENDING" && (
+                    <button onClick={() => handleCancel(booking.id)} className="text-xs font-semibold text-terracotta-400">
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="space-y-3">
+          <div className="flex items-center justify-between px-1">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">Featured verified</p>
+              <h2 className="mt-1 text-lg font-display font-bold text-slate-800">Top properties near campus</h2>
+            </div>
+            <Link to="/properties" className="text-sm font-semibold text-brand-900">
+              View all →
+            </Link>
+          </div>
+
+          {loadingFeatured && <p className="px-1 text-sm text-slate-500">Loading featured properties…</p>}
+
+          {!loadingFeatured && featuredVerified.length === 0 && (
+            <div className="mobile-card-compact p-5 text-center text-slate-500">
+              No featured verified properties yet.
+            </div>
+          )}
+
+          <div className="space-y-4">
+            {featuredVerified.map((property) => (
+              <PropertyCard key={property.id} property={property} />
+            ))}
+          </div>
+        </section>
+      </div>
+    </StudentMobileShell>
   );
 }

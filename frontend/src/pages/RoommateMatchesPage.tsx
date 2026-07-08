@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { AppNav } from "@/components/AppNav";
+import { StudentMobileShell } from "@/components/StudentMobileShell";
 import { roommateService } from "@/services/roommate.service";
 
 function scoreColor(score: number) {
@@ -23,16 +23,19 @@ export default function RoommateMatchesPage() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <AppNav />
-
-      <main className="px-6 py-8 md:px-12 max-w-3xl mx-auto">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-brand-900">Roommate matches</h1>
-          <Link to="/roommates/profile" className="text-sm font-medium text-brand-600 hover:underline">
-            {myProfile ? "Edit your profile" : "Create your profile"}
-          </Link>
-        </div>
+    <StudentMobileShell>
+      <div className="page-transition space-y-4">
+        <section className="mobile-card-compact p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">Roommates</p>
+              <h1 className="mt-1 text-2xl font-display font-bold text-slate-800">Roommate matches</h1>
+            </div>
+            <Link to="/roommates/profile" className="text-sm font-semibold text-brand-900">
+              {myProfile ? "Edit" : "Create"}
+            </Link>
+          </div>
+        </section>
 
         {loadingProfile && <p className="mt-4 text-sm text-slate-500">Loading…</p>}
 
@@ -58,9 +61,9 @@ export default function RoommateMatchesPage() {
           </p>
         )}
 
-        <div className="mt-6 space-y-3">
+        <div className="space-y-3">
           {matches?.map(({ profile, score }) => (
-            <div key={profile.id} className="rounded-2xl border border-slate-100 bg-white p-5">
+            <div key={profile.id} className="mobile-card-compact p-4">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="font-semibold text-slate-900">
@@ -87,7 +90,7 @@ export default function RoommateMatchesPage() {
             </div>
           ))}
         </div>
-      </main>
-    </div>
+      </div>
+    </StudentMobileShell>
   );
 }

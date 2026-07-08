@@ -17,7 +17,7 @@ export function PropertyCard({ property, isFavourited, onToggleFavourite }: Prop
   const primaryImage = property.images.find((i) => i.isPrimary) ?? property.images[0];
 
   return (
-    <div className="group overflow-hidden rounded-[24px] border border-brand-900/10 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-soft">
+    <div className="group overflow-hidden rounded-[20px] border border-brand-900/10 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-soft tap-scale">
       <div className="relative aspect-[4/3] overflow-hidden bg-cream-100">
         {primaryImage ? (
           <img
@@ -34,7 +34,7 @@ export function PropertyCard({ property, isFavourited, onToggleFavourite }: Prop
           <button
             onClick={() => onToggleFavourite(property.id)}
             aria-label={isFavourited ? "Remove from favourites" : "Save to favourites"}
-            className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-lg shadow-sm backdrop-blur"
+            className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-lg shadow-sm backdrop-blur transition-transform active:scale-95"
           >
             {isFavourited ? "❤️" : "🤍"}
           </button>
@@ -57,11 +57,12 @@ export function PropertyCard({ property, isFavourited, onToggleFavourite }: Prop
         )}
       </div>
 
-      <Link to={`/properties/${property.id}`} className="block p-5">
+      <Link to={`/properties/${property.id}`} className="block p-4 sm:p-5">
         <div className="flex items-start justify-between gap-2">
           <h3 className="font-semibold text-slate-900 line-clamp-1">{property.title}</h3>
         </div>
         <p className="mt-1 text-sm text-slate-500 line-clamp-1">{property.location}</p>
+        {property.university?.name && <p className="mt-1 text-xs font-medium text-brand-900">{property.university.name}</p>}
 
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
           <span className="rounded-full bg-cream-50 px-2.5 py-1">{property.bedrooms} bed</span>

@@ -9,9 +9,46 @@ html {
 }
 
 body {
-  @apply bg-cream-50 text-slate-800 antialiased;
+  @apply bg-cream-50 text-slate-800 antialiased font-sans;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
 }
 
 ::selection {
   @apply bg-brand-900/10 text-brand-950;
+}
+
+.mobile-card {
+  @apply rounded-[20px] border border-brand-900/10 bg-white shadow-sm;
+}
+
+.mobile-card-compact {
+  @apply rounded-[18px] border border-brand-900/10 bg-white shadow-sm;
+}
+
+.touch-target {
+  @apply min-h-11 min-w-11;
+}
+
+.page-transition {
+  animation: fadeUp 360ms ease-out both;
+}
+
+.tap-scale {
+  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.tap-scale:active {
+  transform: scale(0.98);
 }

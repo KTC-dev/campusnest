@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { AppNav } from "@/components/AppNav";
+import { LandlordMobileShell } from "@/components/LandlordMobileShell";
 import { Upload } from "@/components/Upload";
 import { propertyService } from "@/services/property.service";
 import { useToastStore } from "@/store/toastStore";
@@ -35,6 +35,7 @@ export default function ListingFormPage() {
     bathrooms: "1",
     roomType: "SELF_CONTAIN" as RoomType,
     genderRestriction: "ANY" as Gender,
+    isAvailable: true,
   });
   const [amenityIds, setAmenityIds] = useState<string[]>([]);
   const [images, setImages] = useState<string[]>([]);
@@ -54,6 +55,7 @@ export default function ListingFormPage() {
       bathrooms: String(existing.bathrooms),
       roomType: existing.roomType,
       genderRestriction: existing.genderRestriction,
+      isAvailable: existing.isAvailable,
     });
     setAmenityIds(existing.amenities.map((a) => a.amenity.id));
   }, [existing]);
@@ -89,6 +91,7 @@ export default function ListingFormPage() {
         roomType: form.roomType,
         genderRestriction: form.genderRestriction,
         amenityIds,
+        isAvailable: form.isAvailable,
       };
 
       if (!isEditing && !ownerConfirmed) {
@@ -114,24 +117,23 @@ export default function ListingFormPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <AppNav />
+    <LandlordMobileShell>
+      <div className="page-transition space-y-4">
+        <section className="mobile-card-compact p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">Add property</p>
+          <h1 className="mt-1 text-2xl font-display font-bold text-slate-800">{isEditing ? "Edit listing" : "New listing"}</h1>
+          <p className="mt-2 text-sm text-slate-500">
+            {isEditing ? "Changes (other than availability) go back to pending review." : "Your listing goes live once an admin approves it."}
+          </p>
+        </section>
 
-      <main className="px-6 py-8 md:px-12 max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold text-brand-900">{isEditing ? "Edit listing" : "New listing"}</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          {isEditing
-            ? "Changes (other than availability) go back to pending review."
-            : "Your listing goes live once an admin approves it."}
-        </p>
-
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4 rounded-2xl border border-slate-100 bg-white p-6">
+        <form onSubmit={handleSubmit} className="mobile-card-compact space-y-4 p-4">
           <input
             placeholder="Title (e.g. Self-contain near West Gate)"
             required
             value={form.title}
             onChange={update("title")}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-2xl border border-slate-300 px-3 py-3 text-sm"
           />
           <textarea
             placeholder="Description"
@@ -139,7 +141,7 @@ export default function ListingFormPage() {
             rows={4}
             value={form.description}
             onChange={update("description")}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-2xl border border-slate-300 px-3 py-3 text-sm"
           />
           <div className="grid grid-cols-2 gap-3">
             <input
@@ -148,14 +150,14 @@ export default function ListingFormPage() {
               required
               value={form.price}
               onChange={update("price")}
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="rounded-2xl border border-slate-300 px-3 py-3 text-sm"
             />
             <input
               placeholder="Location"
               required
               value={form.location}
               onChange={update("location")}
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="rounded-2xl border border-slate-300 px-3 py-3 text-sm"
             />
           </div>
           <div className="grid grid-cols-3 gap-3">
@@ -166,7 +168,7 @@ export default function ListingFormPage() {
               required
               value={form.distanceFromCampusKm}
               onChange={update("distanceFromCampusKm")}
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="rounded-2xl border border-slate-300 px-3 py-3 text-sm"
             />
             <input
               type="number"
@@ -174,7 +176,7 @@ export default function ListingFormPage() {
               required
               value={form.bedrooms}
               onChange={update("bedrooms")}
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="rounded-2xl border border-slate-300 px-3 py-3 text-sm"
             />
             <input
               type="number"
@@ -182,11 +184,11 @@ export default function ListingFormPage() {
               required
               value={form.bathrooms}
               onChange={update("bathrooms")}
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="rounded-2xl border border-slate-300 px-3 py-3 text-sm"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <select value={form.roomType} onChange={update("roomType")} className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+            <select value={form.roomType} onChange={update("roomType")} className="rounded-2xl border border-slate-300 px-3 py-3 text-sm">
               {roomTypes.map((r) => (
                 <option key={r} value={r}>
                   {r.replace(/_/g, " ").toLowerCase()}
@@ -196,7 +198,7 @@ export default function ListingFormPage() {
             <select
               value={form.genderRestriction}
               onChange={update("genderRestriction")}
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="rounded-2xl border border-slate-300 px-3 py-3 text-sm"
             >
               {genders.map((g) => (
                 <option key={g} value={g}>
@@ -222,6 +224,16 @@ export default function ListingFormPage() {
               ))}
             </div>
           </div>
+
+          <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-cream-50 p-4">
+            <input
+              type="checkbox"
+              checked={form.isAvailable}
+              onChange={(e) => setForm((current) => ({ ...current, isAvailable: e.target.checked }))}
+              className="mt-1 rounded border-slate-300 accent-brand-900"
+            />
+            <span className="text-sm text-slate-700">List this property as available right away</span>
+          </label>
 
           {!isEditing && (
             <div>
@@ -259,12 +271,12 @@ export default function ListingFormPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-lg bg-brand-500 py-2.5 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-60"
+            className="w-full rounded-2xl bg-brand-900 py-3 text-sm font-semibold text-white hover:bg-brand-950 disabled:opacity-60"
           >
             {isSubmitting ? "Saving…" : isEditing ? "Save changes" : "Submit for review"}
           </button>
         </form>
-      </main>
-    </div>
+      </div>
+    </LandlordMobileShell>
   );
 }

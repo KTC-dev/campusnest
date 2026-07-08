@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { AppNav } from "@/components/AppNav";
+import { LandlordMobileShell } from "@/components/LandlordMobileShell";
+import { StudentMobileShell } from "@/components/StudentMobileShell";
 import { BookingRequestModal } from "@/components/BookingRequestModal";
 import { propertyService } from "@/services/property.service";
 import { conversationService } from "@/services/conversation.service";
@@ -21,6 +22,7 @@ export default function PropertyDetailsPage() {
   const [bookingSent, setBookingSent] = useState(false);
   const [isCreatingConversation, setIsCreatingConversation] = useState(false);
   const user = useAuthStore((s) => s.user);
+  const Shell = user?.role === "LANDLORD" ? LandlordMobileShell : StudentMobileShell;
 
   const { data: property, isLoading, isError } = useQuery({
     queryKey: ["property", id],
@@ -42,43 +44,38 @@ export default function PropertyDetailsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen">
-        <AppNav />
-        <p className="px-6 py-10 text-sm text-slate-500 md:px-12">Loading…</p>
-      </div>
+      <Shell>
+        <p className="px-1 py-8 text-sm text-slate-500">Loading…</p>
+      </Shell>
     );
   }
 
   if (isError || !property) {
     return (
-      <div className="min-h-screen">
-        <AppNav />
-        <p className="px-6 py-10 text-sm text-red-600 md:px-12">Listing not found.</p>
-      </div>
+      <Shell>
+        <p className="px-1 py-8 text-sm text-red-600">Listing not found.</p>
+      </Shell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <AppNav />
-
-      <main className="px-6 py-8 md:px-12 grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-8 max-w-6xl mx-auto">
+    <Shell>
+      <main className="page-transition grid grid-cols-1 gap-4">
         <div>
-          <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100">
+          <div className="aspect-[4/3] overflow-hidden rounded-[20px] bg-slate-100">
             {property.images[activeImage] ? (
               <img src={property.images[activeImage].url} alt={property.title} className="h-full w-full object-cover" />
             ) : (
-              <div className="h-full w-full flex items-center justify-center text-slate-400">No image</div>
+              <div className="flex h-full w-full items-center justify-center text-slate-400">No image</div>
             )}
           </div>
           {property.images.length > 1 && (
-            <div className="mt-3 flex gap-2 overflow-x-auto">
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
               {property.images.map((img, i) => (
                 <button
                   key={img.id}
                   onClick={() => setActiveImage(i)}
-                  className={`h-16 w-16 shrink-0 rounded-lg overflow-hidden border-2 ${i === activeImage ? "border-brand-500" : "border-transparent"
-                    }`}
+                  className={`h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 ${i === activeImage ? "border-brand-900" : "border-transparent"}`}
                 >
                   <img src={img.url} alt="" className="h-full w-full object-cover" />
                 </button>
@@ -86,7 +83,7 @@ export default function PropertyDetailsPage() {
             </div>
           )}
 
-          <h1 className="mt-6 text-2xl font-bold text-brand-900">{property.title}</h1>
+          <h1 className="mt-5 text-2xl font-display font-bold text-slate-800">{property.title}</h1>
           <p className="text-slate-500">{property.location}</p>
 
           <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-600">
@@ -96,11 +93,11 @@ export default function PropertyDetailsPage() {
             <span>👥 {property.genderRestriction === "ANY" ? "Any gender" : property.genderRestriction.toLowerCase()}</span>
           </div>
 
-          <p className="mt-6 text-slate-700 leading-relaxed whitespace-pre-line">{property.description}</p>
+          <p className="mt-6 whitespace-pre-line leading-relaxed text-slate-700">{property.description}</p>
 
           {property.amenities.length > 0 && (
-            <div className="mt-6">
-              <h2 className="font-semibold text-slate-900">Amenities</h2>
+              <div className="mt-6">
+                <h2 className="font-semibold text-slate-900">Amenities</h2>
               <div className="mt-2 flex flex-wrap gap-2">
                 {property.amenities.map(({ amenity }) => (
                   <span key={amenity.id} className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">
@@ -112,8 +109,8 @@ export default function PropertyDetailsPage() {
           )}
         </div>
 
-        <aside className="rounded-2xl border border-slate-100 bg-white p-6 h-fit sticky top-6">
-          <p className="text-2xl font-bold text-brand-600">
+        <aside className="mobile-card-compact h-fit p-5">
+          <p className="text-2xl font-bold text-brand-900">
             {formatNaira(property.price)} <span className="text-sm font-normal text-slate-400">/ year</span>
           </p>
 
@@ -129,7 +126,7 @@ export default function PropertyDetailsPage() {
           <button
             disabled={!property.isAvailable || user?.role !== "STUDENT" || bookingSent}
             onClick={() => setShowBookingModal(true)}
-            className="mt-5 w-full rounded-lg bg-brand-500 py-2.5 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="mt-5 w-full rounded-2xl bg-brand-900 py-3 text-sm font-semibold text-white transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {bookingSent ? "Request sent ✓" : property.isAvailable ? "Request to book" : "Fully booked"}
           </button>
@@ -137,7 +134,7 @@ export default function PropertyDetailsPage() {
             <button
               onClick={handleContactLandlord}
               disabled={isCreatingConversation}
-              className="mt-3 w-full rounded-lg border border-brand-200 bg-white py-2.5 text-sm font-semibold text-brand-700 hover:bg-brand-50 transition-colors disabled:cursor-not-allowed disabled:opacity-70"
+              className="mt-3 w-full rounded-2xl border border-brand-200 bg-white py-3 text-sm font-semibold text-brand-700 transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
             >
               {isCreatingConversation ? "Opening chat..." : "Contact landlord"}
             </button>
@@ -160,6 +157,6 @@ export default function PropertyDetailsPage() {
           }}
         />
       )}
-    </div>
+    </Shell>
   );
 }

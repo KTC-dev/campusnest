@@ -1,6 +1,7 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AppNav } from "@/components/AppNav";
+import { LandlordMobileShell } from "@/components/LandlordMobileShell";
+import { StudentMobileShell } from "@/components/StudentMobileShell";
 import { Upload } from "@/components/Upload";
 import { authService } from "@/services/auth.service";
 import { userService } from "@/services/user.service";
@@ -140,12 +141,11 @@ export default function ProfilePage() {
     const isStudent = profile?.role === "STUDENT";
     const isLandlord = profile?.role === "LANDLORD";
     const landlordVerificationStatus = profile?.landlord?.isVerified ? "VERIFIED" : "PENDING";
+    const Shell = user?.role === "LANDLORD" ? LandlordMobileShell : StudentMobileShell;
 
     return (
-        <div className="min-h-screen bg-slate-50">
-            <AppNav />
-
-            <main className="mx-auto max-w-3xl px-6 py-8 md:px-12">
+        <Shell>
+            <main className="page-transition space-y-4">
                 <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                     <div className="flex items-start justify-between gap-4">
                         <div>
@@ -387,6 +387,6 @@ export default function ProfilePage() {
                     )}
                 </div>
             </main>
-        </div>
+        </Shell>
     );
 }

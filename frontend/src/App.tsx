@@ -9,6 +9,7 @@ import PropertyListingPage from "@/pages/PropertyListingPage";
 import PropertyDetailsPage from "@/pages/PropertyDetailsPage";
 import StudentDashboard from "@/pages/StudentDashboard";
 import LandlordDashboard from "@/pages/LandlordDashboard";
+import MyPropertiesPage from "@/pages/MyPropertiesPage";
 import ListingFormPage from "@/pages/ListingFormPage";
 import RoommateMatchesPage from "@/pages/RoommateMatchesPage";
 import RoommateProfilePage from "@/pages/RoommateProfilePage";
@@ -20,6 +21,7 @@ import TermsPage from "@/pages/TermsPage";
 import HelpPage from "@/pages/HelpPage";
 import ProfilePage from "@/pages/ProfilePage";
 import ConversationsPage from "@/pages/ConversationsPage";
+import VerificationPage from "@/pages/VerificationPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 
 // A single /dashboard route renders the right dashboard for the logged-in
@@ -54,6 +56,11 @@ export default function App() {
           <Route path="/conversations/:id" element={<ConversationsPage />} />
           <Route path="/dashboard/listings/new" element={<ListingFormPage />} />
           <Route path="/dashboard/listings/:id/edit" element={<ListingFormPage />} />
+        </Route>
+
+        <Route element={<ProtectedRoute allowedRoles={["LANDLORD"]} />}> 
+          <Route path="/dashboard/properties" element={<MyPropertiesPage />} />
+          <Route path="/verification" element={<VerificationPage />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={["STUDENT"]} />}>

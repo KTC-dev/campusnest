@@ -82,6 +82,10 @@ export interface Property {
   status: ListingStatus;
   rejectionReason?: string | null;
   createdAt?: string;
+  university?: {
+    id: string;
+    name: string;
+  };
   images: { id: string; url: string; isPrimary: boolean }[];
   amenities: { amenity: Amenity }[];
   landlord?: {
@@ -180,6 +184,7 @@ export interface CreatePropertyPayload {
   amenityIds: string[];
   images: string[]; // base64 data URLs
   ownerConfirmation?: boolean;
+  isAvailable?: boolean;
 }
 
 export interface AdminStats {

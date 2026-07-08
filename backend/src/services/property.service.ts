@@ -18,6 +18,7 @@ interface CreatePropertyInput {
   images: string[];
   // Landlord affirmation before publishing
   ownerConfirmation?: boolean;
+  isAvailable?: boolean;
 }
 
 interface UpdatePropertyInput extends Partial<Omit<CreatePropertyInput, "images">> {
@@ -40,6 +41,7 @@ interface ListFilters {
 const publicPropertyInclude = {
   images: { orderBy: { isPrimary: "desc" as const } },
   amenities: { include: { amenity: true } },
+  university: { select: { id: true, name: true } },
   landlord: { select: { firstName: true, lastName: true, businessName: true, isVerified: true, phone: true } },
 };
 
@@ -62,6 +64,7 @@ class PropertyService {
         roomType: input.roomType as any,
         genderRestriction: input.genderRestriction as any,
         status: ListingStatus.PENDING,
+        isAvailable: input.isAvailable ?? true,
         images: {
           create: uploaded.map((img, i) => ({ url: img.url, publicId: img.publicId, isPrimary: i === 0 })),
         },
@@ -159,7 +162,7 @@ class PropertyService {
   async listForLandlord(landlordId: string) {
     return prisma.property.findMany({
       where: { landlordId },
-      include: { images: true, _count: { select: { bookings: true } } },
+      include: { images: true, university: { select: { id: true, name: true } }, _count: { select: { bookings: true } } },
       orderBy: { createdAt: "desc" },
     });
   }
