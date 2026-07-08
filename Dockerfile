@@ -18,4 +18,4 @@ ENV PORT=4000
 
 EXPOSE 4000
 
-CMD ["sh", "-c", "if [ -f /app/backend/package.json ]; then cd /app/backend && npx prisma migrate deploy && node dist/server.js; elif [ -f /app/package.json ]; then npx prisma migrate deploy && node dist/server.js; else echo 'No backend package.json found' && exit 1; fi"]
+CMD ["sh", "-c", "if [ -f /app/backend/package.json ]; then cd /app/backend && npm run start; elif [ -f /app/package.json ]; then npm run start; else echo 'No backend package.json found' && exit 1; fi"]
