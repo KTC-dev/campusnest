@@ -78,6 +78,11 @@ export default function ListingFormPage() {
       return;
     }
 
+    if (!isEditing && !ownerConfirmed) {
+      setError("Please confirm that you own this property or have the legal right to advertise it.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const payload = {
@@ -93,12 +98,6 @@ export default function ListingFormPage() {
         amenityIds,
         isAvailable: form.isAvailable,
       };
-
-      if (!isEditing && !ownerConfirmed) {
-        setError("You must confirm you have the right to publish this listing.");
-        setIsSubmitting(false);
-        return;
-      }
 
       if (isEditing) {
         await propertyService.update(id!, payload);
@@ -258,11 +257,30 @@ export default function ListingFormPage() {
           )}
 
           {!isEditing && (
-            <div className="mt-4">
+            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <label className="flex items-start gap-3">
-                <input type="checkbox" checked={ownerConfirmed} onChange={(e) => setOwnerConfirmed(e.target.checked)} />
-                <span className="text-sm text-slate-700">I confirm that this listing is truthful, accurate, and that I have the legal right to advertise this property.</span>
+                <input
+                  type="checkbox"
+                  checked={ownerConfirmed}
+                  onChange={(e) => {
+                    setOwnerConfirmed(e.target.checked);
+                    if (e.target.checked && error?.includes("own this property")) {
+                      setError(null);
+                    }
+                  }}
+                  required
+                  aria-invalid={Boolean(error?.includes("own this property"))}
+                  className="mt-1 h-4 w-4 rounded border-slate-300 accent-brand-900"
+                />
+                <span className="text-sm text-slate-700">
+                  I confirm that I own this property or have the legal right to advertise it.
+                </span>
               </label>
+              {!ownerConfirmed && (
+                <p className="mt-2 text-xs font-medium text-amber-700">
+                  You must check this box before submitting the listing.
+                </p>
+              )}
             </div>
           )}
 
@@ -270,8 +288,8 @@ export default function ListingFormPage() {
 
           <button
             type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-2xl bg-brand-900 py-3 text-sm font-semibold text-white hover:bg-brand-950 disabled:opacity-60"
+            disabled={isSubmitting || (!isEditing && !ownerConfirmed)}
+            className="w-full rounded-2xl bg-brand-900 py-3 text-sm font-semibold text-white hover:bg-brand-950 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSubmitting ? "Saving…" : isEditing ? "Save changes" : "Submit for review"}
           </button>
