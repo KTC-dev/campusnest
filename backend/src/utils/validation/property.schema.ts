@@ -17,6 +17,9 @@ export const createPropertySchema = z.object({
     amenityIds: z.array(z.string()).default([]),
     // Base64 data URLs or remote URLs; the upload service normalizes either.
     images: z.array(z.string()).min(1, "At least one image is required").max(10),
+    ownerConfirmation: z.boolean().refine((value) => value === true, {
+      message: "You must confirm you have the right to advertise this property",
+    }),
   }),
   query: z.object({}).optional(),
   params: z.object({}).optional(),

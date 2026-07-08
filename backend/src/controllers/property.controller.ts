@@ -30,8 +30,6 @@ export const createProperty = catchAsync(async (req: Request, res: Response) => 
 
   if (!req.body?.ownerConfirmation) throw AppError.badRequest("You must confirm you have the right to advertise this property");
 
-  if (!req.body?.ownerConfirmation) throw AppError.badRequest("You must confirm you have the right to advertise this property");
-
   const property = await propertyService.create(landlordId, university.id, {
     ...req.body,
     isAvailable: req.body?.isAvailable ?? true,
