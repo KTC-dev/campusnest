@@ -20,3 +20,30 @@ export const upsertRoommateProfileSchema = z.object({
   query: z.object({}).optional(),
   params: z.object({}).optional(),
 });
+
+export const sendMatchRequestSchema = z.object({
+  body: z.object({
+    receiverId: z.string().cuid(),
+    message: z.string().max(500).optional(),
+  }),
+  query: z.object({}).optional(),
+  params: z.object({}).optional(),
+});
+
+export const respondMatchRequestSchema = z.object({
+  body: z.object({
+    accept: z.boolean(),
+  }),
+  query: z.object({}).optional(),
+  params: z.object({
+    requestId: z.string().cuid(),
+  }),
+});
+
+export const idParamSchema = z.object({
+  body: z.object({}).optional(),
+  query: z.object({}).optional(),
+  params: z.object({
+    id: z.string().cuid(),
+  }),
+});

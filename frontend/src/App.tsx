@@ -13,6 +13,7 @@ import MyPropertiesPage from "@/pages/MyPropertiesPage";
 import ListingFormPage from "@/pages/ListingFormPage";
 import RoommateMatchesPage from "@/pages/RoommateMatchesPage";
 import RoommateProfilePage from "@/pages/RoommateProfilePage";
+import RoommateProfileViewPage from "@/pages/RoommateProfileViewPage";
 import AdminDashboard from "@/pages/AdminDashboard";
 import AboutPage from "@/pages/AboutPage";
 import ContactPage from "@/pages/ContactPage";
@@ -66,6 +67,7 @@ export default function App() {
         <Route element={<ProtectedRoute allowedRoles={["STUDENT"]} />}>
           <Route path="/roommates" element={<RoommateMatchesPage />} />
           <Route path="/roommates/profile" element={<RoommateProfilePage />} />
+          <Route path="/roommates/:id" element={<RoommateProfileViewPage />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>

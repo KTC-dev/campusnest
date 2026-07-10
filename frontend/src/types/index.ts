@@ -172,6 +172,67 @@ export interface RoommateMatch {
   };
 }
 
+export interface RoommateMatchCandidate {
+  score: number;
+  profile: RoommateProfile & {
+    student: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      faculty?: string | null;
+      level?: string | null;
+      avatarUrl?: string | null;
+      gender?: string | null;
+      university?: { id: string; name: string };
+    };
+    roommateProfile?: {
+      budgetMin: string;
+      budgetMax: string;
+      genderPreference: Gender;
+      sleepSchedule: SleepSchedule;
+      cleanliness: CleanlinessLevel;
+      isSmoker: boolean;
+      noiseTolerance: NoiseTolerance;
+      bio?: string | null;
+    };
+  };
+}
+
+export interface Student {
+  id: string;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  phone?: string | null;
+  faculty?: string | null;
+  level?: string | null;
+  gender?: string | null;
+  avatarUrl?: string | null;
+  universityId: string;
+  createdAt: string;
+  updatedAt: string;
+  university?: { id: string; name: string };
+  isVerified: boolean;
+}
+
+export interface RoommateProfileView {
+  student: Student & {
+    roommateProfile?: RoommateProfile;
+  };
+}
+
+export interface MatchFilters {
+  budgetMin?: number;
+  budgetMax?: number;
+  genderPreference?: "MALE" | "FEMALE" | "ANY";
+  sleepSchedule?: "EARLY_BIRD" | "NIGHT_OWL" | "FLEXIBLE";
+  cleanliness?: "RELAXED" | "MODERATE" | "VERY_CLEAN";
+  isSmoker?: boolean;
+  noiseTolerance?: "LOW" | "MEDIUM" | "HIGH";
+  faculty?: string;
+  level?: string;
+}
+
 export interface ConversationAttachment {
   id?: string;
   url: string;
@@ -387,3 +448,90 @@ export interface PublicStats {
   verifiedLandlords: number;
   successfulBookings: number;
 }
+
+export type MatchRequestStatus = "PENDING" | "ACCEPTED" | "DECLINED" | "EXPIRED";
+
+export interface RoommateMatchRequest {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  sender: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    faculty?: string | null;
+    level?: string | null;
+    avatarUrl?: string | null;
+    gender?: string | null;
+    university?: { id: string; name: string };
+    roommateProfile?: {
+      budgetMin: string;
+      budgetMax: string;
+      genderPreference: Gender;
+      sleepSchedule: SleepSchedule;
+      cleanliness: CleanlinessLevel;
+      isSmoker: boolean;
+      noiseTolerance: NoiseTolerance;
+      bio?: string | null;
+    } | null;
+  };
+  receiver: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    faculty?: string | null;
+    level?: string | null;
+    avatarUrl?: string | null;
+    gender?: string | null;
+    university?: { id: string; name: string };
+  };
+  status: MatchRequestStatus;
+  message?: string | null;
+  createdAt: string;
+  respondedAt?: string | null;
+}
+
+export interface SavedMatch {
+  id: string;
+  studentId: string;
+  targetId: string;
+  createdAt: string;
+  target: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    faculty?: string | null;
+    level?: string | null;
+    avatarUrl?: string | null;
+    gender?: string | null;
+    university?: { id: string; name: string };
+    isVerified: boolean;
+    roommateProfile?: {
+      budgetMin: string;
+      budgetMax: string;
+      genderPreference: Gender;
+      sleepSchedule: SleepSchedule;
+      cleanliness: CleanlinessLevel;
+      isSmoker: boolean;
+      noiseTolerance: NoiseTolerance;
+      bio?: string | null;
+    } | null;
+  };
+}
+
+export interface CompatibilityBreakdownItem {
+  score: number;
+  label: string;
+  matched: boolean;
+}
+
+export interface CompatibilityBreakdown {
+  budget: CompatibilityBreakdownItem;
+  gender: CompatibilityBreakdownItem;
+  sleepSchedule: CompatibilityBreakdownItem;
+  cleanliness: CompatibilityBreakdownItem;
+  smoking: CompatibilityBreakdownItem;
+  noiseTolerance: CompatibilityBreakdownItem;
+}
+
+export type NotificationTypeWithRoommate = "BOOKING_UPDATE" | "MESSAGE" | "LISTING_STATUS" | "ROOMMATE_MATCH" | "ROOMMATE_MATCH_REQUEST" | "ROOMMATE_MATCH_ACCEPTED" | "ROOMMATE_MATCH_DECLINED" | "SYSTEM" | "PROPERTY_INQUIRY" | "INSPECTION_CONFIRMED" | "VERIFICATION_APPROVED" | "PROPERTY_APPROVED";

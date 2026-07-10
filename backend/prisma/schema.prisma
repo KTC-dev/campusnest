@@ -75,6 +75,9 @@ enum NotificationType {
   MESSAGE
   LISTING_STATUS
   ROOMMATE_MATCH
+  ROOMMATE_MATCH_REQUEST
+  ROOMMATE_MATCH_ACCEPTED
+  ROOMMATE_MATCH_DECLINED
   SYSTEM
   PROPERTY_INQUIRY
   INSPECTION_CONFIRMED
@@ -168,6 +171,7 @@ model Student {
   universityId String
   faculty      String?
   level        String?
+  gender       Gender?  @default(ANY)
   avatarUrl    String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -180,6 +184,10 @@ model Student {
   conversationsAsSecondary Conversation[] @relation("ConversationSecondaryStudent")
   roommateMatchesAsStudentA RoommateMatch[] @relation("RoommateMatchStudentA")
   roommateMatchesAsStudentB RoommateMatch[] @relation("RoommateMatchStudentB")
+  sentMatchRequests  RoommateMatchRequest[] @relation("SentMatchRequests")
+  receivedMatchRequests RoommateMatchRequest[] @relation("ReceivedMatchRequests")
+  savedMatchs        RoommateMatchFavourite[] @relation("SavedMatches")
+  savedTarget        RoommateMatchFavourite[] @relation("SavedTarget")
 
   @@index([universityId])
   @@map("students")
@@ -396,6 +404,44 @@ model RoommateMatch {
   @@index([studentAId])
   @@index([studentBId])
   @@map("roommate_matches")
+}
+
+enum MatchRequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+model RoommateMatchRequest {
+  id          String                @id @default(cuid())
+  senderId    String
+  sender      Student               @relation("SentMatchRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId  String
+  receiver    Student               @relation("ReceivedMatchRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+  status      MatchRequestStatus    @default(PENDING)
+  message     String?
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  respondedAt DateTime?
+
+  @@unique([senderId, receiverId])
+  @@index([senderId])
+  @@index([receiverId, status])
+  @@map("roommate_match_requests")
+}
+
+model RoommateMatchFavourite {
+  id        String   @id @default(cuid())
+  studentId String
+  targetId  String
+  student   Student  @relation("SavedMatches", fields: [studentId], references: [id], onDelete: Cascade)
+  target    Student  @relation("SavedTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([studentId])
+  @@unique([studentId, targetId])
+  @@map("roommate_match_favourites")
 }
 
 // ---------------------------------------------------------------------------

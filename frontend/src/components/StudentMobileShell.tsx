@@ -16,7 +16,7 @@ type NavItem = {
 const navItems: NavItem[] = [
     { label: "Home", to: "/dashboard", icon: "⌂" },
     { label: "Browse", to: "/properties", icon: "⌕" },
-    { label: "Saved", to: "/dashboard", icon: "♡", anchor: "saved-listings" },
+    { label: "Roommates", to: "/roommates", icon: "👥" },
     { label: "Messages", to: "/conversations", icon: "✉" },
     { label: "Profile", to: "/profile", icon: "◌" },
 ] as const;

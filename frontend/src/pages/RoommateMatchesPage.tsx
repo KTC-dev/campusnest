@@ -1,39 +1,99 @@
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { StudentMobileShell } from "@/components/StudentMobileShell";
 import { roommateService } from "@/services/roommate.service";
-import { conversationService } from "@/services/conversation.service";
-import { useToastStore } from "@/store/toastStore";
-import { getFriendlyErrorMessage } from "@/utils/error";
+import { RoommateMatchCard } from "@/components/RoommateMatchCard";
+import { RoommateMatchRequestCard } from "@/components/RoommateMatchRequestCard";
 
-function scoreColor(score: number) {
-  if (score >= 80) return "bg-emerald-100 text-emerald-700";
-  if (score >= 60) return "bg-brand-100 text-brand-700";
-  if (score >= 40) return "bg-amber-100 text-amber-700";
-  return "bg-slate-200 text-slate-600";
-}
+type MatchSection = "recommended" | "new" | "recent" | "saved" | "sent" | "received";
 
 export default function RoommateMatchesPage() {
-  const navigate = useNavigate();
-  const addToast = useToastStore((state) => state.addToast);
-  const { data: myProfile, isLoading: loadingProfile } = useQuery({
+  const [activeSection, setActiveSection] = useState<MatchSection>("recommended");
+
+  const { data: myProfile } = useQuery({
     queryKey: ["roommate-profile"],
     queryFn: roommateService.getMyProfile,
   });
 
-  const { data: matches, isLoading: loadingMatches } = useQuery({
-    queryKey: ["roommate-matches"],
-    queryFn: roommateService.getMatches,
+  const { data: recommendedMatches, isLoading: loadingRecommended } = useQuery({
+    queryKey: ["roommate-matches-recommended"],
+    queryFn: () => roommateService.getMatches(),
     enabled: Boolean(myProfile),
   });
 
-  async function startRoommateChat(studentId: string) {
-    try {
-      const conversation = await conversationService.create({ roommateStudentId: studentId });
-      navigate(`/conversations/${conversation.id}`);
-    } catch (error) {
-      addToast({ type: "error", title: "Could not start chat", message: getFriendlyErrorMessage(error) });
-    }
+  const { data: sentRequests, isLoading: loadingSentRequests } = useQuery({
+    queryKey: ["roommate-matches-sent"],
+    queryFn: roommateService.getSentMatchRequests,
+    enabled: Boolean(myProfile),
+  });
+
+  const { data: receivedRequests, isLoading: loadingReceivedRequests } = useQuery({
+    queryKey: ["roommate-matches-received"],
+    queryFn: roommateService.getReceivedMatchRequests,
+    enabled: Boolean(myProfile),
+  });
+
+  const { data: savedMatches, isLoading: loadingSaved } = useQuery({
+    queryKey: ["roommate-saved"],
+    queryFn: roommateService.getSavedMatches,
+    enabled: Boolean(myProfile),
+  });
+
+  const sentRequestIds = useMemo(() => new Set(sentRequests?.map((r) => r.receiverId) || []), [sentRequests]);
+  const receivedRequestIds = useMemo(() => new Set(receivedRequests?.map((r) => r.senderId) || []), [receivedRequests]);
+
+  const matchableCandidates = useMemo(() => {
+    if (!recommendedMatches) return [];
+    return recommendedMatches.filter(
+      (m) => !sentRequestIds.has(m.profile.student.id) && !receivedRequestIds.has(m.profile.student.id)
+    );
+  }, [recommendedMatches, sentRequestIds, receivedRequestIds]);
+
+  const newMatches = useMemo(() => {
+    if (!recommendedMatches) return [];
+    return recommendedMatches.filter((m) => {
+      const hasSentRequest = sentRequestIds.has(m.profile.student.id);
+      const hasReceivedRequest = receivedRequestIds.has(m.profile.student.id);
+      return hasSentRequest || hasReceivedRequest;
+    });
+  }, [recommendedMatches, sentRequestIds, receivedRequestIds]);
+
+  const activeMatches = useMemo(() => {
+    if (!recommendedMatches) return [];
+    return recommendedMatches.filter((m) => {
+      const hasSentRequest = sentRequestIds.has(m.profile.student.id);
+      const hasReceivedRequest = receivedRequestIds.has(m.profile.student.id);
+      return hasSentRequest || hasReceivedRequest;
+    });
+  }, [recommendedMatches, sentRequestIds, receivedRequestIds]);
+
+  if (!myProfile) {
+    return (
+      <StudentMobileShell>
+        <div className="page-transition space-y-4">
+          <section className="mobile-card-compact p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">Roommates</p>
+                <h1 className="mt-1 text-2xl font-display font-bold text-slate-800">Roommate matches</h1>
+              </div>
+            </div>
+          </section>
+          <div className="mt-6 rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500">
+            Create your roommate profile to find compatible matches.
+            <div className="mt-3">
+              <Link
+                to="/roommates/profile"
+                className="inline-block rounded-full bg-brand-500 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600"
+              >
+                Create profile
+              </Link>
+            </div>
+          </div>
+        </div>
+      </StudentMobileShell>
+    );
   }
 
   return (
@@ -46,72 +106,153 @@ export default function RoommateMatchesPage() {
               <h1 className="mt-1 text-2xl font-display font-bold text-slate-800">Roommate matches</h1>
             </div>
             <Link to="/roommates/profile" className="text-sm font-semibold text-brand-900">
-              {myProfile ? "Edit" : "Create"}
+              Edit Profile
             </Link>
           </div>
         </section>
 
-        {loadingProfile && <p className="mt-4 text-sm text-slate-500">Loading…</p>}
+        <section className="mobile-card-compact">
+          <div className="border-b border-slate-200">
+            <div className="flex overflow-x-auto">
+              {(["recommended", "new", "recent", "saved", "sent", "received"] as MatchSection[]).map((section) => {
+                const count =
+                  section === "recommended"
+                    ? matchableCandidates.length
+                    : section === "new"
+                    ? newMatches.length
+                    : section === "recent"
+                    ? activeMatches.length
+                    : section === "saved"
+                    ? savedMatches?.length || 0
+                    : section === "sent"
+                    ? sentRequests?.length || 0
+                    : receivedRequests?.length || 0;
 
-        {!loadingProfile && !myProfile && (
-          <div className="mt-6 rounded-2xl border border-dashed border-slate-300 p-10 text-center text-slate-500">
-            Create your roommate profile to see compatibility-ranked matches.
-            <div className="mt-3">
-              <Link
-                to="/roommates/profile"
-                className="inline-block rounded-full bg-brand-500 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600"
-              >
-                Create profile
-              </Link>
+                return (
+                  <button
+                    key={section}
+                    onClick={() => setActiveSection(section)}
+                    className={`flex-1 border-b-2 px-4 py-3 text-xs font-semibold transition ${
+                      activeSection === section
+                        ? "border-brand-900 bg-brand-50 text-brand-900"
+                        : "border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                    }`}
+                  >
+                    {section.charAt(0).toUpperCase() + section.slice(1)} ({count})
+                  </button>
+                );
+              })}
             </div>
           </div>
-        )}
 
-        {myProfile && loadingMatches && <p className="mt-4 text-sm text-slate-500">Finding matches…</p>}
-
-        {myProfile && matches && matches.length === 0 && (
-          <p className="mt-6 text-sm text-slate-500">
-            No other active roommate profiles at your university yet. Check back soon.
-          </p>
-        )}
-
-        <div className="space-y-3">
-          {matches?.map(({ profile, score }) => (
-            <div key={profile.id} className="mobile-card-compact p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="font-semibold text-slate-900">
-                    {profile.student.firstName} {profile.student.lastName}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {[profile.student.faculty, profile.student.level].filter(Boolean).join(" · ") || "Student"}
-                  </p>
+          <div className="p-4">
+            {activeSection === "recommended" && (
+              <>
+                {loadingRecommended && <p className="text-sm text-slate-500">Finding matches...</p>}
+                {matchableCandidates.length === 0 && !loadingRecommended && (
+                  <p className="text-sm text-slate-500">No more recommended matches at your university.</p>
+                )}
+                <div className="space-y-3">
+                  {matchableCandidates.map((match) => (
+                    <RoommateMatchCard key={match.profile.student.id} match={match} />
+                  ))}
                 </div>
-                <span className={`rounded-full px-3 py-1 text-xs font-bold ${scoreColor(score)}`}>{score}% match</span>
-              </div>
+              </>
+            )}
 
-              {profile.bio && <p className="mt-3 text-sm text-slate-600">{profile.bio}</p>}
+            {activeSection === "new" && (
+              <>
+                {loadingRecommended && <p className="text-sm text-slate-500">Loading...</p>}
+                {newMatches.length === 0 && !loadingRecommended && (
+                  <p className="text-sm text-slate-500">No new matches yet. Check back later!</p>
+                )}
+                <div className="space-y-3">
+                  {newMatches.map((match) => (
+                    <RoommateMatchCard key={match.profile.student.id} match={match} />
+                  ))}
+                </div>
+              </>
+            )}
 
-              <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
-                <span className="rounded-full bg-slate-100 px-2.5 py-1">
-                  ₦{Number(profile.budgetMin).toLocaleString()}–{Number(profile.budgetMax).toLocaleString()}/yr
-                </span>
-                <span className="rounded-full bg-slate-100 px-2.5 py-1">{profile.sleepSchedule.replace(/_/g, " ").toLowerCase()}</span>
-                <span className="rounded-full bg-slate-100 px-2.5 py-1">{profile.cleanliness.replace(/_/g, " ").toLowerCase()}</span>
-                <span className="rounded-full bg-slate-100 px-2.5 py-1">{profile.isSmoker ? "Smoker" : "Non-smoker"}</span>
-                <span className="rounded-full bg-slate-100 px-2.5 py-1">{profile.noiseTolerance.toLowerCase()} noise tolerance</span>
-              </div>
+            {activeSection === "recent" && (
+              <>
+                {activeMatches.length === 0 && (
+                  <p className="text-sm text-slate-500">No recent matches.</p>
+                )}
+                <div className="space-y-3">
+                  {activeMatches.map((match) => (
+                    <RoommateMatchCard key={match.profile.student.id} match={match} />
+                  ))}
+                </div>
+              </>
+            )}
 
-              <button
-                type="button"
-                onClick={() => startRoommateChat(profile.student.id)}
-                className="mt-4 inline-flex items-center rounded-full bg-brand-900 px-4 py-2 text-sm font-semibold text-white transition active:scale-95"
-              >
-                Message
-              </button>
-            </div>
-          ))}
-        </div>
+            {activeSection === "saved" && (
+              <>
+                {loadingSaved && <p className="text-sm text-slate-500">Loading...</p>}
+                {savedMatches?.length === 0 && !loadingSaved && (
+                  <p className="text-sm text-slate-500">No saved matches.</p>
+                )}
+                <div className="space-y-3">
+                  {savedMatches?.map((saved) => (
+                    <div key={saved.id} className="mobile-card-compact p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-brand-900 text-lg font-bold text-white">
+                          {saved.target.avatarUrl ? (
+                            <img src={saved.target.avatarUrl} alt={`${saved.target.firstName} ${saved.target.lastName}`} className="h-full w-full object-cover" />
+                          ) : (
+                            `${saved.target.firstName[0]}${saved.target.lastName[0]}`
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-slate-900">
+                            {saved.target.firstName} {saved.target.lastName}
+                            {saved.target.isVerified && (
+                              <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                                Verified
+                              </span>
+                            )}
+                          </h3>
+                          <p className="text-xs text-slate-500">
+                            {saved.target.faculty} • {saved.target.level} • {saved.target.university?.name}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {activeSection === "sent" && (
+              <>
+                {loadingSentRequests && <p className="text-sm text-slate-500">Loading...</p>}
+                {sentRequests?.length === 0 && !loadingSentRequests && (
+                  <p className="text-sm text-slate-500">No sent requests yet.</p>
+                )}
+                <div className="space-y-3">
+                  {sentRequests?.map((request) => (
+                    <RoommateMatchRequestCard key={request.id} request={request} />
+                  ))}
+                </div>
+              </>
+            )}
+
+            {activeSection === "received" && (
+              <>
+                {loadingReceivedRequests && <p className="text-sm text-slate-500">Loading...</p>}
+                {receivedRequests?.length === 0 && !loadingReceivedRequests && (
+                  <p className="text-sm text-slate-500">No received requests.</p>
+                )}
+                <div className="space-y-3">
+                  {receivedRequests?.map((request) => (
+                    <RoommateMatchRequestCard key={request.id} request={request} />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </section>
       </div>
     </StudentMobileShell>
   );
