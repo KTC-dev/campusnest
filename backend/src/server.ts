@@ -7,11 +7,45 @@ import { prisma } from "./config/prisma";
 import { verifyAccessToken } from "./utils/jwt";
 import { conversationService } from "./services/conversation.service";
 
+const isOriginAllowed = (origin: string | undefined): boolean => {
+  if (!origin) return true;
+
+  const allowedOrigins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://campusnest.app",
+    "https://www.campusnest.app",
+    "https://campusnest.pages.dev",
+  ];
+
+  for (const allowed of allowedOrigins) {
+    if (allowed === origin) return true;
+
+    if (allowed.endsWith(".pages.dev") && origin.endsWith(".pages.dev")) {
+      const allowedBase = allowed.replace(".pages.dev", "");
+      const originBase = origin.replace(".pages.dev", "");
+      if (originBase.startsWith(allowedBase.replace(/^https?:\/\//, ""))) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+};
+
 const app = createApp();
 const httpServer = createServer(app);
-const allowedOrigins = env.CORS_ORIGIN.split(",").map((origin) => origin.trim()).filter(Boolean);
 const io = new Server(httpServer, {
-  cors: { origin: allowedOrigins, credentials: true },
+  cors: {
+    origin: (origin, callback) => {
+      if (isOriginAllowed(origin)) {
+        return callback(null, true);
+      }
+      callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  },
 });
 
 function setupSocketServer() {
@@ -19,8 +53,8 @@ function setupSocketServer() {
     const authToken = typeof socket.handshake.auth?.token === "string"
       ? socket.handshake.auth.token
       : typeof socket.handshake.headers.authorization === "string"
-        ? socket.handshake.headers.authorization
-        : undefined;
+      ? socket.handshake.headers.authorization
+      : undefined;
 
     if (!authToken) {
       return next(new Error("Unauthorized"));

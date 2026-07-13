@@ -11,9 +11,34 @@ import routes from "./routes";
 import { errorHandler } from "./middleware/errorHandler";
 import { AppError } from "./utils/AppError";
 
+const isOriginAllowed = (origin: string | undefined): boolean => {
+  if (!origin) return true;
+
+  const allowedOrigins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://campusnest.app",
+    "https://www.campusnest.app",
+    "https://campusnest.pages.dev",
+  ];
+
+  for (const allowed of allowedOrigins) {
+    if (allowed === origin) return true;
+
+    if (allowed.endsWith(".pages.dev") && origin.endsWith(".pages.dev")) {
+      const allowedBase = allowed.replace(".pages.dev", "");
+      const originBase = origin.replace(".pages.dev", "");
+      if (originBase.startsWith(allowedBase.replace(/^https?:\/\//, ""))) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+};
+
 export function createApp() {
   const app = express();
-  const allowedOrigins = env.CORS_ORIGIN.split(",").map((origin) => origin.trim()).filter(Boolean);
 
   app.set("trust proxy", env.TRUST_PROXY);
   app.disable("x-powered-by");
@@ -21,21 +46,26 @@ export function createApp() {
   app.use(
     cors({
       origin: (origin, callback) => {
-        if (!origin) return callback(null, true);
-
-        const isAllowed = allowedOrigins.some((allowed) => {
-          if (allowed.includes("*")) {
-            const pattern = "^" + allowed.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*") + "$";
-            return new RegExp(pattern, "i").test(origin);
-          }
-          return allowed === origin;
-        });
-
-        callback(null, isAllowed);
+        if (isOriginAllowed(origin)) {
+          return callback(null, true);
+        }
+        callback(new Error("Not allowed by CORS"));
       },
       credentials: true,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+      exposedHeaders: ["Authorization"],
     })
   );
+
+  app.options("*", (req, res) => {
+    res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
+    res.header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.sendStatus(204);
+  });
+
   app.use(compression());
   app.use(express.json({ limit: "15mb" }));
   app.use(cookieParser());
@@ -45,8 +75,6 @@ export function createApp() {
     })
   );
 
-  // Blanket rate limit; auth endpoints will get a stricter limit added in
-  // Phase 1 hardening once real traffic patterns are known.
   app.use(
     rateLimit({
       windowMs: 15 * 60 * 1000,
