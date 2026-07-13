@@ -29,7 +29,7 @@ export function LandlordPropertyCard({ property }: LandlordPropertyCardProps) {
                     <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                             <p className="truncate text-base font-semibold text-slate-800">{property.title}</p>
-                            <p className="mt-1 truncate text-xs text-slate-500">{property.university?.name ?? "CampusNest university"}</p>
+                            <p className="mt-1 truncate text-xs text-slate-500">{property.university?.name ?? "Edurus university"}</p>
                         </div>
                         <span
                             className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${property.status === "APPROVED"

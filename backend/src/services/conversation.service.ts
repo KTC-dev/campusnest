@@ -537,7 +537,7 @@ class ConversationService {
         await this.getUserContext(userId);
 
         const resourceType = input.mimeType.startsWith("image/") ? "image" : "raw";
-        const uploaded = await uploadService.uploadFile(input.file, "campusnest/messages", resourceType);
+        const uploaded = await uploadService.uploadFile(input.file, "edurus/messages", resourceType);
 
         return {
             url: uploaded.url,

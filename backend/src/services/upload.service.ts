@@ -27,7 +27,7 @@ if (isConfigured) {
 }
 
 class UploadService {
-  async uploadImage(base64OrUrl: string, folder = "campusnest/properties"): Promise<UploadedImage> {
+  async uploadImage(base64OrUrl: string, folder = "edurus/properties"): Promise<UploadedImage> {
     if (!isConfigured) {
       throw AppError.badRequest("Image upload is not configured on the server. Please contact support.");
     }
@@ -38,7 +38,7 @@ class UploadService {
 
   async uploadFile(
     base64OrUrl: string,
-    folder = "campusnest/messages",
+    folder = "edurus/messages",
     resourceType: "image" | "raw" | "auto" = "auto"
   ): Promise<UploadedFile> {
     if (!isConfigured) {

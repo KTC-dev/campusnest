@@ -1,0 +1,20 @@
+{
+  "name": "Edurus",
+  "short_name": "Edurus",
+  "description": "Your Trusted Student Living Platform",
+  "theme_color": "#6D28D9",
+  "background_color": "#FFFFFF",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

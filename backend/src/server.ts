@@ -106,7 +106,7 @@ setupSocketServer();
 
 const port = Number(env.PORT) || 4000;
 const server = httpServer.listen(port, "0.0.0.0", () => {
-  logger.info("Server started", { port, environment: env.NODE_ENV, service: "campusnest-backend" });
+  logger.info("Server started", { port, environment: env.NODE_ENV, service: "edurus-backend" });
 });
 
 let isShuttingDown = false;
@@ -115,7 +115,7 @@ async function shutdown(signal: string) {
   if (isShuttingDown) return;
   isShuttingDown = true;
 
-  logger.info("Shutdown requested", { signal, service: "campusnest-backend" });
+  logger.info("Shutdown requested", { signal, service: "edurus-backend" });
   server.close(async (error) => {
     if (error) {
       logger.error("Failed to shut down cleanly", { error });
@@ -127,7 +127,7 @@ async function shutdown(signal: string) {
   });
 
   setTimeout(() => {
-    logger.error("Forced shutdown after timeout", { service: "campusnest-backend" });
+    logger.error("Forced shutdown after timeout", { service: "edurus-backend" });
     process.exit(1);
   }, 10_000);
 }

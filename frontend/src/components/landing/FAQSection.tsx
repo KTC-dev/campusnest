@@ -22,7 +22,7 @@ const faqs = [
       "Yes — fill out a short roommate profile with your budget, sleep schedule, cleanliness habits, smoking preference, and noise tolerance. We’ll rank other active students at your university by compatibility score.",
   },
   {
-    question: "Is there a fee to use CampusNest?",
+    question: "Is there a fee to use Edurus?",
     answer:
       "Browsing and booking requests are free for students. Any landlord listing fees, if introduced, will be communicated clearly before you list, and nothing is charged without your knowledge.",
   },

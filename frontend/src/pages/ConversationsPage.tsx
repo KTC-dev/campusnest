@@ -366,7 +366,7 @@ function RoommateContextCard({ conversation, currentUserId }: { conversation: Co
                 <div className="min-w-0 flex-1">
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">Roommate chat</p>
                     <h2 className="truncate text-lg font-semibold text-slate-950">{other.firstName} {other.lastName}</h2>
-                    <p className="truncate text-sm text-slate-500">{other.university?.name ?? "CampusNest university"}</p>
+                    <p className="truncate text-sm text-slate-500">{other.university?.name ?? "Edurus university"}</p>
                     <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-600">
                         <span className="rounded-full bg-cream-100 px-2.5 py-1">{conversation.roommateMatch.score}% match</span>
                         <span className="rounded-full bg-cream-100 px-2.5 py-1">{sharedProfile?.sleepSchedule?.replace(/_/g, " ").toLowerCase() ?? "sleep flexible"}</span>

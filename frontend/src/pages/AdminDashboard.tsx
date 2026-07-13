@@ -129,7 +129,7 @@ function SidebarNav({ activeTab, onChange, collapsed, onToggleCollapsed, mobileO
             <aside className={`hidden md:sticky md:top-0 md:flex md:h-screen md:flex-col md:border-r md:border-slate-200 md:bg-white ${collapsed ? "md:w-24" : "md:w-72"}`}>
                 <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-5">
                     <div className={`min-w-0 ${collapsed ? "hidden" : "block"}`}>
-                        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-600">CampusNest</p>
+                        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-600">Edurus</p>
                         <h1 className="mt-1 text-xl font-semibold text-slate-950">Admin panel</h1>
                     </div>
                     <button type="button" onClick={onToggleCollapsed} className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:bg-slate-50">
@@ -162,7 +162,7 @@ function SidebarNav({ activeTab, onChange, collapsed, onToggleCollapsed, mobileO
                     <div className="absolute inset-y-0 left-0 w-[84%] max-w-sm bg-white shadow-2xl" onClick={(event) => event.stopPropagation()}>
                         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-4">
                             <div>
-                                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-600">CampusNest</p>
+                                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand-600">Edurus</p>
                                 <h1 className="mt-1 text-lg font-semibold text-slate-950">Admin panel</h1>
                             </div>
                             <button type="button" onClick={onCloseMobile} className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 text-slate-600">

@@ -20,9 +20,9 @@ class VerificationService {
         const landlord = await prisma.landlord.findUnique({ where: { userId }, select: { id: true } });
 
         const [idDocument, selfie, proofOfOwnership] = await Promise.all([
-            uploadService.uploadImage(input.idDocument, "campusnest/verification"),
-            input.selfie ? uploadService.uploadImage(input.selfie, "campusnest/verification") : Promise.resolve(null),
-            input.proofOfOwnership ? uploadService.uploadImage(input.proofOfOwnership, "campusnest/verification") : Promise.resolve(null),
+            uploadService.uploadImage(input.idDocument, "edurus/verification"),
+            input.selfie ? uploadService.uploadImage(input.selfie, "edurus/verification") : Promise.resolve(null),
+            input.proofOfOwnership ? uploadService.uploadImage(input.proofOfOwnership, "edurus/verification") : Promise.resolve(null),
         ]);
 
         return prisma.landlordVerification.create({

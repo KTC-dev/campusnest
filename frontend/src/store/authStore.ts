@@ -11,7 +11,7 @@ interface AuthState {
   logout: () => void;
 }
 
-// Persisted to localStorage under "campusnest-auth" so a page refresh
+// Persisted to localStorage under "edurus-auth" so a page refresh
 // doesn't log the user out. The access token is short-lived by design
 // (see backend JWT_ACCESS_EXPIRES_IN), so the exposure window from storing
 // it client-side is intentionally small.
@@ -31,6 +31,6 @@ export const useAuthStore = create<AuthState>()(
       },
       logout: () => set({ user: null, accessToken: null, refreshToken: null }),
     }),
-    { name: "campusnest-auth" }
+    { name: "edurus-auth" }
   )
 );

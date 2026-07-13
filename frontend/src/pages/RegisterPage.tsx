@@ -97,7 +97,7 @@ export default function RegisterPage() {
             acceptedTermsAt: new Date().toISOString(),
           });
       setTokens(tokens);
-      addToast({ type: "success", title: "Account created", message: "Your CampusNest account is ready." });
+      addToast({ type: "success", title: "Account created", message: "Your Edurus account is ready." });
       navigate("/dashboard");
     } catch (err: any) {
       const message = getFriendlyErrorMessage(err);
@@ -112,7 +112,7 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center px-6 bg-slate-50 py-10">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
         <h1 className="text-2xl font-bold text-brand-900">Create your account</h1>
-        <p className="mt-2 text-sm text-slate-500">Join CampusNest with consent, verification, and clear policies built in.</p>
+        <p className="mt-2 text-sm text-slate-500">Join Edurus with consent, verification, and clear policies built in.</p>
 
         <div className="mt-4 flex rounded-lg bg-slate-100 p-1 text-sm font-medium">
           {(["student", "landlord"] as const).map((r) => (
@@ -201,7 +201,7 @@ export default function RegisterPage() {
             <label className="flex items-start gap-2">
               <input id="accept-legal" type="checkbox" checked={acceptedLegal} onChange={(e) => setAcceptedLegal(e.target.checked)} className="mt-1" />
               <span>
-                I have read and agree to the <a href="/terms" target="_blank" rel="noreferrer" className="text-brand-600 hover:underline">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noreferrer" className="text-brand-600 hover:underline">Privacy Policy</a>. I understand CampusNest will use my data to create and manage my account.
+                I have read and agree to the <a href="/terms" target="_blank" rel="noreferrer" className="text-brand-600 hover:underline">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noreferrer" className="text-brand-600 hover:underline">Privacy Policy</a>. I understand Edurus will use my data to create and manage my account.
               </span>
             </label>
           </div>

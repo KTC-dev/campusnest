@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const STORAGE_KEY = "campusnest-cookie-consent";
+const STORAGE_KEY = "edurus-cookie-consent";
 
 type ConsentChoice = "accepted" | "rejected";
 
@@ -34,7 +34,7 @@ export function CookieConsentBanner() {
                 <div className="max-w-3xl">
                     <p className="text-sm font-semibold text-slate-900">We respect your privacy</p>
                     <p className="mt-1 text-sm text-slate-600">
-                        CampusNest uses essential cookies to keep the platform secure and remember your session. You can choose to allow optional preferences, but we do not use tracking cookies for advertising.
+                        Edurus uses essential cookies to keep the platform secure and remember your session. You can choose to allow optional preferences, but we do not use tracking cookies for advertising.
                     </p>
                 </div>
                 <div className="flex flex-wrap gap-2">

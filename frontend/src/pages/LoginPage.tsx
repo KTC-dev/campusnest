@@ -21,7 +21,7 @@ export default function LoginPage() {
     try {
       const tokens = await authService.loginStudentOrLandlord(email, password);
       setTokens(tokens);
-      addToast({ type: "success", title: "Signed in successfully", message: "Welcome back to CampusNest." });
+      addToast({ type: "success", title: "Signed in successfully", message: "Welcome back to Edurus." });
       navigate("/dashboard");
     } catch (err: any) {
       const message = getFriendlyErrorMessage(err);
@@ -36,7 +36,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center px-6 bg-slate-50">
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
         <h1 className="text-2xl font-bold text-brand-900">Welcome back</h1>
-        <p className="mt-1 text-sm text-slate-500">Log in to your CampusNest account.</p>
+        <p className="mt-1 text-sm text-slate-500">Log in to your Edurus account.</p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>

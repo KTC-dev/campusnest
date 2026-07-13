@@ -65,7 +65,7 @@ export default function StudentDashboard() {
         <section className="mobile-card overflow-hidden bg-[radial-gradient(circle_at_top_right,_rgba(212,160,23,0.16),_transparent_36%),linear-gradient(160deg,_#14532d_0%,_#1f2937_100%)] p-5 text-white shadow-soft">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cream-100/80">CampusNest</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cream-100/80">Edurus</p>
               <h1 className="mt-2 text-[28px] font-display font-bold leading-tight">Welcome back, {firstName}.</h1>
               <p className="mt-2 max-w-[26ch] text-sm text-cream-100/90">
                 Your bookings, saved places, and best verified options are all in one calm, mobile-first space.

@@ -97,7 +97,7 @@ export default function ProfilePage() {
     const displayName = useMemo(() => {
         const firstName = profile?.student?.firstName || profile?.landlord?.firstName || profile?.admin?.firstName || "";
         const lastName = profile?.student?.lastName || profile?.landlord?.lastName || profile?.admin?.lastName || "";
-        return `${firstName} ${lastName}`.trim() || user?.email.split("@")[0] || "CampusNest";
+        return `${firstName} ${lastName}`.trim() || user?.email.split("@")[0] || "Edurus";
     }, [profile, user?.email]);
 
     const initials = useMemo(() => {

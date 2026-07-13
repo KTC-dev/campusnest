@@ -9,7 +9,7 @@ export function FinalCTASection() {
           Ready to find your next home?
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-brand-50/80">
-          Join students already using CampusNest to find verified housing, compare listings, and book with confidence.
+          Join students already using Edurus to find verified housing, compare listings, and book with confidence.
         </p>
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
           <Link to="/register" className="rounded-full bg-white px-6 py-3 font-semibold text-brand-900 transition-colors hover:bg-cream-100">
@@ -51,7 +51,7 @@ export function Footer() {
     <footer className="bg-slate-950 px-5 py-12 text-slate-400 sm:px-6 lg:px-8">
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 md:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr]">
         <div>
-          <p className="text-lg font-semibold text-white">CampusNest</p>
+          <p className="text-lg font-semibold text-white">Edurus</p>
           <p className="mt-3 max-w-sm text-sm leading-7">Verified student accommodation and roommate matching, built for student life with clarity and trust.</p>
           <div className="mt-4 flex gap-4 text-sm">
             <a href="#" aria-label="Twitter" className="transition-colors hover:text-white">Twitter</a>
@@ -77,7 +77,7 @@ export function Footer() {
       </div>
 
       <div className="mx-auto mt-10 max-w-7xl border-t border-slate-800 pt-6 text-xs text-slate-500">
-        © {new Date().getFullYear()} CampusNest. All rights reserved.
+        © {new Date().getFullYear()} Edurus. All rights reserved.
       </div>
     </footer>
   );

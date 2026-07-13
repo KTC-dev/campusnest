@@ -14,7 +14,7 @@ export function WhyChooseSection() {
     <section className="bg-white/70 px-5 py-16 sm:px-6 lg:px-8 lg:py-20">
       <div className="mx-auto max-w-7xl">
         <div className="max-w-2xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-brand-600">Why CampusNest</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-brand-600">Why Edurus</p>
           <h2 className="mt-2 font-display text-3xl font-semibold text-brand-950 sm:text-4xl">
             A calmer way to find a place that feels right.
           </h2>
