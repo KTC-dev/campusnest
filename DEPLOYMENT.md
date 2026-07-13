@@ -25,7 +25,7 @@
    - JWT_REFRESH_SECRET=<strong random string>
    - JWT_ACCESS_EXPIRES_IN=15m
    - JWT_REFRESH_EXPIRES_IN=7d
-   - CORS_ORIGIN=https://edurus.ng,https://www.edurus.ng,https://*.railway.app
+   - CORS_ORIGIN=https://edurus.ng,https://www.edurus.ng,https://*.railway.app,https://*.pages.dev
    - CLOUDINARY_CLOUD_NAME=<cloudinary cloud name>
    - CLOUDINARY_API_KEY=<cloudinary api key>
    - CLOUDINARY_API_SECRET=<cloudinary api secret>

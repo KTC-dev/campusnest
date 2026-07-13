@@ -25,8 +25,8 @@ export function createApp() {
 
         const isAllowed = allowedOrigins.some((allowed) => {
           if (allowed.includes("*")) {
-            const pattern = "^" + allowed.replace(/[.]/g, "\\.").replace(/\*/g, "[^.]+") + "$";
-            return new RegExp(pattern).test(origin);
+            const pattern = "^" + allowed.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*") + "$";
+            return new RegExp(pattern, "i").test(origin);
           }
           return allowed === origin;
         });
