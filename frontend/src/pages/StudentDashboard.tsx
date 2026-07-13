@@ -29,11 +29,13 @@ export default function StudentDashboard() {
   const { data: favourites = [], isLoading: loadingFavourites } = useQuery({
     queryKey: ["favourites"],
     queryFn: propertyService.listFavourites,
+    enabled: Boolean(user),
   });
 
   const { data: bookings = [], isLoading: loadingBookings } = useQuery({
     queryKey: ["my-bookings"],
     queryFn: bookingService.listMine,
+    enabled: Boolean(user),
   });
 
   const { data: featuredProperties, isLoading: loadingFeatured } = useQuery({

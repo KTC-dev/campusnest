@@ -3,18 +3,22 @@ import { LandlordMobileShell } from "@/components/LandlordMobileShell";
 import { LandlordPropertyCard } from "@/components/LandlordPropertyCard";
 import { bookingService } from "@/services/booking.service";
 import { propertyService } from "@/services/property.service";
+import { useAuthStore } from "@/store/authStore";
 
 export default function MyPropertiesPage() {
     const queryClient = useQueryClient();
+    const user = useAuthStore((s) => s.user);
 
     const { data: properties = [], isLoading } = useQuery({
         queryKey: ["my-properties"],
         queryFn: propertyService.listMine,
+        enabled: Boolean(user),
     });
 
     const { data: bookings = [] } = useQuery({
         queryKey: ["landlord-bookings"],
         queryFn: bookingService.listForLandlord,
+        enabled: Boolean(user),
     });
 
     async function toggleAvailability(id: string, isAvailable: boolean) {

@@ -486,10 +486,11 @@ export default function ConversationsPage() {
     const Shell = user?.role === "LANDLORD" ? LandlordMobileShell : StudentMobileShell;
     const [search, setSearch] = useState("");
 
-    const { data: conversations = [], isLoading } = useQuery({
+const { data: conversations = [], isLoading } = useQuery({
         queryKey: ["conversations"],
         queryFn: conversationService.list,
-    });
+        enabled: Boolean(user),
+      });
 
     const selectedConversation = useMemo(() => conversations.find((conversation) => conversation.id === selectedId) ?? conversations[0] ?? null, [conversations, selectedId]);
 

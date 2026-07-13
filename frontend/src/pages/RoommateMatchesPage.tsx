@@ -5,15 +5,18 @@ import { StudentMobileShell } from "@/components/StudentMobileShell";
 import { roommateService } from "@/services/roommate.service";
 import { RoommateMatchCard } from "@/components/RoommateMatchCard";
 import { RoommateMatchRequestCard } from "@/components/RoommateMatchRequestCard";
+import { useAuthStore } from "@/store/authStore";
 
 type MatchSection = "recommended" | "new" | "recent" | "saved" | "sent" | "received";
 
 export default function RoommateMatchesPage() {
   const [activeSection, setActiveSection] = useState<MatchSection>("recommended");
+  const user = useAuthStore((s) => s.user);
 
   const { data: myProfile } = useQuery({
     queryKey: ["roommate-profile"],
     queryFn: roommateService.getMyProfile,
+    enabled: Boolean(user),
   });
 
   const { data: recommendedMatches, isLoading: loadingRecommended } = useQuery({

@@ -18,11 +18,13 @@ export default function LandlordDashboard() {
   const { data: properties = [], isLoading } = useQuery({
     queryKey: ["my-properties"],
     queryFn: propertyService.listMine,
+    enabled: Boolean(user),
   });
 
   const { data: bookings = [] } = useQuery({
     queryKey: ["landlord-bookings"],
     queryFn: bookingService.listForLandlord,
+    enabled: Boolean(user),
   });
 
   const pendingBookings = bookings.filter((booking) => booking.status === "PENDING");

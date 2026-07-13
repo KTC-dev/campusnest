@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { notificationService } from "@/services/notification.service";
+import { useAuthStore } from "@/store/authStore";
 
 function timeAgo(iso: string) {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -15,11 +16,13 @@ function timeAgo(iso: string) {
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
+  const user = useAuthStore((s) => s.user);
 
   const { data } = useQuery({
     queryKey: ["notifications"],
     queryFn: notificationService.list,
     refetchInterval: 30_000,
+    enabled: Boolean(user),
   });
 
   async function handleOpen() {

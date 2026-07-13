@@ -5,6 +5,7 @@ import { ImageGalleryViewer, GalleryImage } from "@/components/ImageGalleryViewe
 import { verificationService } from "@/services/verification.service";
 import { useToastStore } from "@/store/toastStore";
 import { getFriendlyErrorMessage } from "@/utils/error";
+import { useAuthStore } from "@/store/authStore";
 import type { VerificationRequest, VerificationStatus } from "@/types";
 
 type Tab = "overview" | "moderation" | "students" | "landlords" | "bookings" | "verifications";
@@ -1429,6 +1430,11 @@ export default function AdminDashboard() {
     const [tab, setTab] = useState<Tab>("overview");
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const user = useAuthStore((s) => s.user);
+
+    if (!user) {
+        return null;
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 text-slate-900 lg:flex">
