@@ -7,45 +7,30 @@ import { prisma } from "./config/prisma";
 import { verifyAccessToken } from "./utils/jwt";
 import { conversationService } from "./services/conversation.service";
 
-const isOriginAllowed = (origin: string | undefined): boolean => {
-  if (!origin) return true;
+const allowedOrigins =
+  process.env.CORS_ORIGIN?.split(",").map((o) => o.trim()) ?? [];
 
-  const allowedOrigins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "https://campusnest.app",
-    "https://www.campusnest.app",
-    "https://campusnest.pages.dev",
-  ];
+const corsOptions = {
+  origin(origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+    if (!origin) return callback(null, true);
 
-  for (const allowed of allowedOrigins) {
-    if (allowed === origin) return true;
-
-    if (allowed.endsWith(".pages.dev") && origin.endsWith(".pages.dev")) {
-      const allowedBase = allowed.replace(".pages.dev", "");
-      const originBase = origin.replace(".pages.dev", "");
-      if (originBase.startsWith(allowedBase.replace(/^https?:\/\//, ""))) {
-        return true;
-      }
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
     }
-  }
 
-  return false;
+    if (origin.endsWith(".campusnest.pages.dev")) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`Origin ${origin} not allowed by CORS`));
+  },
+  credentials: true,
 };
 
 const app = createApp();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
-  cors: {
-    origin: (origin, callback) => {
-      if (isOriginAllowed(origin)) {
-        return callback(null, true);
-      }
-      callback(new Error("Not allowed by CORS"));
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  },
+  cors: corsOptions,
 });
 
 function setupSocketServer() {

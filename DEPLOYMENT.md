@@ -59,6 +59,6 @@ Run these commands in the Railway backend service shell or locally before first 
 The backend supports the following origins:
 - Development: http://localhost:5173, http://127.0.0.1:5173
 - Production: https://campusnest.app, https://www.campusnest.app, https://campusnest.pages.dev
-- Cloudflare Pages preview URLs: All URLs ending with .pages.dev (e.g., https://abc123.campusnest.pages.dev)
+- Cloudflare Pages preview URLs: All URLs ending with .campusnest.pages.dev (e.g., https://abc123.campusnest.pages.dev)
 
-Cloudflare Pages preview URLs are automatically allowed since they end with .pages.dev.
+Cloudflare Pages preview URLs are automatically allowed since they end with .campusnest.pages.dev.
