@@ -124,37 +124,52 @@ function setupSocketServer() {
 setupSocketServer();
 
 const port = Number(env.PORT) || 4000;
-const server = httpServer.listen(port, "0.0.0.0", () => {
-  logger.info("Server started", { port, environment: env.NODE_ENV, service: "edurus-backend" });
-});
 
-let isShuttingDown = false;
+async function startServer() {
+  try {
+    await prisma.$connect();
+    logger.info("Database connection established", { service: "edurus-backend" });
 
-async function shutdown(signal: string) {
-  if (isShuttingDown) return;
-  isShuttingDown = true;
+    const server = httpServer.listen(port, "0.0.0.0", () => {
+      logger.info("Server started", { port, environment: env.NODE_ENV, service: "edurus-backend" });
+    });
 
-  logger.info("Shutdown requested", { signal, service: "edurus-backend" });
-  server.close(async (error) => {
-    if (error) {
-      logger.error("Failed to shut down cleanly", { error });
-      process.exit(1);
+    let isShuttingDown = false;
+
+    async function shutdown(signal: string) {
+      if (isShuttingDown) return;
+      isShuttingDown = true;
+
+      logger.info("Shutdown requested", { signal, service: "edurus-backend" });
+      server.close(async (error) => {
+        if (error) {
+          logger.error("Failed to shut down cleanly", { error, service: "edurus-backend" });
+          process.exit(1);
+        }
+
+        await prisma.$disconnect();
+        logger.info("Shutdown completed", { service: "edurus-backend" });
+        process.exit(0);
+      });
+
+      setTimeout(() => {
+        logger.error("Forced shutdown after timeout", { service: "edurus-backend" });
+        process.exit(1);
+      }, 10_000);
     }
 
-    await prisma.$disconnect();
-    process.exit(0);
-  });
+    process.on("SIGTERM", () => shutdown("SIGTERM"));
+    process.on("SIGINT", () => shutdown("SIGINT"));
+    process.on("unhandledRejection", (reason) => logger.error("Unhandled rejection", { reason, service: "edurus-backend" }));
+    process.on("uncaughtException", (error) => {
+      logger.error("Uncaught exception", { error, service: "edurus-backend" });
+      process.exit(1);
+    });
 
-  setTimeout(() => {
-    logger.error("Forced shutdown after timeout", { service: "edurus-backend" });
+  } catch (error) {
+    logger.error("Failed to start server", { error, service: "edurus-backend" });
     process.exit(1);
-  }, 10_000);
+  }
 }
 
-process.on("SIGTERM", () => shutdown("SIGTERM"));
-process.on("SIGINT", () => shutdown("SIGINT"));
-process.on("unhandledRejection", (reason) => logger.error("Unhandled rejection", { reason }));
-process.on("uncaughtException", (error) => {
-  logger.error("Uncaught exception", { error });
-  process.exit(1);
-});
+startServer();
