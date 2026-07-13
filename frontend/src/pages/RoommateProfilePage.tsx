@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { StudentMobileShell } from "@/components/StudentMobileShell";
 import { roommateService } from "@/services/roommate.service";
+import { useAuthStore } from "@/store/authStore";
 import { CleanlinessLevel, Gender, NoiseTolerance, SleepSchedule } from "@/types";
 
 const sleepOptions: SleepSchedule[] = ["EARLY_BIRD", "NIGHT_OWL", "FLEXIBLE"];
@@ -12,7 +13,12 @@ const genderOptions: Gender[] = ["ANY", "MALE", "FEMALE"];
 
 export default function RoommateProfilePage() {
   const navigate = useNavigate();
-  const { data: existing, isLoading } = useQuery({ queryKey: ["roommate-profile"], queryFn: roommateService.getMyProfile });
+  const user = useAuthStore((s) => s.user);
+  const { data: existing, isLoading } = useQuery({
+    queryKey: ["roommate-profile"],
+    queryFn: roommateService.getMyProfile,
+    enabled: Boolean(user),
+  });
 
   const [form, setForm] = useState({
     budgetMin: "",
