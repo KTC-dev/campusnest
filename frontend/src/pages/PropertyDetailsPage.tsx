@@ -106,41 +106,47 @@ return (
          </aside>
        </main>
 
-       {showBookingModal && (
-         <BookingRequestModal
-           propertyId={property.id}
-           propertyTitle={property.title}
-           onClose={() => setShowBookingModal(false)}
-           onSuccess={() => {
-             setShowBookingModal(false);
-             setBookingSent(true);
-           }}
-         />
-       )}
+{showBookingModal && (
+          <BookingRequestModal
+            propertyId={property.id}
+            propertyTitle={property.title}
+            onClose={() => setShowBookingModal(false)}
+            onSuccess={() => {
+              setShowBookingModal(false);
+              setBookingSent(true);
+            }}
+          />
+        )}
 
-       {user?.role === "STUDENT" && (
-         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-brand-900/10 bg-white/90 backdrop-blur-sm">
-           <div className="mx-auto grid max-w-md grid-cols-2 gap-2 p-2">
-             <button
-               type="button"
-               onClick={() => handleContactLandlord("Hello, I'm interested in your property.")}
-               disabled={isCreatingConversation}
-               className="rounded-2xl border border-brand-900 bg-white px-4 py-3 text-sm font-semibold text-brand-900 transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
-             >
-               {isCreatingConversation ? "Opening chat..." : "Contact Landlord"}
-             </button>
-             <button
-               type="button"
-               onClick={() => setShowBookingModal(true)}
-               disabled={!property.isAvailable || bookingSent}
-               className="rounded-2xl bg-brand-900 px-4 py-3 text-sm font-semibold text-white transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-             >
-               {bookingSent ? "Request sent ✓" : property.isAvailable ? "Request Inspection" : "Fully booked"}
-             </button>
-           </div>
-           {user?.role === "STUDENT" && <div className="h-[env(safe-area-inset-bottom)]" />}
-         </div>
-       )}
+        {user?.role === "STUDENT" && (
+          <div className="fixed inset-x-0 bottom-0 z-40 border-t border-brand-900/10 bg-white/90 backdrop-blur-sm">
+            <div className="mx-auto grid max-w-md grid-cols-2 gap-2 p-2">
+              <button
+                type="button"
+                onClick={() => handleContactLandlord("Hello, I'm interested in your property.")}
+                disabled={isCreatingConversation || !property.landlord}
+                className="rounded-2xl border border-brand-900 bg-white px-4 py-3 text-sm font-semibold text-brand-900 transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {isCreatingConversation ? "Opening chat..." : "Contact Landlord"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowBookingModal(true)}
+                disabled={!property.isAvailable || bookingSent}
+                className="rounded-2xl bg-brand-900 px-4 py-3 text-sm font-semibold text-white transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {bookingSent ? "Request sent ✓" : property.isAvailable ? "Request Inspection" : "Fully booked"}
+              </button>
+            </div>
+            <div className="h-[env(safe-area-inset-bottom)]" />
+          </div>
+        )}
+
+        {!user && (
+          <div className="fixed inset-x-0 bottom-0 z-40 border-t border-brand-900/10 bg-white/90 backdrop-blur-sm p-3 text-center">
+            <p className="text-sm text-slate-600">Log in to contact the landlord or request inspection</p>
+          </div>
+        )}
      </Shell>
    );
 }
