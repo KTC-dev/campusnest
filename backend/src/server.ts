@@ -18,7 +18,7 @@ const corsOptions = {
       return callback(null, true);
     }
 
-    if (origin.endsWith(".campusnest.pages.dev")) {
+    if (origin.endsWith(".edurus.pages.dev")) {
       return callback(null, true);
     }
 
