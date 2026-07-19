@@ -308,7 +308,7 @@ class ConversationService {
                 content: `${intro}\n\n${input.initialMessage?.trim() || "Hi, I am interested in this property. Is it still available?"}`,
                 messageType: MessageType.TEXT,
                 readBySender: true,
-                attachments: property.images[0]
+                attachments: property.images[0]?.url && property.images[0].publicId
                     ? [{ url: property.images[0].url, publicId: property.images[0].publicId, type: AttachmentType.IMAGE }]
                     : undefined,
             });
