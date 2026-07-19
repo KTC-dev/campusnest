@@ -34,7 +34,7 @@ export default function PropertyDetailsPage() {
   });
 
   async function handleContactLandlord() {
-    if (!id || !user || user.role !== "STUDENT" || isCreatingConversation || !property?.landlord) return;
+    if (!id || !user || user?.role !== "STUDENT" || isCreatingConversation || !property?.landlord) return;
 
     setIsCreatingConversation(true);
     try {
@@ -145,6 +145,15 @@ export default function PropertyDetailsPage() {
             </button>
           </div>
           <div className="h-[env(safe-area-inset-bottom)]" />
+        </div>
+      )}
+
+      {user && user.role !== "STUDENT" && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-brand-900/10 bg-white/90 backdrop-blur-sm p-3 text-center">
+          <p className="text-sm text-slate-600">
+            {user.role === "LANDLORD" && "Available for landlords only"}
+            {user.role === "ADMIN" && "Available for admins only"}
+          </p>
         </div>
       )}
 
