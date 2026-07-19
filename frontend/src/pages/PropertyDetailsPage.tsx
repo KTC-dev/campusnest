@@ -124,7 +124,7 @@ export default function PropertyDetailsPage() {
         />
       )}
 
-      {user?.role === "STUDENT" && (
+      {user && user.role === "STUDENT" && (
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-brand-900/10 bg-white/90 backdrop-blur-sm">
           <div className="mx-auto grid max-w-md grid-cols-2 gap-2 p-2">
             <button
