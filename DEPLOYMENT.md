@@ -25,7 +25,7 @@
    - JWT_REFRESH_SECRET=<strong random string>
    - JWT_ACCESS_EXPIRES_IN=15m
    - JWT_REFRESH_EXPIRES_IN=7d
-   - CORS_ORIGIN=http://localhost:5173,http://127.0.0.1:5173,https://edurus.pages.dev,https://www.edurus.pages.dev
+    - CORS_ORIGIN=https://campusnest.app,https://www.campusnest.app,https://campusnest.pages.dev,https://*.pages.dev
    - CLOUDINARY_CLOUD_NAME=<cloudinary cloud name>
    - CLOUDINARY_API_KEY=<cloudinary api key>
    - CLOUDINARY_API_SECRET=<cloudinary api secret>
@@ -57,8 +57,7 @@ Run these commands in the Railway backend service shell or locally before first 
 
 ## CORS Configuration
 The backend supports the following origins:
-- Development: http://localhost:5173, http://127.0.0.1:5173
-- Production: https://edurus.pages.dev, https://www.edurus.pages.dev
- - Cloudflare Pages preview URLs: All URLs ending with .edurus.pages.dev (e.g., https://abc123.edurus.pages.dev)
+- Production: https://campusnest.app, https://www.campusnest.app, https://campusnest.pages.dev
+- Cloudflare Pages preview URLs: All URLs ending with .pages.dev (e.g., https://abc123.pages.dev)
 
- Cloudflare Pages preview URLs are automatically allowed since they end with .edurus.pages.dev.
+Cloudflare Pages preview URLs are automatically allowed since they match the wildcard pattern.
