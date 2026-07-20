@@ -101,30 +101,30 @@ export function HeroSection() {
         </div>
 
         <div className="relative mx-auto w-full max-w-xl">
-          <div className="grid gap-3 sm:grid-cols-[1.2fr_0.8fr]">
+          <div className="flex flex-col gap-4 sm:grid sm:grid-cols-[1.2fr_0.8fr] sm:gap-3">
             <img
               src={collageImages[0]}
               alt="Modern student accommodation"
-              className="h-72 w-full rounded-[28px] object-cover shadow-soft"
+              className="h-60 w-full rounded-[24px] object-cover shadow-soft sm:h-72 sm:rounded-[28px]"
               loading="eager"
             />
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-col sm:gap-3">
               <img
                 src={collageImages[1]}
                 alt="Bright shared apartment"
-                className="h-34 w-full rounded-[24px] object-cover shadow-soft"
+                className="h-32 w-full rounded-[24px] object-cover shadow-soft sm:h-34"
                 loading="lazy"
               />
               <img
                 src={collageImages[2]}
                 alt="Comfortable room interior"
-                className="h-34 w-full rounded-[24px] object-cover shadow-soft"
+                className="h-32 w-full rounded-[24px] object-cover shadow-soft sm:h-34"
                 loading="lazy"
               />
             </div>
           </div>
 
-          <div className="absolute -left-3 top-8 rounded-2xl border border-brand-900/10 bg-white/95 px-4 py-3 shadow-lg backdrop-blur">
+          <div className="absolute -left-3 top-6 rounded-2xl border border-brand-900/10 bg-white/95 px-4 py-3 shadow-lg backdrop-blur sm:top-8">
             <p className="flex items-center gap-2 text-sm font-semibold text-brand-900">
               <span className="text-[#d4a017]">✓</span> Verified
             </p>
@@ -133,7 +133,7 @@ export function HeroSection() {
             <p className="text-sm font-semibold text-brand-950">₦180,000 / year</p>
             <p className="text-xs text-slate-500">5 mins from campus</p>
           </div>
-          <div className="absolute bottom-20 left-5 rounded-full border border-brand-900/10 bg-white/95 px-3 py-2 text-sm font-semibold text-brand-900 shadow-lg backdrop-blur">
+          <div className="absolute bottom-[150px] left-5 rounded-full border border-brand-900/10 bg-white/95 px-3 py-2 text-sm font-semibold text-brand-900 shadow-lg backdrop-blur sm:bottom-20 sm:left-5">
             Available now
           </div>
         </div>
