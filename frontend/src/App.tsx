@@ -21,6 +21,7 @@ import PrivacyPage from "@/pages/PrivacyPage";
 import TermsPage from "@/pages/TermsPage";
 import HelpPage from "@/pages/HelpPage";
 import ProfilePage from "@/pages/ProfilePage";
+import SettingsPage from "@/pages/SettingsPage";
 import ConversationsPage from "@/pages/ConversationsPage";
 import VerificationPage from "@/pages/VerificationPage";
 import NotFoundPage from "@/pages/NotFoundPage";
@@ -53,6 +54,7 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<RoleDashboard />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="/conversations" element={<ConversationsPage />} />
           <Route path="/conversations/:id" element={<ConversationsPage />} />
           <Route path="/dashboard/listings/new" element={<ListingFormPage />} />

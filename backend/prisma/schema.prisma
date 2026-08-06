@@ -123,6 +123,7 @@ model User {
   role         Role
   isVerified   Boolean  @default(false)
   isActive     Boolean  @default(true)
+  twoFactorEnabled Boolean @default(false)
   // Legal consent tracking
   acceptedTerms Boolean? @default(false)
   acceptedTermsVersion String?
@@ -138,9 +139,23 @@ model User {
   notifications     Notification[]
   sentMessages      Message[]        @relation("MessageSender")
   refreshTokens      RefreshToken[]
+  preferences        UserPreference?
 
   @@index([role])
   @@map("users")
+}
+
+model UserPreference {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  inApp     Boolean  @default(true)
+  email     Boolean  @default(true)
+  push      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_preferences")
 }
 
 model RefreshToken {

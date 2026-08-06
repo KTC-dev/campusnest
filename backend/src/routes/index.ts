@@ -9,6 +9,8 @@ import notificationRoutes from "./notification.routes";
 import userRoutes from "./user.routes";
 import verificationRoutes from "./verification.routes";
 import conversationRoutes from "./conversation.routes";
+import preferenceRoutes from "./preference.routes";
+import sessionRoutes from "./session.routes";
 
 const router = Router();
 
@@ -19,6 +21,8 @@ router.use("/properties", propertyRoutes);
 router.use("/bookings", bookingRoutes);
 router.use("/roommates", roommateRoutes);
 router.use("/notifications", notificationRoutes);
+router.use("/preferences", preferenceRoutes);
+router.use("/sessions", sessionRoutes);
 router.use("/users", userRoutes);
 router.use("/landlords/verification", verificationRoutes);
 router.use("/conversations", conversationRoutes);

@@ -6,15 +6,17 @@
 
 html {
   scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  @apply bg-cream-50 text-slate-800 antialiased font-sans;
+  @apply bg-cream-50 text-text-primary antialiased font-sans;
   text-rendering: optimizeLegibility;
 }
 
 #root {
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 button,
@@ -26,29 +28,145 @@ textarea {
 }
 
 ::selection {
-  @apply bg-brand-900/10 text-brand-950;
+  @apply bg-primary-600/10 text-primary-700;
 }
 
-.mobile-card {
-  @apply rounded-[20px] border border-brand-900/10 bg-white shadow-sm;
+/* ── Premium cards ── */
+.premium-card {
+  @apply rounded-card bg-card border border-border shadow-soft;
+  transition: box-shadow 250ms ease, transform 250ms ease;
 }
 
-.mobile-card-compact {
-  @apply rounded-[18px] border border-brand-900/10 bg-white shadow-sm;
+.premium-card-elevated {
+  @apply rounded-card bg-card shadow-soft-lg border-none;
 }
 
+.premium-card-outlined {
+  @apply rounded-card bg-card border border-border shadow-none;
+}
+
+.premium-card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 50px -25px rgba(18, 53, 36, 0.28);
+}
+
+.premium-card-strong {
+  @apply rounded-card-lg bg-card border-0 shadow-brand-lg;
+  transition: all 250ms ease;
+}
+
+/* ── Gradient text ── */
+.gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-800;
+}
+
+/* ── Hero gradient (shared dashboard hero) ── */
+.hero-gradient {
+  background: radial-gradient(circle at top right, rgba(212, 160, 23, 0.16), transparent 36%),
+              linear-gradient(160deg, #14532d 0%, #1f2937 100%);
+}
+
+/* ── Accent line (decorative) ── */
+.accent-line {
+  @apply h-1 w-12 rounded-full bg-gradient-to-r from-primary-500 to-primary-700;
+}
+
+/* ── Touch target ── */
 .touch-target {
-  @apply min-h-11 min-w-11;
+  @apply min-h-12 min-w-12;
 }
 
-.page-transition {
-  animation: fadeUp 360ms ease-out both;
+/* ── Page transitions ── */
+.page-enter {
+  animation: pageEnter 200ms ease-out both;
 }
 
-.tap-scale {
-  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+.page-exit {
+  animation: pageExit 150ms ease-in both;
 }
 
-.tap-scale:active {
-  transform: scale(0.98);
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pageExit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+/* ── Tap press ── */
+.tap-press {
+  transition: transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+
+.tap-press:active {
+  transform: scale(0.97);
+}
+
+/* ── Focus visible ── */
+.focus-ring {
+  @apply outline-none;
+}
+
+.focus-ring:focus-visible {
+  @apply ring-2 ring-primary-500 ring-offset-2;
+  border-radius: inherit;
+}
+
+/* ── Shimmer skeleton ── */
+.shimmer {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(90deg, #f0ece4 0%, #f5f1eb 40%, #f0ece4 80%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ── Scrollbar hiding ── */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Safe area utilities ── */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-right {
+  padding-right: env(safe-area-inset-right);
 }

@@ -1,69 +1,40 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
-import { NotificationBell } from "./NotificationBell";
+import { Button } from "@/components/ui/Button";
+import { NotificationBell } from "@/components/NotificationBell";
 
 export function AppNav() {
-  const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
 
   return (
-    <header className="flex items-center justify-between px-6 py-4 border-b border-slate-100 md:px-12">
-      <Link to="/" className="flex items-center gap-3">
-        <img src="/favicon.png" alt="Edurus logo" className="h-8 w-8 rounded-full object-cover" />
-        <span className="text-lg font-bold text-brand-900">Edurus</span>
-      </Link>
-      <nav className="flex items-center gap-4 text-sm">
-        <Link to="/properties" className="text-slate-600 hover:text-brand-600">
-          Browse
+    <header className="sticky top-0 z-40 border-b border-border bg-white/90 backdrop-blur-xl shadow-premium">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3 sm:px-6 lg:px-8" aria-label="Main">
+        <Link to="/" className="flex items-center gap-2.5">
+          <span className="font-display text-base font-semibold text-text.primary sm:text-lg">Edurus</span>
         </Link>
-        {user?.role === "STUDENT" && (
-          <Link to="/dashboard" className="text-slate-600 hover:text-brand-600">
-            Favourites
-          </Link>
-        )}
-        {user?.role === "STUDENT" && (
-          <Link to="/roommates" className="text-slate-600 hover:text-brand-600">
-            Roommates
-          </Link>
-        )}
-        {user?.role === "LANDLORD" && (
-          <Link to="/dashboard" className="text-slate-600 hover:text-brand-600">
-            My listings
-          </Link>
-        )}
-        {user?.role === "ADMIN" && (
-          <Link to="/admin" className="text-slate-600 hover:text-brand-600">
-            Admin
-          </Link>
-        )}
+
         {user && (
-          <Link to="/conversations" className="text-slate-600 hover:text-brand-600">
-            Messages
-          </Link>
+          <div className="hidden items-center gap-4 lg:flex">
+            <Link to="/properties" className="text-sm font-medium text-text.secondary transition-colors duration-200 hover:text-primary">Properties</Link>
+            <Link to="/dashboard" className="text-sm font-medium text-text.secondary transition-colors duration-200 hover:text-primary">Dashboard</Link>
+            <Link to="/profile" className="text-sm font-medium text-text.secondary transition-colors duration-200 hover:text-primary">Profile</Link>
+            {user.role === "STUDENT" && <Link to="/conversations" className="text-sm font-medium text-text.secondary transition-colors duration-200 hover:text-primary">Messages</Link>}
+            {user.role === "STUDENT" && <Link to="/roommates" className="text-sm font-medium text-text.secondary transition-colors duration-200 hover:text-primary">Roommates</Link>}
+            <NotificationBell />
+            <Button variant="ghost" size="sm" onClick={logout}>Log out</Button>
+          </div>
         )}
-        {user && (
-          <Link to="/profile" className="text-slate-600 hover:text-brand-600">
-            Profile
-          </Link>
-        )}
-        {user && <NotificationBell />}
-        {user ? (
-          <button
-            onClick={() => {
-              logout();
-              navigate("/");
-            }}
-            className="rounded-full border border-slate-300 px-3 py-1.5 font-medium text-slate-700 hover:border-brand-400"
-          >
-            Log out
-          </button>
-        ) : (
-          <Link
-            to="/login"
-            className="rounded-full bg-brand-500 px-3 py-1.5 font-semibold text-white hover:bg-brand-600"
-          >
-            Log in
-          </Link>
+
+        {!user && (
+          <div className="hidden items-center gap-2.5 lg:flex">
+            <Link to="/login">
+              <Button variant="ghost" size="sm">Log in</Button>
+            </Link>
+            <Link to="/register">
+              <Button variant="primary" size="sm">Sign up</Button>
+            </Link>
+          </div>
         )}
       </nav>
     </header>

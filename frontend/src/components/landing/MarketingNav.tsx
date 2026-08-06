@@ -14,10 +14,10 @@ export function MarketingNav() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-brand-900/10 bg-cream-50/90 backdrop-blur-xl shadow-[0_8px_30px_-20px_rgba(20,83,45,0.35)]">
+    <header className="sticky top-0 z-40 border-b border-brand-900/10 bg-cream-50/90 backdrop-blur-xl shadow-[0_8px_30px_-20px_rgba(109,40,217,0.25)]">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-3">
-          <img src="/favicon.png" alt="Edurus logo" className="h-10 w-10 rounded-full object-cover shadow-sm" />
+          <img src="/logo.png" alt="Edurus" className="h-10 w-10 rounded-full object-cover shadow-sm" />
           <div>
             <p className="font-display text-lg font-semibold text-brand-950">Edurus</p>
             <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Your Trusted Student Living Platform</p>
@@ -49,7 +49,11 @@ export function MarketingNav() {
           onClick={() => setMobileOpen((o) => !o)}
           aria-label="Toggle menu"
         >
-          {mobileOpen ? "✕" : "☰"}
+          {mobileOpen ? (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="4" y1="7" x2="20" y2="7" /><line x1="4" y1="12" x2="20" y2="12" /><line x1="4" y1="17" x2="20" y2="17" /></svg>
+          )}
         </button>
       </div>
 
