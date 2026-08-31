@@ -3,6 +3,7 @@ import { Property } from "@/types";
 import { Badge } from "@/components/ui/Badge";
 import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
 import { Card } from "@/components/ui/Card";
+import { StarRating } from "@/components/ui/StarRating";
 
 function formatNaira(price: string) {
   return new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(
@@ -39,13 +40,13 @@ export function PropertyCard({ property, isFavourited, onToggleFavourite }: Prop
             aria-label={isFavourited ? "Remove from favourites" : "Save to favourites"}
             className="absolute right-3 top-3 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-lg shadow-sm backdrop-blur transition-transform active:scale-95"
           >
-            {isFavourited ? "❤️" : "🤍"}
+            {isFavourited ? "??" : "??"}
           </button>
         )}
 
-        {property.status === "APPROVED" && property.landlord?.isVerified && (
+        {property.status === "APPROVED" && property.agent?.isVerified && (
           <span className="absolute left-3 top-3">
-            <VerifiedBadge size={20} />
+            <VerifiedBadge size={16} showText />
           </span>
         )}
 
@@ -69,13 +70,21 @@ export function PropertyCard({ property, isFavourited, onToggleFavourite }: Prop
           <span className="rounded-full bg-cream-50 px-2.5 py-1">{Number(property.distanceFromCampusKm)}km</span>
         </div>
 
+        {(property.averageRating ?? 0) > 0 && (
+          <div className="mt-1.5 flex items-center gap-1.5">
+            <StarRating rating={property.averageRating!} readonly size="sm" />
+            <span className="text-xs text-text.secondary">({property.reviewCount})</span>
+          </div>
+        )}
+
         <div className="mt-4 flex items-center justify-between">
           <p className="font-bold text-text.primary">
             {formatNaira(property.price)} <span className="text-xs font-normal text-text.secondary">/ year</span>
           </p>
-          <span className="text-sm font-semibold text-primary-600">View details →</span>
+          <span className="text-sm font-semibold text-primary-600">View details ?</span>
         </div>
       </Link>
     </Card>
   );
 }
+

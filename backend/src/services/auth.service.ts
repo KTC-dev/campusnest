@@ -16,7 +16,7 @@ interface RegisterStudentInput {
   acceptedTermsAt?: string;
 }
 
-interface RegisterLandlordInput {
+interface RegisterAgentInput {
   email: string;
   password: string;
   firstName: string;
@@ -76,7 +76,7 @@ class AuthService {
     });
   }
 
-  async registerLandlord(input: RegisterLandlordInput) {
+  async registerAgent(input: RegisterAgentInput) {
     const existing = await prisma.user.findUnique({ where: { email: input.email } });
     if (existing) throw AppError.conflict("An account with this email already exists");
 
@@ -86,11 +86,11 @@ class AuthService {
       data: {
         email: input.email,
         passwordHash,
-        role: Role.LANDLORD,
+        role: Role.AGENT,
         acceptedTerms: input.acceptedTerms ?? false,
         acceptedTermsVersion: input.acceptedTermsVersion ?? null,
         acceptedTermsAt: input.acceptedTermsAt ? new Date(input.acceptedTermsAt) : null,
-        landlord: {
+        agent: {
           create: {
             firstName: input.firstName,
             lastName: input.lastName,
@@ -99,7 +99,7 @@ class AuthService {
           },
         },
       },
-      include: { landlord: true },
+      include: { agent: true },
     });
 
     return this.issueTokensFor(user.id, user.role, user.email);

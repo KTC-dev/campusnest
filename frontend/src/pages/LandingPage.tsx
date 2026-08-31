@@ -5,7 +5,7 @@ import {
   WhyChooseSection,
   HowItWorksSection,
   RoommateMatchingSection,
-  BecomeLandlordSection,
+  BecomeAgentSection,
 } from "@/components/landing/MarketingSections";
 import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
 import { StatsSection } from "@/components/landing/StatsSection";
@@ -23,7 +23,7 @@ export default function LandingPage() {
       <HowItWorksSection />
       <RoommateMatchingSection />
       <StatsSection />
-      <BecomeLandlordSection />
+      <BecomeAgentSection />
       <TestimonialsSection />
       <FAQSection />
       <FinalCTASection />

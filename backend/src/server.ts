@@ -75,13 +75,13 @@ function setupSocketServer() {
           id: true,
           primaryStudent: { select: { userId: true } },
           secondaryStudent: { select: { userId: true } },
-          landlord: { select: { userId: true } },
+          agent: { select: { userId: true } },
         },
       });
 
       if (!conversation) return;
 
-      const participantIds = [conversation.primaryStudent?.userId, conversation.secondaryStudent?.userId, conversation.landlord?.userId].filter(Boolean);
+      const participantIds = [conversation.primaryStudent?.userId, conversation.secondaryStudent?.userId, conversation.agent?.userId].filter(Boolean);
       if (!participantIds.includes(currentUser.id)) return;
 
       socket.join(`conversation:${payload.conversationId}`);

@@ -40,8 +40,8 @@ export function FeaturedPropertiesSection() {
       {!isLoading && properties.length === 0 && (
         <p className="mt-10 text-sm text-text.secondary">
           No verified listings yet — check back soon, or{" "}
-          <Link to="/register?role=landlord" className="font-medium text-brand-900 transition-colors hover:text-brand-950">
-            be the first landlord to list one
+          <Link to="/register?role=agent" className="font-medium text-brand-900 transition-colors hover:text-brand-950">
+            be the first agent to list one
           </Link>
           .
         </p>

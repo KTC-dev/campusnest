@@ -8,10 +8,10 @@ interface PaginationInput {
 
 class AdminService {
   async getStats() {
-    const [totalStudents, totalLandlords, totalProperties, pendingApprovals, totalBookings, approvedBookings] =
+    const [totalStudents, totalAgents, totalProperties, pendingApprovals, totalBookings, approvedBookings] =
       await Promise.all([
         prisma.student.count(),
-        prisma.landlord.count(),
+        prisma.agent.count(),
         prisma.property.count(),
         prisma.property.count({ where: { status: "PENDING" } }),
         prisma.booking.count(),
@@ -19,9 +19,9 @@ class AdminService {
       ]);
 
     return {
-      totalUsers: totalStudents + totalLandlords,
+      totalUsers: totalStudents + totalAgents,
       totalStudents,
-      totalLandlords,
+      totalAgents,
       totalProperties,
       pendingApprovals,
       totalBookings,
@@ -69,9 +69,9 @@ class AdminService {
     return { items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
   }
 
-  async listLandlords({ page, pageSize }: PaginationInput) {
+  async listAgents({ page, pageSize }: PaginationInput) {
     const [items, total] = await Promise.all([
-      prisma.landlord.findMany({
+      prisma.agent.findMany({
         include: {
           user: { select: { email: true, isActive: true, createdAt: true } },
           _count: { select: { properties: true } },
@@ -80,7 +80,7 @@ class AdminService {
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
-      prisma.landlord.count(),
+      prisma.agent.count(),
     ]);
     return { items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
   }
@@ -131,3 +131,4 @@ class AdminService {
 }
 
 export const adminService = new AdminService();
+

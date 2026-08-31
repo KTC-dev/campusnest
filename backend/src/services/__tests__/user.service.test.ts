@@ -4,7 +4,7 @@ const { mockPrisma } = vi.hoisted(() => ({
     mockPrisma: {
         user: { findUnique: vi.fn(), update: vi.fn() },
         student: { update: vi.fn() },
-        landlord: { update: vi.fn() },
+        agent: { update: vi.fn() },
         admin: { update: vi.fn() },
     },
 }));

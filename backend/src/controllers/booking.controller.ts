@@ -4,10 +4,10 @@ import { bookingService } from "../services/booking.service";
 import { AppError } from "../utils/AppError";
 import { prisma } from "../config/prisma";
 
-async function requireLandlordId(userId: string) {
-  const landlord = await prisma.landlord.findUnique({ where: { userId } });
-  if (!landlord) throw AppError.forbidden("Landlord profile not found");
-  return landlord.id;
+async function requireAgentId(userId: string) {
+  const agent = await prisma.agent.findUnique({ where: { userId } });
+  if (!agent) throw AppError.forbidden("Agent profile not found");
+  return agent.id;
 }
 
 async function requireStudentId(userId: string) {
@@ -24,8 +24,8 @@ export const createBooking = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const respondToBooking = catchAsync(async (req: Request, res: Response) => {
-  const landlordId = await requireLandlordId(req.user!.id);
-  const booking = await bookingService.respond(landlordId, req.params.id, req.body.status);
+  const agentId = await requireAgentId(req.user!.id);
+  const booking = await bookingService.respond(agentId, req.params.id, req.body.status);
   res.status(200).json({ success: true, data: booking });
 });
 
@@ -41,8 +41,10 @@ export const listMyBookings = catchAsync(async (req: Request, res: Response) => 
   res.status(200).json({ success: true, data: bookings });
 });
 
-export const listPropertyBookingsForLandlord = catchAsync(async (req: Request, res: Response) => {
-  const landlordId = await requireLandlordId(req.user!.id);
-  const bookings = await bookingService.listForLandlord(landlordId);
+export const listPropertyBookingsForAgent = catchAsync(async (req: Request, res: Response) => {
+  const agentId = await requireAgentId(req.user!.id);
+  const bookings = await bookingService.listForAgent(agentId);
   res.status(200).json({ success: true, data: bookings });
 });
+
+

@@ -7,7 +7,7 @@ class BookingService {
   async create(studentId: string, propertyId: string, moveInDate: Date, message?: string) {
     const property = await prisma.property.findUnique({
       where: { id: propertyId },
-      include: { landlord: true },
+      include: { agent: true },
     });
     if (!property || property.status !== "APPROVED") throw AppError.notFound("Listing not available");
     if (!property.isAvailable) throw AppError.badRequest("This property is no longer available");
@@ -23,7 +23,7 @@ class BookingService {
     });
 
     await notificationService.notify({
-      userId: property.landlord.userId,
+      userId: property.agent.userId,
       type: "BOOKING_UPDATE",
       title: "New booking request",
       body: `A student requested to book "${booking.property.title}".`,
@@ -32,14 +32,14 @@ class BookingService {
     return booking;
   }
 
-  /** Landlord approves or rejects — approving auto-marks the property unavailable and rejects any other pending requests for it. */
-  async respond(landlordId: string, bookingId: string, status: "APPROVED" | "REJECTED") {
+  /** Agent approves or rejects — approving auto-marks the property unavailable and rejects any other pending requests for it. */
+  async respond(agentId: string, bookingId: string, status: "APPROVED" | "REJECTED") {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: { property: true, student: { include: { user: true } } },
     });
     if (!booking) throw AppError.notFound("Booking request not found");
-    if (booking.property.landlordId !== landlordId) throw AppError.forbidden("You do not own this listing");
+    if (booking.property.agentId !== agentId) throw AppError.forbidden("You do not own this listing");
     if (booking.status !== BookingStatus.PENDING) throw AppError.badRequest("This request has already been resolved");
 
     const updated = await prisma.$transaction(async (tx) => {
@@ -85,9 +85,9 @@ class BookingService {
     });
   }
 
-  async listForLandlord(landlordId: string) {
+  async listForAgent(agentId: string) {
     return prisma.booking.findMany({
-      where: { property: { landlordId } },
+      where: { property: { agentId } },
       include: {
         property: { select: { title: true } },
         student: { select: { firstName: true, lastName: true, phone: true } },
@@ -98,3 +98,4 @@ class BookingService {
 }
 
 export const bookingService = new BookingService();
+

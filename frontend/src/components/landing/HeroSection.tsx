@@ -17,9 +17,9 @@ const genders = [
 ];
 
 const collageImages = [
-  "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=900&q=80",
-  "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=900&q=80",
-  "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=900&q=80",
+  "/livingroom-1.png",
+  "/livingroom-2.png",
+  "/roommate.png",
 ];
 
 export function HeroSection() {
@@ -44,7 +44,7 @@ export function HeroSection() {
         <div className="max-w-2xl page-enter">
           <div className="inline-flex items-center gap-2 rounded-full border border-brand-900/10 bg-white/90 px-4 py-2 text-sm font-semibold text-brand-900 shadow-soft">
             <span className="inline-flex h-2.5 w-2.5 rounded-full bg-brand-400" />{" "}
-            Verified homes, trusted landlords
+            Verified homes, trusted agents
           </div>
           <h1 className="mt-6 font-display text-4xl font-semibold leading-tight text-brand-950 sm:text-5xl lg:text-6xl">
             Find your perfect student home.
@@ -61,7 +61,7 @@ export function HeroSection() {
               Find accommodation
             </a>
             <a
-              href="/register?role=landlord"
+              href="/register?role=agent"
               className="inline-flex h-12 items-center justify-center rounded-full border border-brand-900/15 bg-white px-7 text-base font-semibold text-brand-900 shadow-sm transition-all duration-200 hover:border-brand-900/25 hover:bg-cream-100 hover:shadow-premium active:scale-95"
             >
               List your property
@@ -105,7 +105,7 @@ export function HeroSection() {
           <div className="flex flex-col gap-3">
             <img
               src={collageImages[0]}
-              alt="Modern student accommodation"
+              alt="Modern student accommodation interior"
               className="h-72 w-full rounded-[24px] object-cover shadow-soft-lg animate-fadeUp"
               loading="eager"
             />
@@ -113,7 +113,7 @@ export function HeroSection() {
               <div className="relative">
                 <img
                   src={collageImages[1]}
-                  alt="Bright shared apartment"
+                  alt="Bright living room"
                   className="h-36 w-full rounded-[24px] object-cover shadow-soft-lg animate-fadeUp"
                   style={{ animationDelay: "100ms" }}
                   loading="lazy"
@@ -123,7 +123,7 @@ export function HeroSection() {
               <div className="relative">
                 <img
                   src={collageImages[2]}
-                  alt="Comfortable room interior"
+                  alt="Student roommate matching"
                   className="h-36 w-full rounded-[24px] object-cover shadow-soft-lg animate-fadeUp"
                   style={{ animationDelay: "200ms" }}
                   loading="lazy"
@@ -151,3 +151,4 @@ export function HeroSection() {
     </section>
   );
 }
+

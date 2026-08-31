@@ -50,7 +50,7 @@ const propertyConversationInclude = {
             price: true,
             university: { select: { id: true, name: true } },
             images: { orderBy: [{ isPrimary: "desc" as const }, { createdAt: "asc" as const }], select: { id: true, url: true, isPrimary: true } },
-            landlord: { select: { firstName: true, lastName: true, businessName: true, isVerified: true, phone: true } },
+            agent: { select: { firstName: true, lastName: true, businessName: true, isVerified: true, phone: true } },
         },
     },
 };
@@ -134,14 +134,14 @@ class ConversationService {
             })
             : null;
 
-        const landlord = user.role === Role.LANDLORD
-            ? await prisma.landlord.findUnique({
+        const agent = user.role === Role.AGENT
+            ? await prisma.agent.findUnique({
                 where: { userId },
                 select: { id: true, firstName: true, lastName: true, businessName: true, avatarUrl: true, isVerified: true },
             })
             : null;
 
-        return { user, student, landlord };
+        return { user, student, agent };
     }
 
     private async assertParticipant(conversationId: string, userId: string) {
@@ -150,13 +150,13 @@ class ConversationService {
             include: {
                 primaryStudent: { select: { userId: true } },
                 secondaryStudent: { select: { userId: true } },
-                landlord: { select: { userId: true } },
+                agent: { select: { userId: true } },
             },
         });
 
         if (!conversation) throw AppError.notFound("Conversation not found");
 
-        const participantIds = [conversation.primaryStudent?.userId, conversation.secondaryStudent?.userId, conversation.landlord?.userId].filter(Boolean);
+        const participantIds = [conversation.primaryStudent?.userId, conversation.secondaryStudent?.userId, conversation.agent?.userId].filter(Boolean);
         if (!participantIds.includes(userId)) {
             throw AppError.forbidden("You are not a participant in this conversation");
         }
@@ -170,13 +170,13 @@ class ConversationService {
         roommateMatch: unknown;
         primaryStudent: unknown;
         secondaryStudent: unknown;
-        landlord: unknown;
+        agent: unknown;
     }) {
         if (conversation.type === ConversationType.ROOMMATE_CHAT) {
             return { type: conversation.type, roommateMatch: conversation.roommateMatch };
         }
 
-        return { type: conversation.type, property: conversation.property, landlord: conversation.landlord };
+        return { type: conversation.type, property: conversation.property, agent: conversation.agent };
     }
 
     private async getUnreadCount(conversationId: string, userId: string) {
@@ -263,7 +263,7 @@ class ConversationService {
             const property = await prisma.property.findUnique({
                 where: { id: input.propertyId },
                 include: {
-                    landlord: { select: { id: true, userId: true } },
+                    agent: { select: { id: true, userId: true } },
                     images: { orderBy: [{ isPrimary: "desc" as const }, { createdAt: "asc" as const }], take: 1, select: { id: true, url: true, publicId: true } },
                     university: { select: { name: true } },
                 },
@@ -275,12 +275,12 @@ class ConversationService {
                     type: ConversationType.PROPERTY_CHAT,
                     propertyId: input.propertyId,
                     primaryStudentId: student.id,
-                    landlordId: property.landlordId,
+                    agentId: property.agentId,
                 },
                 include: {
                     ...propertyConversationInclude,
                     primaryStudent: conversationParticipantInclude,
-                    landlord: conversationParticipantInclude,
+                    agent: conversationParticipantInclude,
                     messages: { take: 1, orderBy: { createdAt: "desc" }, include: messageInclude },
                 },
             });
@@ -294,7 +294,7 @@ class ConversationService {
                     type: ConversationType.PROPERTY_CHAT,
                     propertyId: property.id,
                     primaryStudentId: student.id,
-                    landlordId: property.landlordId,
+                    agentId: property.agentId,
                     lastMessageContent: null,
                     lastMessageType: null,
                     lastMessageAt: null,
@@ -314,7 +314,7 @@ class ConversationService {
             });
 
             await notificationService.notify({
-                userId: property.landlord.userId,
+                userId: property.agent.userId,
                 type: "MESSAGE",
                 title: "New property inquiry",
                 body: `New message for ${property.title}`,
@@ -381,7 +381,7 @@ class ConversationService {
     }
 
     async listConversations(userId: string) {
-        const { user, student, landlord } = await this.getUserContext(userId);
+        const { user, student, agent } = await this.getUserContext(userId);
 
         const where = user.role === Role.STUDENT
             ? {
@@ -390,8 +390,8 @@ class ConversationService {
                     { type: ConversationType.ROOMMATE_CHAT, OR: [{ primaryStudentId: student?.id ?? undefined }, { secondaryStudentId: student?.id ?? undefined }] },
                 ],
             }
-            : user.role === Role.LANDLORD
-                ? { type: ConversationType.PROPERTY_CHAT, landlordId: landlord?.id ?? undefined }
+            : user.role === Role.AGENT
+                ? { type: ConversationType.PROPERTY_CHAT, agentId: agent?.id ?? undefined }
                 : {};
 
         const conversations = await prisma.conversation.findMany({
@@ -401,7 +401,7 @@ class ConversationService {
                 ...roommateConversationInclude,
                 primaryStudent: conversationParticipantInclude,
                 secondaryStudent: conversationParticipantInclude,
-                landlord: conversationParticipantInclude,
+                agent: conversationParticipantInclude,
                 messages: { take: 1, orderBy: { createdAt: "desc" }, include: messageInclude },
             },
             orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
@@ -467,14 +467,14 @@ class ConversationService {
                         },
                     },
                 },
-                landlord: { select: { id: true, userId: true, firstName: true, lastName: true, businessName: true, avatarUrl: true, isVerified: true, user: { select: { id: true, email: true, role: true, isVerified: true } } } },
+                agent: { select: { id: true, userId: true, firstName: true, lastName: true, businessName: true, avatarUrl: true, isVerified: true, user: { select: { id: true, email: true, role: true, isVerified: true } } } },
                 messages: { take: 1, orderBy: { createdAt: "desc" }, include: messageInclude },
             },
         });
 
         if (!conversation) throw AppError.notFound("Conversation not found");
 
-        const participantIds = [conversation.primaryStudent?.userId, conversation.secondaryStudent?.userId, conversation.landlord?.userId].filter(Boolean);
+        const participantIds = [conversation.primaryStudent?.userId, conversation.secondaryStudent?.userId, conversation.agent?.userId].filter(Boolean);
         if (!participantIds.includes(userId)) {
             throw AppError.forbidden("You are not a participant in this conversation");
         }
@@ -521,7 +521,7 @@ class ConversationService {
             attachments,
         });
 
-        const recipientUserIds = [conversation.primaryStudent?.userId, conversation.secondaryStudent?.userId, conversation.landlord?.userId].filter(Boolean).filter((participantId) => participantId !== userId) as string[];
+        const recipientUserIds = [conversation.primaryStudent?.userId, conversation.secondaryStudent?.userId, conversation.agent?.userId].filter(Boolean).filter((participantId) => participantId !== userId) as string[];
 
         await Promise.all(recipientUserIds.map((recipientId) => notificationService.notify({
             userId: recipientId,
@@ -557,7 +557,7 @@ class ConversationService {
                     include: {
                         primaryStudent: { select: { userId: true } },
                         secondaryStudent: { select: { userId: true } },
-                        landlord: { select: { userId: true } },
+                        agent: { select: { userId: true } },
                     },
                 },
             },
@@ -565,7 +565,7 @@ class ConversationService {
 
         if (!message) throw AppError.notFound("Message not found");
 
-        const participantIds = [message.conversation.primaryStudent?.userId, message.conversation.secondaryStudent?.userId, message.conversation.landlord?.userId].filter(Boolean);
+        const participantIds = [message.conversation.primaryStudent?.userId, message.conversation.secondaryStudent?.userId, message.conversation.agent?.userId].filter(Boolean);
         if (!participantIds.includes(userId)) {
             throw AppError.forbidden("You are not a participant in this conversation");
         }
@@ -598,3 +598,4 @@ class ConversationService {
 }
 
 export const conversationService = new ConversationService();
+

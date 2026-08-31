@@ -46,8 +46,8 @@ export default function SettingsPage() {
             <Card variant="strong" padding="md" className="border border-border/60">
                 <SettingsSection title="Account">
                     <SettingsRow title="Edit profile" subtitle="Name, contact & business" onClick={() => navigate('/profile')} />
-                    <SettingsRow title="Linked accounts" subtitle="Google, Apple" onClick={() => { }} />
-                    <SettingsRow title="Language" subtitle="English (US)" onClick={() => { }} />
+                    <SettingsRow title="Linked accounts" subtitle="Google, Apple" onClick={() => addToast({ type: 'info', title: 'Coming soon', message: 'Google and Apple sign-in will be available soon.' })} />
+                    <SettingsRow title="Language" subtitle="English (US)" onClick={() => addToast({ type: 'info', title: 'Coming soon', message: 'Language selection will be available soon.' })} />
                 </SettingsSection>
             </Card>
 
@@ -56,18 +56,21 @@ export default function SettingsPage() {
                     <ToggleRow label="In-app messages" description="Show new message badges" checked={inAppNotifications} onChange={(v) => { setInAppNotifications(v); mutation.mutate({ inApp: v }); }} />
                     <ToggleRow label="Email" description="Receive email updates" checked={emailNotifications} onChange={(v) => { setEmailNotifications(v); mutation.mutate({ email: v }); }} />
                     <ToggleRow label="Push" description="Enable push notifications" checked={pushNotifications} onChange={(v) => { setPushNotifications(v); mutation.mutate({ push: v }); }} />
+                    <div className="px-4 py-2 text-xs text-text.secondary">
+                        Security notifications (alerts, account warnings) cannot be disabled and will always be delivered.
+                    </div>
                 </SettingsSection>
             </Card>
 
             <Card variant="strong" padding="md" className="border border-border/60">
                 <SettingsSection title="Appearance">
-                    <SettingsRow title="Theme" subtitle="System / Light / Dark" onClick={() => { }} />
+                    <SettingsRow title="Theme" subtitle="System / Light / Dark" onClick={() => addToast({ type: 'info', title: 'Coming soon', message: 'Theme selection will be available soon.' })} />
                 </SettingsSection>
             </Card>
 
             <Card variant="strong" padding="md" className="border border-border/60">
                 <SettingsSection title="Privacy & Security">
-                    <SettingsRow title="Change password" onClick={() => navigate('/change-password')} />
+                    <SettingsRow title="Change password" onClick={() => addToast({ type: 'info', title: 'Contact support', message: 'Password changes require email verification. Please contact support to update your password.' })} />
                     <ToggleRow label="Two‑factor authentication" description="Add an extra layer of security" checked={twoFactor} onChange={(v) => { setTwoFactor(v); addToast({ type: 'info', title: 'Two-factor', message: v ? 'Enabled (demo)' : 'Disabled (demo)' }); }} />
                     <SettingsRow title="Active sessions" subtitle="Sign out other devices" onClick={() => setShowSessions(true)} />
                 </SettingsSection>
@@ -106,3 +109,4 @@ export default function SettingsPage() {
         </div>
     );
 }
+

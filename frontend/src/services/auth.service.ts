@@ -13,7 +13,7 @@ export interface RegisterStudentPayload {
   acceptedTermsAt?: string;
 }
 
-export interface RegisterLandlordPayload {
+export interface RegisterAgentPayload {
   email: string;
   password: string;
   firstName: string;
@@ -26,7 +26,7 @@ export interface RegisterLandlordPayload {
 }
 
 export const authService = {
-  async loginStudentOrLandlord(email: string, password: string) {
+  async loginStudentOrAgent(email: string, password: string) {
     const { data } = await api.post<ApiResponse<AuthTokens>>("/auth/login", { email, password });
     return data.data;
   },
@@ -36,8 +36,8 @@ export const authService = {
     return data.data;
   },
 
-  async registerLandlord(payload: RegisterLandlordPayload) {
-    const { data } = await api.post<ApiResponse<AuthTokens>>("/auth/register/landlord", payload);
+  async registerAgent(payload: RegisterAgentPayload) {
+    const { data } = await api.post<ApiResponse<AuthTokens>>("/auth/register/agent", payload);
     return data.data;
   },
 

@@ -1,0 +1,25 @@
+-- Add student decision-making fields to properties
+ALTER TABLE "properties" ADD COLUMN "estimatedMoveInCost" DECIMAL(12,2);
+ALTER TABLE "properties" ADD COLUMN "agentFee" DECIMAL(10,2);
+ALTER TABLE "properties" ADD COLUMN "legalFee" DECIMAL(10,2);
+ALTER TABLE "properties" ADD COLUMN "cautionFee" DECIMAL(10,2);
+ALTER TABLE "properties" ADD COLUMN "serviceCharge" DECIMAL(10,2);
+ALTER TABLE "properties" ADD COLUMN "electricityNote" TEXT;
+ALTER TABLE "properties" ADD COLUMN "waterNote" TEXT;
+ALTER TABLE "properties" ADD COLUMN "internetNote" TEXT;
+ALTER TABLE "properties" ADD COLUMN "securityNote" TEXT;
+ALTER TABLE "properties" ADD COLUMN "rulesNotes" TEXT;
+ALTER TABLE "properties" ADD COLUMN "furnished" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "properties" ADD COLUMN "hasGenerator" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "properties" ADD COLUMN "hasInverter" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "properties" ADD COLUMN "hasSolar" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "properties" ADD COLUMN "hasBorehole" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "properties" ADD COLUMN "hasSecurity" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "properties" ADD COLUMN "hasGate" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "properties" ADD COLUMN "hasWifi" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "properties" ADD COLUMN "allowsCooking" BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE "properties" ADD COLUMN "allowsVisitors" BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE "properties" ADD COLUMN "allowsGenerator" BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE "properties" ADD COLUMN "allowsAppliances" BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE "properties" ADD COLUMN "hasCurfew" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "properties" ADD COLUMN "propertyCondition" TEXT;

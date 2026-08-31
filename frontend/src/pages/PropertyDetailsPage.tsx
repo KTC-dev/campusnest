@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { LandlordMobileShell } from "@/components/LandlordMobileShell";
+import { AgentMobileShell } from "@/components/AgentMobileShell";
 import { StudentMobileShell } from "@/components/StudentMobileShell";
 import { BookingRequestModal } from "@/components/BookingRequestModal";
 import { propertyService } from "@/services/property.service";
@@ -15,6 +15,9 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { LocationPicker } from "@/components/LocationPicker";
+import { ReviewList } from "@/components/ReviewList";
+import { ReviewForm } from "@/components/ReviewForm";
 
 interface PropertyImage {
   id: string;
@@ -37,7 +40,7 @@ export default function PropertyDetailsPage() {
   const [isCreatingConversation, setIsCreatingConversation] = useState(false);
   const user = useAuthStore((s) => s.user);
   const addToast = useToastStore((s) => s.addToast);
-  const Shell = user?.role === "LANDLORD" ? LandlordMobileShell : StudentMobileShell;
+  const Shell = user?.role === "AGENT" ? AgentMobileShell : StudentMobileShell;
 
   const { data: property, isLoading, isError } = useQuery({
     queryKey: ["property", id],
@@ -50,15 +53,15 @@ export default function PropertyDetailsPage() {
     }
   }, [property]);
 
-  async function handleContactLandlord() {
-    if (!id || !user || user?.role !== "STUDENT" || isCreatingConversation || !property?.landlord) return;
+  async function handleContactAgent() {
+    if (!id || !user || user?.role !== "STUDENT" || isCreatingConversation || !property?.agent) return;
 
     setIsCreatingConversation(true);
     try {
       const conversation = await conversationService.create({ propertyId: id, initialMessage: "Hello, I'm interested in your property." });
       navigate(`/conversations/${conversation.id}`);
     } catch (error: any) {
-      addToast({ type: "error", title: "Unable to contact landlord", message: getFriendlyErrorMessage(error) });
+      addToast({ type: "error", title: "Unable to contact agent", message: getFriendlyErrorMessage(error) });
     } finally {
       setIsCreatingConversation(false);
     }
@@ -188,25 +191,56 @@ export default function PropertyDetailsPage() {
               </div>
             </Card>
           )}
-
-          {property.landlord && (
-            <Card variant="strong" padding="md" className="border border-border/60 flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-lg font-semibold text-brand-700">
-                {property.landlord.businessName?.[0] ?? property.landlord.firstName[0]}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-text.primary truncate">
-                  {property.landlord.businessName || `${property.landlord.firstName} ${property.landlord.lastName}`}
-                </p>
-                <div className="mt-0.5 flex items-center gap-1.5">
-                  {property.landlord.isVerified && (
-                    <VerifiedBadge size={16} />
-                  )}
-                  <p className="text-xs text-text.secondary">Landlord</p>
-                </div>
-              </div>
+          {(property.latitude && property.longitude) && (
+            <Card variant="outlined" padding="md">
+              <p className="text-sm font-semibold uppercase tracking-[0.12em] text-text.secondary mb-3">Location</p>
+              <LocationPicker
+                latitude={Number(property.latitude)}
+                longitude={Number(property.longitude)}
+                formattedAddress={property.formattedAddress ?? undefined}
+                placeId={property.placeId ?? undefined}
+                onChange={() => {}}
+                readOnly
+              />
+              {property.formattedAddress && (
+                <p className="mt-2 text-xs text-text.secondary">?? {property.formattedAddress}</p>
+              )}
             </Card>
           )}
+          {property.agent && (
+            <Card variant="strong" padding="md" className="border border-border/60">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-lg font-semibold text-brand-700">
+                  {property.agent.businessName?.[0] ?? property.agent.firstName[0]}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-text.primary truncate">
+                    {property.agent.businessName || `${property.agent.firstName} ${property.agent.lastName}`}
+                  </p>
+                  <div className="mt-0.5 flex items-center gap-2">
+                    {property.agent.isVerified && (
+                      <VerifiedBadge size={16} showText />
+                    )}
+                  </div>
+                </div>
+              </div>
+              {property.agent.isVerified && (
+                <p className="mt-2 text-[10px] text-text.secondary">
+                  Edurus Verified — identity and documents checked. This does not guarantee safety or ownership.
+                </p>
+              )}
+            </Card>
+          )}
+          {user?.role === "STUDENT" && (
+            <Card variant="outlined" padding="md">
+              <p className="text-sm font-semibold uppercase tracking-[0.12em] text-text.secondary mb-3">Write a review</p>
+              <ReviewForm propertyId={property.id} />
+            </Card>
+          )}
+          <Card variant="elevated" padding="md">
+            <p className="text-sm font-semibold uppercase tracking-[0.12em] text-text.secondary mb-3">Reviews</p>
+            <ReviewList propertyId={property.id} />
+          </Card>
         </div>
       </main>
 
@@ -230,11 +264,11 @@ export default function PropertyDetailsPage() {
                 variant="secondary"
                 size="lg"
                 fullWidth
-                onClick={handleContactLandlord}
-                disabled={isCreatingConversation || !property.landlord}
+                onClick={handleContactAgent}
+                disabled={isCreatingConversation || !property.agent}
                 loading={isCreatingConversation}
               >
-                {isCreatingConversation ? "Opening chat…" : "Contact Landlord"}
+                {isCreatingConversation ? "Opening chat…" : "Contact Agent"}
               </Button>
               <Button
                 variant="primary"
@@ -250,14 +284,14 @@ export default function PropertyDetailsPage() {
           ) : (
             <div className="rounded-2xl border border-border bg-cream-50 px-4 py-3 text-center">
               <p className="text-sm text-text.secondary">
-                {user.role === "LANDLORD" && "Available for landlords only"}
+                {user.role === "AGENT" && "Available for agents only"}
                 {user.role === "ADMIN" && "Available for admins only"}
               </p>
             </div>
           )
         ) : (
           <div className="rounded-2xl border border-border bg-cream-50 px-4 py-3 text-center">
-            <p className="text-sm text-text.secondary">Log in to contact the landlord or request inspection</p>
+            <p className="text-sm text-text.secondary">Log in to contact the agent or request inspection</p>
           </div>
         )}
         <div className="h-[env(safe-area-inset-bottom)]" />
@@ -272,10 +306,11 @@ export default function PropertyDetailsPage() {
           onSuccess={() => {
             setShowBookingModal(false);
             setBookingSent(true);
-            addToast({ type: "success", title: "Inspection request sent", message: "The landlord will contact you soon." });
+            addToast({ type: "success", title: "Inspection request sent", message: "The agent will contact you soon." });
           }}
         />
       )}
     </Shell>
   );
 }
+

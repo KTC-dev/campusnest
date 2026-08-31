@@ -2,7 +2,7 @@ import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { io, Socket } from "socket.io-client";
-import { LandlordMobileShell } from "@/components/LandlordMobileShell";
+import { AgentMobileShell } from "@/components/AgentMobileShell";
 import { StudentMobileShell } from "@/components/StudentMobileShell";
 import { conversationService } from "@/services/conversation.service";
 import { useAuthStore } from "@/store/authStore";
@@ -62,7 +62,7 @@ function participantName(participant?: { user?: { email: string }; businessName?
 
 function conversationTitle(conversation: ConversationSummary, currentUserId?: string) {
   if (conversation.type === "PROPERTY_CHAT") {
-    return conversation.property ? participantName(conversation.property.landlord) : "Property chat";
+    return conversation.property ? participantName(conversation.property.agent) : "Property chat";
   }
 
   const other = conversation.roommateMatch
@@ -86,7 +86,7 @@ function conversationAvatar(conversation: ConversationSummary, currentUserId?: s
     if (cover) {
       return <img src={cover} alt={conversation.property?.title ?? "Property"} className="h-full w-full object-cover" loading="lazy" />;
     }
-    return initials(conversation.property ? participantName(conversation.property.landlord) : "Property");
+    return initials(conversation.property ? participantName(conversation.property.agent) : "Property");
   }
 
   const other = conversation.roommateMatch
@@ -103,7 +103,7 @@ function messageStatus(message: ConversationMessage) {
 }
 
 function canShowVerificationBadge(conversation: ConversationSummary, currentUserId?: string) {
-  if (conversation.type === "PROPERTY_CHAT") return Boolean(conversation.property?.landlord.isVerified);
+  if (conversation.type === "PROPERTY_CHAT") return Boolean(conversation.property?.agent.isVerified);
   const other = conversation.roommateMatch
     ? (conversation.primaryStudent?.userId === currentUserId ? conversation.roommateMatch.studentB : conversation.roommateMatch.studentA)
     : null;
@@ -352,7 +352,7 @@ function PropertyContextCard({ conversation }: { conversation: ConversationSumma
           <div className="mt-2 flex flex-wrap gap-2 text-xs text-text.secondary">
             <span className="rounded-full bg-cream-50 px-2.5 py-1">{formatNaira(conversation.property.price)}/year</span>
             <span className="rounded-full bg-cream-50 px-2.5 py-1">{conversation.property.university?.name}</span>
-            <span className="rounded-full bg-cream-50 px-2.5 py-1">{participantName(conversation.property.landlord)}</span>
+            <span className="rounded-full bg-cream-50 px-2.5 py-1">{participantName(conversation.property.agent)}</span>
           </div>
         </div>
         <Link
@@ -494,7 +494,7 @@ export default function ConversationsPage() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [selectedId, setSelectedId] = useState<string | undefined>(id);
   const socketUrl = (import.meta.env.VITE_API_URL ?? "http://localhost:4000/api/v1").replace(/\/api\/v1\/?$/, "");
-  const Shell = user?.role === "LANDLORD" ? LandlordMobileShell : StudentMobileShell;
+  const Shell = user?.role === "AGENT" ? AgentMobileShell : StudentMobileShell;
   const [search, setSearch] = useState("");
 
   const { data: conversations = [], isLoading } = useQuery({
@@ -577,7 +577,7 @@ export default function ConversationsPage() {
       const haystack = [
         conversation.property?.title,
         conversation.property?.location,
-        conversation.property?.landlord?.businessName,
+        conversation.property?.agent?.businessName,
         conversation.primaryStudent?.user?.email,
         conversation.secondaryStudent?.user?.email,
         conversation.lastMessageContent,
@@ -697,7 +697,7 @@ export default function ConversationsPage() {
                             deliveredAt: conversation.lastMessageAt,
                             createdAt: conversation.lastMessageAt ?? conversation.updatedAt,
                             attachments: [],
-                            sender: conversation.primaryStudent?.user ?? conversation.secondaryStudent?.user ?? conversation.roommateMatch?.studentA.user ?? conversation.roommateMatch?.studentB.user ?? conversation.landlord?.user,
+                            sender: conversation.primaryStudent?.user ?? conversation.secondaryStudent?.user ?? conversation.roommateMatch?.studentA.user ?? conversation.roommateMatch?.studentB.user ?? conversation.agent?.user,
                           } as ConversationMessage : null);
                           const isActive = selectedConversation?.id === conversation.id;
                           const unreadCount = conversation.unreadCount ?? 0;

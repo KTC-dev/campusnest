@@ -21,8 +21,6 @@ for (const envFile of envFiles) {
   }
 }
 
-// Fail fast: if required env vars are missing or malformed, the process
-// should not start rather than fail unpredictably later at request time.
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().default(4000),
@@ -41,13 +39,19 @@ const envSchema = z.object({
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),
+
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_FROM: z.string().optional(),
+  FCM_SERVER_KEY: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
-  // eslint-disable-next-line no-console
-  console.error("❌ Invalid environment variables:", parsed.error.flatten().fieldErrors);
+  console.error("Invalid environment variables:", parsed.error.flatten().fieldErrors);
   process.exit(1);
 }
 

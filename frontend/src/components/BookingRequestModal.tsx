@@ -58,7 +58,7 @@ export function BookingRequestModal({ propertyId, propertyTitle, onClose, onSucc
               rows={3}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Anything the landlord should know?"
+              placeholder="Anything the agent should know?"
               className="mt-1.5 h-24 w-full rounded-card border border-border bg-cream-50 px-4 py-3 text-sm text-text.primary outline-none transition-all duration-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 placeholder:text-text.secondary/60"
             />
           </div>

@@ -5,7 +5,7 @@ const navLinks = [
   { label: "Home", to: "/" },
   { label: "Properties", to: "/properties" },
   { label: "Find a Roommate", to: "/roommates" },
-  { label: "Become a Landlord", to: "/register?role=landlord" },
+  { label: "Become an Agent", to: "/register?role=agent" },
   { label: "About", to: "/about" },
   { label: "Contact", to: "/contact" },
 ];

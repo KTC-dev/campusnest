@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { notificationService } from "@/services/notification.service";
 import { useAuthStore } from "@/store/authStore";
 
@@ -13,9 +14,37 @@ function timeAgo(iso: string) {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
+function navigateForNotification(type: string, actionUrl?: string | null) {
+  if (actionUrl) return actionUrl;
+  switch (type) {
+    case "MESSAGE":
+      return "/conversations";
+    case "BOOKING_UPDATE":
+    case "PROPERTY_INQUIRY":
+    case "INSPECTION_CONFIRMED":
+      return "/dashboard";
+    case "LISTING_STATUS":
+    case "PROPERTY_APPROVED":
+      return "/dashboard/listings";
+    case "ROOMMATE_MATCH":
+    case "ROOMMATE_MATCH_REQUEST":
+    case "ROOMMATE_MATCH_ACCEPTED":
+    case "ROOMMATE_MATCH_DECLINED":
+      return "/roommates";
+    case "VERIFICATION_APPROVED":
+      return "/verification";
+    case "SECURITY_ALERT":
+    case "ACCOUNT_WARNING":
+      return "/settings";
+    default:
+      return "/";
+  }
+}
+
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -32,6 +61,20 @@ export function NotificationBell() {
       await notificationService.markAllRead();
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
     }
+  }
+
+  async function handleNotificationClick(notification: { id: string; type: string; actionUrl?: string | null }) {
+    await notificationService.markRead(notification.id);
+    queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    setOpen(false);
+    const target = navigateForNotification(notification.type, notification.actionUrl);
+    navigate(target);
+  }
+
+  async function handleDelete(e: React.MouseEvent, id: string) {
+    e.stopPropagation();
+    await notificationService.delete(id);
+    queryClient.invalidateQueries({ queryKey: ["notifications"] });
   }
 
   useEffect(() => {
@@ -75,10 +118,26 @@ export function NotificationBell() {
             <div className="p-4 text-sm text-text.secondary">No notifications yet.</div>
           ) : (
             data.notifications.map((n) => (
-              <div key={n.id} className={`border-b border-border p-3 last:border-b-0 ${!n.readAt ? "bg-primary-600/5" : ""}`} role="menuitem">
-                <p className="text-sm font-medium text-text.primary">{n.title}</p>
-                <p className="mt-0.5 text-xs text-text.secondary">{n.body}</p>
-                <p className="mt-1 text-[10px] text-text.secondary">{timeAgo(n.createdAt)}</p>
+              <div
+                key={n.id}
+                className={`border-b border-border p-3 last:border-b-0 cursor-pointer transition hover:bg-cream-50 ${!n.readAt ? "bg-primary-600/5" : ""}`}
+                role="menuitem"
+                onClick={() => handleNotificationClick(n)}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-text.primary">{n.title}</p>
+                    <p className="mt-0.5 text-xs text-text.secondary line-clamp-2">{n.body}</p>
+                    <p className="mt-1 text-[10px] text-text.secondary">{timeAgo(n.createdAt)}</p>
+                  </div>
+                  <button
+                    onClick={(e) => handleDelete(e, n.id)}
+                    className="shrink-0 text-text.secondary hover:text-error text-xs px-1.5 py-0.5 rounded"
+                    aria-label="Dismiss notification"
+                  >
+                    ×
+                  </button>
+                </div>
               </div>
             ))
           )}

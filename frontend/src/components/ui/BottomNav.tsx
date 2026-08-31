@@ -87,6 +87,13 @@ const IconProperties = () => (
   </svg>
 );
 
+const IconSettings = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" />
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06A2 2 0 0 1 2.28 17.4l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82L4.28 2.28A2 2 0 0 1 7.11.45l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V0a2 2 0 0 1 4 0v.09c.16.72.61 1.35 1.24 1.8l.06.04a2 2 0 0 1 2.83 2.83l-.06.06c-.42.42-.66.99-.66 1.59v.09c0 .6.24 1.17.66 1.59z" />
+  </svg>
+);
+
 export {
   IconHome,
   IconBrowse,
@@ -95,6 +102,7 @@ export {
   IconProfile,
   IconAddProperty,
   IconProperties,
+  IconSettings,
 };
 
 export function BottomNav({ items }: BottomNavProps) {

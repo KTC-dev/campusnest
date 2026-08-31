@@ -16,7 +16,7 @@ router.get("/stats", adminController.getStats);
 router.get("/analytics", adminController.getAnalytics);
 
 router.get("/students", validate(paginationSchema), adminController.listStudents);
-router.get("/landlords", validate(paginationSchema), adminController.listLandlords);
+router.get("/agents", validate(paginationSchema), adminController.listAgents);
 router.get("/bookings", validate(paginationSchema), adminController.listBookings);
 router.get("/properties/pending", adminController.listPendingProperties);
 

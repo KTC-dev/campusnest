@@ -18,6 +18,7 @@ export function AppNav() {
           <div className="hidden items-center gap-4 lg:flex">
             <Link to="/properties" className="text-sm font-medium text-text.secondary transition-colors duration-200 hover:text-primary">Properties</Link>
             <Link to="/dashboard" className="text-sm font-medium text-text.secondary transition-colors duration-200 hover:text-primary">Dashboard</Link>
+            <Link to="/settings" className="text-sm font-medium text-text.secondary transition-colors duration-200 hover:text-primary">Settings</Link>
             <Link to="/profile" className="text-sm font-medium text-text.secondary transition-colors duration-200 hover:text-primary">Profile</Link>
             {user.role === "STUDENT" && <Link to="/conversations" className="text-sm font-medium text-text.secondary transition-colors duration-200 hover:text-primary">Messages</Link>}
             {user.role === "STUDENT" && <Link to="/roommates" className="text-sm font-medium text-text.secondary transition-colors duration-200 hover:text-primary">Roommates</Link>}

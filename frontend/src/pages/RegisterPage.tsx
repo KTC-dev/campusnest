@@ -12,8 +12,8 @@ export default function RegisterPage() {
   const setTokens = useAuthStore((s) => s.setTokens);
   const addToast = useToastStore((s) => s.addToast);
 
-  const [role, setRole] = useState<"student" | "landlord">(
-    searchParams.get("role") === "landlord" ? "landlord" : "student"
+  const [role, setRole] = useState<"student" | "agent">(
+    searchParams.get("role") === "agent" ? "agent" : "student"
   );
   const [form, setForm] = useState({
     firstName: "",
@@ -86,7 +86,7 @@ export default function RegisterPage() {
             acceptedTermsVersion: termsVersion,
             acceptedTermsAt: new Date().toISOString(),
           })
-          : await authService.registerLandlord({
+          : await authService.registerAgent({
             email: form.email,
             password: form.password,
             firstName: form.firstName,
@@ -115,7 +115,7 @@ export default function RegisterPage() {
         <p className="mt-2 text-sm text-slate-500">Join Edurus with consent, verification, and clear policies built in.</p>
 
         <div className="mt-4 flex rounded-lg bg-slate-100 p-1 text-sm font-medium">
-          {(["student", "landlord"] as const).map((r) => (
+          {(["student", "agent"] as const).map((r) => (
             <button
               key={r}
               type="button"
@@ -156,7 +156,7 @@ export default function RegisterPage() {
           <input
             type="tel"
             placeholder="Phone number"
-            required={role === "landlord"}
+            required={role === "agent"}
             value={form.phone}
             onChange={update("phone")}
             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"

@@ -8,6 +8,11 @@ export const submitVerification = catchAsync(async (req: Request, res: Response)
     res.status(201).json({ success: true, data: verification });
 });
 
+export const getMyVerification = catchAsync(async (req: Request, res: Response) => {
+    const verification = await verificationService.getMyVerification(req.user!.id);
+    res.status(200).json({ success: true, data: verification });
+});
+
 export const listVerifications = catchAsync(async (_req: Request, res: Response) => {
     const verifications = await verificationService.listVerifications();
     res.status(200).json({ success: true, data: verifications });

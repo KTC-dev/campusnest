@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { LandlordMobileShell } from "@/components/LandlordMobileShell";
-import { LandlordPropertyCard } from "@/components/LandlordPropertyCard";
+import { AgentMobileShell } from "@/components/AgentMobileShell";
+import { AgentPropertyCard } from "@/components/AgentPropertyCard";
 import { bookingService } from "@/services/booking.service";
 import { propertyService } from "@/services/property.service";
 import { useAuthStore } from "@/store/authStore";
@@ -21,8 +21,8 @@ export default function MyPropertiesPage() {
     });
 
     const { data: bookings = [] } = useQuery({
-        queryKey: ["landlord-bookings"],
-        queryFn: bookingService.listForLandlord,
+        queryKey: ["agent-bookings"],
+        queryFn: bookingService.listForAgent,
         enabled: Boolean(user),
     });
 
@@ -32,7 +32,7 @@ export default function MyPropertiesPage() {
     }
 
     return (
-        <LandlordMobileShell>
+        <AgentMobileShell>
             <div className="page-enter space-y-5">
                 <section>
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600">Properties</p>
@@ -63,7 +63,7 @@ export default function MyPropertiesPage() {
                 <div className="space-y-4">
                     {properties.map((property) => (
                         <div key={property.id} className="space-y-3">
-                            <LandlordPropertyCard property={property} />
+                            <AgentPropertyCard property={property} />
                             <div className="flex items-center justify-between gap-3 px-1">
                                 <Button
                                     variant={property.isAvailable ? "secondary" : "primary"}
@@ -86,6 +86,8 @@ export default function MyPropertiesPage() {
                     </Card>
                 )}
             </div>
-        </LandlordMobileShell>
+        </AgentMobileShell>
     );
 }
+
+

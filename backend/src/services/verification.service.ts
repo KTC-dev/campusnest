@@ -7,7 +7,7 @@ interface SubmitVerificationInput {
     idDocument: string;
     selfie?: string;
     proofOfOwnership?: string;
-    // Landlord confirmation for authenticity
+    // Agent confirmation for authenticity
     confirmation?: boolean;
 }
 
@@ -15,9 +15,9 @@ class VerificationService {
     async submitVerification(userId: string, input: SubmitVerificationInput) {
         const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, role: true } });
         if (!user) throw AppError.notFound("User not found");
-        if (user.role !== "LANDLORD") throw AppError.forbidden("Only landlords can submit verification requests");
+        if (user.role !== "AGENT") throw AppError.forbidden("Only agents can submit verification requests");
 
-        const landlord = await prisma.landlord.findUnique({ where: { userId }, select: { id: true } });
+        const agent = await prisma.agent.findUnique({ where: { userId }, select: { id: true } });
 
         const [idDocument, selfie, proofOfOwnership] = await Promise.all([
             uploadService.uploadImage(input.idDocument, "edurus/verification"),
@@ -25,10 +25,10 @@ class VerificationService {
             input.proofOfOwnership ? uploadService.uploadImage(input.proofOfOwnership, "edurus/verification") : Promise.resolve(null),
         ]);
 
-        return prisma.landlordVerification.create({
+        return prisma.agentVerification.create({
             data: {
                 userId,
-                landlordId: landlord?.id,
+                agentId: agent?.id,
                 idDocumentUrl: idDocument.url,
                 selfieUrl: selfie?.url,
                 proofOfOwnershipUrl: proofOfOwnership?.url,
@@ -39,21 +39,31 @@ class VerificationService {
     }
 
     async listVerifications() {
-        return prisma.landlordVerification.findMany({
+        return prisma.agentVerification.findMany({
             include: {
                 user: { select: { email: true, role: true } },
-                landlord: { select: { id: true, businessName: true, firstName: true, lastName: true, isVerified: true } },
+                agent: { select: { id: true, businessName: true, firstName: true, lastName: true, isVerified: true } },
             },
             orderBy: { createdAt: "desc" },
         });
     }
 
+    async getMyVerification(userId: string) {
+        return prisma.agentVerification.findFirst({
+            where: { userId },
+            include: {
+                agent: { select: { id: true, businessName: true, firstName: true, lastName: true, isVerified: true } },
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+    }
+
     async getVerification(id: string) {
-        const verification = await prisma.landlordVerification.findUnique({
+        const verification = await prisma.agentVerification.findUnique({
             where: { id },
             include: {
                 user: { select: { email: true, role: true } },
-                landlord: { select: { id: true, businessName: true, firstName: true, lastName: true, isVerified: true } },
+                agent: { select: { id: true, businessName: true, firstName: true, lastName: true, isVerified: true } },
             },
         });
 
@@ -62,11 +72,11 @@ class VerificationService {
     }
 
     async approveVerification(id: string) {
-        const verification = await prisma.landlordVerification.findUnique({ where: { id } });
+        const verification = await prisma.agentVerification.findUnique({ where: { id } });
         if (!verification) throw AppError.notFound("Verification request not found");
 
         const [updatedVerification] = await Promise.all([
-            prisma.landlordVerification.update({
+            prisma.agentVerification.update({
                 where: { id },
                 data: {
                     status: VerificationStatus.VERIFIED,
@@ -74,7 +84,7 @@ class VerificationService {
                     adminNotes: "Approved by admin",
                 },
             }),
-            prisma.landlord.update({
+            prisma.agent.update({
                 where: { userId: verification.userId },
                 data: { isVerified: true },
             }).catch(() => undefined),
@@ -86,10 +96,10 @@ class VerificationService {
     }
 
     async rejectVerification(id: string, adminNotes?: string) {
-        const verification = await prisma.landlordVerification.findUnique({ where: { id } });
+        const verification = await prisma.agentVerification.findUnique({ where: { id } });
         if (!verification) throw AppError.notFound("Verification request not found");
 
-        return prisma.landlordVerification.update({
+        return prisma.agentVerification.update({
             where: { id },
             data: {
                 status: VerificationStatus.REJECTED,
@@ -101,3 +111,4 @@ class VerificationService {
 }
 
 export const verificationService = new VerificationService();
+

@@ -19,7 +19,7 @@ export default function LoginPage() {
     setError(null);
     setIsSubmitting(true);
     try {
-      const tokens = await authService.loginStudentOrLandlord(email, password);
+      const tokens = await authService.loginStudentOrAgent(email, password);
       setTokens(tokens);
       addToast({ type: "success", title: "Signed in successfully", message: "Welcome back to Edurus." });
       navigate("/dashboard");

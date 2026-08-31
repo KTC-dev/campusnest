@@ -23,11 +23,11 @@ router.get("/public-stats", propertyController.getPublicStats);
 router.get("/favourites", authenticate, requireRole(Role.STUDENT), propertyController.listFavourites);
 router.post("/:id/favourite", authenticate, requireRole(Role.STUDENT), propertyController.toggleFavourite);
 
-// --- Landlord ---------------------------------------------------------------
-router.get("/mine", authenticate, requireRole(Role.LANDLORD), propertyController.listMyProperties);
-router.post("/", authenticate, requireRole(Role.LANDLORD), createPropertyRateLimit, validate(createPropertySchema), propertyController.createProperty);
-router.patch("/:id", authenticate, requireRole(Role.LANDLORD), validate(updatePropertySchema), propertyController.updateProperty);
-router.delete("/:id", authenticate, requireRole(Role.LANDLORD), propertyController.deleteProperty);
+// --- Agent ---------------------------------------------------------------
+router.get("/mine", authenticate, requireRole(Role.AGENT), propertyController.listMyProperties);
+router.post("/", authenticate, requireRole(Role.AGENT), createPropertyRateLimit, validate(createPropertySchema), propertyController.createProperty);
+router.patch("/:id", authenticate, requireRole(Role.AGENT), validate(updatePropertySchema), propertyController.updateProperty);
+router.delete("/:id", authenticate, requireRole(Role.AGENT), propertyController.deleteProperty);
 
 // --- Admin ---------------------------------------------------------------
 router.get("/pending/all", authenticate, requireRole(Role.ADMIN), propertyController.listPendingProperties);
@@ -43,3 +43,4 @@ router.patch(
 router.get("/:id", propertyController.getProperty);
 
 export default router;
+

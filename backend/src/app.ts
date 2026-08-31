@@ -9,6 +9,7 @@ import { env } from "./config/env";
 import { logger } from "./config/logger";
 import routes from "./routes";
 import { errorHandler } from "./middleware/errorHandler";
+import { sanitizeInput } from "./middleware/sanitize";
 import { AppError } from "./utils/AppError";
 
 const allowedOrigins =
@@ -41,6 +42,7 @@ export function createApp() {
   app.use(compression());
   app.use(express.json({ limit: "15mb" }));
   app.use(cookieParser());
+app.use(sanitizeInput);
   app.use(
     morgan(env.NODE_ENV === "production" ? "combined" : "dev", {
       stream: { write: (msg) => logger.http?.(msg.trim()) ?? logger.info(msg.trim()) },

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { LandlordMobileShell } from "@/components/LandlordMobileShell";
+import { AgentMobileShell } from "@/components/AgentMobileShell";
 import { bookingService } from "@/services/booking.service";
 import { propertyService } from "@/services/property.service";
 import { userService } from "@/services/user.service";
@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 
-export default function LandlordDashboard() {
+export default function AgentDashboard() {
   const user = useAuthStore((state) => state.user);
 
   const { data: profile } = useQuery({
@@ -26,8 +26,8 @@ export default function LandlordDashboard() {
   });
 
   const { data: bookings = [] } = useQuery({
-    queryKey: ["landlord-bookings"],
-    queryFn: bookingService.listForLandlord,
+    queryKey: ["agent-bookings"],
+    queryFn: bookingService.listForAgent,
     enabled: Boolean(user),
   });
 
@@ -37,11 +37,11 @@ export default function LandlordDashboard() {
   const inspectionRequests = new Set(pendingBookings.map((booking) => booking.property.title)).size;
 
   return (
-    <LandlordMobileShell>
+    <AgentMobileShell>
       <div className="page-enter space-y-5">
-        <section className="overflow-hidden rounded-[28px] bg-[radial-gradient(circle_at_top_right,_rgba(109,40,217,0.08),_transparent_36%),linear-gradient(160deg,_#3b0764_0%,_#1e0a3c_100%)] p-5 text-white shadow-soft">          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cream-100/80">Landlord hub</p>
+        <section className="overflow-hidden rounded-[28px] bg-[radial-gradient(circle_at_top_right,_rgba(109,40,217,0.08),_transparent_36%),linear-gradient(160deg,_#3b0764_0%,_#1e0a3c_100%)] p-5 text-white shadow-soft">          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cream-100/80">Agent hub</p>
           <h1 className="mt-2 text-[28px] font-display font-bold leading-tight">
-            Welcome back, {profile?.landlord?.firstName || user?.email.split("@")[0] || "there"}.
+            Welcome back, {profile?.agent?.firstName || user?.email.split("@")[0] || "there"}.
           </h1>
           <p className="mt-2 max-w-[26ch] text-sm text-cream-100/90">
             Manage bookings, track occupancy, and keep every listing looking polished on mobile.
@@ -77,7 +77,7 @@ export default function LandlordDashboard() {
               Add listing →
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <Link to="/dashboard/properties">
               <Button variant="primary" size="md" fullWidth>
                 My properties
@@ -86,6 +86,11 @@ export default function LandlordDashboard() {
             <Link to="/dashboard/listings/new">
               <Button variant="secondary" size="md" fullWidth>
                 Add property
+              </Button>
+            </Link>
+            <Link to="/dashboard/requests">
+              <Button variant="secondary" size="md" fullWidth>
+                Browse requests
               </Button>
             </Link>
           </div>
@@ -136,6 +141,7 @@ export default function LandlordDashboard() {
           </div>
         </section>
       </div>
-    </LandlordMobileShell>
+    </AgentMobileShell>
   );
 }
+

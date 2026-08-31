@@ -1,9 +1,10 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+﻿import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { StudentMobileShell } from "@/components/StudentMobileShell";
 import { PropertyCard } from "@/components/PropertyCard";
 import { propertyService } from "@/services/property.service";
 import { bookingService } from "@/services/booking.service";
+import { reviewService } from "@/services/review.service";
 import { userService } from "@/services/user.service";
 import { useAuthStore } from "@/store/authStore";
 import { Badge } from "@/components/ui/Badge";
@@ -43,14 +44,20 @@ export default function StudentDashboard() {
     enabled: Boolean(user),
   });
 
+  const { data: myReview, isLoading: loadingMyReview } = useQuery({
+    queryKey: ["my-review"],
+    queryFn: reviewService.getMyReview,
+    enabled: Boolean(user),
+  });
+
   const { data: featuredProperties, isLoading: loadingFeatured } = useQuery({
     queryKey: ["featured-properties"],
     queryFn: () => propertyService.list({ availableOnly: true, page: 1 }) as Promise<PropertyListResult>,
   });
 
-  const featuredVerified = featuredProperties?.items?.filter((property) => property.status === "APPROVED" && property.landlord?.isVerified).slice(0, 3) ?? [];
+  const featuredVerified = featuredProperties?.items?.filter((property) => property.status === "APPROVED" && property.agent?.isVerified).slice(0, 3) ?? [];
 
-  const firstName = profile?.student?.firstName || profile?.landlord?.firstName || user?.email.split("@")[0] || "there";
+  const firstName = profile?.student?.firstName || profile?.agent?.firstName || user?.email.split("@")[0] || "there";
   const bookingCount = bookings.length;
   const savedCount = favourites.length;
   const featuredCount = featuredVerified.length;
@@ -81,22 +88,37 @@ export default function StudentDashboard() {
             <p className="mt-0.5 font-semibold text-white">Student hub</p>
           </div>
         </div>
-          <div className="mt-5 grid grid-cols-3 gap-3">
-            <div className="rounded-card border border-white/10 bg-white/10 p-4 text-center">
-              <p className="text-[11px] text-cream-100/80">Bookings</p>
-              <p className="mt-1 text-2xl font-bold text-white">{bookingCount}</p>
+            <div className="mt-5 grid grid-cols-3 gap-3">
+              <div className="rounded-card border border-white/10 bg-white/10 p-4 text-center">
+                <p className="text-[11px] text-cream-100/80">Bookings</p>
+                <p className="mt-1 text-2xl font-bold text-white">{bookingCount}</p>
+              </div>
+              <div className="rounded-card border border-white/10 bg-white/10 p-4 text-center">
+                <p className="text-[11px] text-cream-100/80">Saved</p>
+                <p className="mt-1 text-2xl font-bold text-white">{savedCount}</p>
+              </div>
+              <div className="rounded-card border border-white/10 bg-white/10 p-4 text-center">
+                <p className="text-[11px] text-cream-100/80">Verified</p>
+                <p className="mt-1 text-2xl font-bold text-white">{featuredCount}</p>
+              </div>
             </div>
-            <div className="rounded-card border border-white/10 bg-white/10 p-4 text-center">
-              <p className="text-[11px] text-cream-100/80">Saved</p>
-              <p className="mt-1 text-2xl font-bold text-white">{savedCount}</p>
-            </div>
-            <div className="rounded-card border border-white/10 bg-white/10 p-4 text-center">
-              <p className="text-[11px] text-cream-100/80">Verified</p>
-              <p className="mt-1 text-2xl font-bold text-white">{featuredCount}</p>
+          </section>
+
+        <section className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600">Quick actions</p>
+              <h2 className="mt-1 text-lg font-display font-bold text-text.primary">Get started</h2>
             </div>
           </div>
+          <div className="grid grid-cols-1 gap-3">
+            <Link to="/accommodation-requests/new">
+              <Button variant="primary" size="md" fullWidth>
+                Post request
+              </Button>
+            </Link>
+          </div>
         </section>
-
         <Card variant="strong" padding="md" className="border border-border/60">
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -210,6 +232,52 @@ export default function StudentDashboard() {
         <section className="space-y-4">
           <div className="flex items-center justify-between px-1">
             <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600">Reviews</p>
+              <h2 className="mt-1 text-lg font-display font-bold text-text.primary">Rate your stay</h2>
+            </div>
+          </div>
+
+          {loadingMyReview ? (
+            <div className="space-y-3">
+              <div className="h-20 w-full animate-pulse rounded-card bg-cream-100" />
+            </div>
+          ) : myReview ? (
+            <Card variant="outlined" padding="md" className="border border-border/60">
+              <p className="text-sm font-semibold text-text.primary">Your review</p>
+              <p className="mt-1 text-xs text-text.secondary">You reviewed {myReview.property?.title ?? "this property"} — {myReview.rating}/5</p>
+              {myReview.comment && (
+                <p className="mt-2 text-sm text-text.secondary">{myReview.comment}</p>
+              )}
+            </Card>
+          ) : bookings.some((b) => b.status === "COMPLETED") ? (
+            <Card variant="outlined" padding="md" className="border border-border/60">
+              <p className="text-sm font-semibold text-text.primary">How was your stay?</p>
+              <p className="mt-1 text-xs text-text.secondary">You have a completed booking. Share your experience to help other students.</p>
+              <div className="mt-3 flex gap-2">
+                <Link to="/accommodation-requests">
+                  <Button variant="primary" size="sm">View bookings</Button>
+                </Link>
+                <Link to="/properties">
+                  <Button variant="secondary" size="sm">Browse properties</Button>
+                </Link>
+              </div>
+            </Card>
+          ) : (
+            <Card variant="outlined" padding="md" className="border border-border/60">
+              <EmptyState
+                icon={
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-text.secondary"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                }
+                title="No reviews yet"
+                description="Complete a booking to leave a review and help fellow students."
+              />
+            </Card>
+          )}
+        </section>
+
+        <section className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-600">Featured verified</p>
               <h2 className="mt-1 text-lg font-display font-bold text-text.primary">Top properties near campus</h2>
             </div>
@@ -229,7 +297,7 @@ export default function StudentDashboard() {
             <Card variant="outlined" padding="lg" className="border border-border/60">
               <EmptyState
                 icon={
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-text.secondary"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-text.secondary"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2 2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
                 }
                 title="No featured verified properties yet"
                 description="Check back soon — we surface the best verified listings here."
@@ -247,3 +315,4 @@ export default function StudentDashboard() {
     </StudentMobileShell>
   );
 }
+

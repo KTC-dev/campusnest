@@ -1,10 +1,9 @@
 import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate, Link } from "react-router-dom";
 import { StudentMobileShell } from "@/components/StudentMobileShell";
 import { roommateService } from "@/services/roommate.service";
 import { useAuthStore } from "@/store/authStore";
-import { useToastStore } from "@/store/toastStore";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -25,8 +24,9 @@ const sectionLabels: Record<MatchSection, string> = {
 
 export default function RoommateMatchesPage() {
   const [activeSection, setActiveSection] = useState<MatchSection>("recommended");
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
-  const addToast = useToastStore((s) => s.addToast);
 
   const { data: myProfile } = useQuery({
     queryKey: ["roommate-profile"],
@@ -113,7 +113,7 @@ export default function RoommateMatchesPage() {
               title="No roommate profile yet"
               description="Create your profile so we can match you with compatible students based on lifestyle, budget, and preferences."
               actionLabel="Create profile"
-              onAction={() => addToast({ type: "info", title: "Coming soon", message: "Profile creation is not available yet." })}
+              onAction={() => navigate("/roommates/profile")}
             />
           </Card>
         </div>
@@ -168,7 +168,7 @@ export default function RoommateMatchesPage() {
                     title="No more recommended matches"
                     description="Check back later or adjust your profile preferences to see more candidates."
                     actionLabel="Refresh"
-                    onAction={() => addToast({ type: "info", title: "Refreshed", message: "We'll look for new matches soon." })}
+                    onAction={() => queryClient.invalidateQueries({ queryKey: ["roommate-matches-recommended"] })}
                   />
                 </Card>
               )}
@@ -182,7 +182,7 @@ export default function RoommateMatchesPage() {
                     title="No new matches yet"
                     description="When someone matches with you, they'll appear here."
                     actionLabel="Browse profiles"
-                    onAction={() => addToast({ type: "info", title: "Coming soon", message: "Profile browsing is not available yet." })}
+                    onAction={() => navigate("/roommates")}
                   />
                 </Card>
               )}
@@ -247,17 +247,17 @@ export default function RoommateMatchesPage() {
 
           {activeSection === "recommended" &&
             matchableCandidates.map((match) => (
-              <RoommateMatchCard key={match.profile.student.id} match={match} onAction={(label) => addToast({ type: "info", title: label, message: "This action is not available yet." })} />
+              <RoommateMatchCard key={match.profile.student.id} match={match} />
             ))}
 
           {activeSection === "new" &&
             newMatches.map((match) => (
-              <RoommateMatchCard key={match.profile.student.id} match={match} onAction={(label) => addToast({ type: "info", title: label, message: "This action is not available yet." })} />
+              <RoommateMatchCard key={match.profile.student.id} match={match} />
             ))}
 
           {activeSection === "recent" &&
             activeMatches.map((match) => (
-              <RoommateMatchCard key={match.profile.student.id} match={match} onAction={(label) => addToast({ type: "info", title: label, message: "This action is not available yet." })} />
+              <RoommateMatchCard key={match.profile.student.id} match={match} />
             ))}
 
           {activeSection === "saved" &&
@@ -276,10 +276,10 @@ export default function RoommateMatchesPage() {
                     {saved.target.isVerified && <Badge variant="success" size="sm" className="ml-2">Verified</Badge>}
                   </p>
                   <p className="truncate text-xs text-text.secondary">
-                    {saved.target.faculty} â€¢ {saved.target.level} â€¢ {saved.target.university?.name}
+                    {saved.target.faculty} • {saved.target.level} • {saved.target.university?.name}
                   </p>
                 </div>
-                <Button variant="primary" size="sm" onClick={() => addToast({ type: "info", title: "Coming soon", message: "Messaging is not available yet." })}>
+                <Button variant="primary" size="sm" onClick={() => navigate(`/roommates/${saved.target.id}`)}>
                   Message
                 </Button>
               </Card>
@@ -316,10 +316,10 @@ interface RoommateMatchCardProps {
     score: number;
     breakdown?: { label: string; value: number }[];
   };
-  onAction: (label: string) => void;
 }
 
-function RoommateMatchCard({ match, onAction }: RoommateMatchCardProps) {
+function RoommateMatchCard({ match }: RoommateMatchCardProps) {
+  const navigate = useNavigate();
   const profile = match.profile.student;
   const score = Math.round(match.score);
 
@@ -342,7 +342,7 @@ function RoommateMatchCard({ match, onAction }: RoommateMatchCardProps) {
           <Badge variant={scoreTone} size="sm">{score}% match</Badge>
         </div>
         <p className="mt-1 truncate text-xs text-text.secondary">
-          {profile.faculty} â€¢ {profile.level} â€¢ {profile.university?.name}
+          {profile.faculty} • {profile.level} • {profile.university?.name}
         </p>
         <div className="mt-3 flex flex-wrap gap-1.5">
           {match.breakdown?.slice(0, 3).map((item) => (
@@ -352,10 +352,10 @@ function RoommateMatchCard({ match, onAction }: RoommateMatchCardProps) {
           ))}
         </div>
         <div className="mt-3 flex gap-2">
-          <Button variant="primary" size="sm" className="flex-1" onClick={() => onAction("Send request")}>
+          <Button variant="primary" size="sm" className="flex-1" onClick={() => navigate(`/roommates/${profile.id}`)}>
             Connect
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => onAction("Save profile")}>
+          <Button variant="ghost" size="sm" onClick={() => navigate(`/roommates/${profile.id}`)}>
             Save
           </Button>
         </div>

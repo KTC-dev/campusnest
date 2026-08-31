@@ -16,7 +16,7 @@ interface CreatePropertyInput {
   genderRestriction: string;
   amenityIds: string[];
   images: string[];
-  // Landlord affirmation before publishing
+  // Agent affirmation before publishing
   ownerConfirmation?: boolean;
   isAvailable?: boolean;
 }
@@ -42,17 +42,17 @@ const publicPropertyInclude = {
   images: { orderBy: { isPrimary: "desc" as const } },
   amenities: { include: { amenity: true } },
   university: { select: { id: true, name: true } },
-  landlord: { select: { firstName: true, lastName: true, businessName: true, isVerified: true, phone: true } },
+  agent: { select: { firstName: true, lastName: true, businessName: true, isVerified: true, phone: true } },
 };
 
 class PropertyService {
-  /** Landlords create listings in PENDING status; an admin must approve before it's publicly visible. */
-  async create(landlordId: string, universityId: string, input: CreatePropertyInput) {
+  /** Agents create listings in PENDING status; an admin must approve before it's publicly visible. */
+  async create(agentId: string, universityId: string, input: CreatePropertyInput) {
     const uploaded = await Promise.all(input.images.map((img) => uploadService.uploadImage(img)));
 
     return prisma.property.create({
       data: {
-        landlordId,
+        agentId,
         universityId,
         title: input.title,
         description: input.description,
@@ -76,11 +76,11 @@ class PropertyService {
     });
   }
 
-  async update(propertyId: string, landlordId: string, input: UpdatePropertyInput) {
-    const property = await this.assertOwnership(propertyId, landlordId);
+  async update(propertyId: string, agentId: string, input: UpdatePropertyInput) {
+    const property = await this.assertOwnership(propertyId, agentId);
 
     // Editing a listing sends it back to PENDING re-review, unless only
-    // availability changed â€” a landlord toggling "no vacancy" shouldn't
+    // availability changed — an agent toggling "no vacancy" shouldn't
     // have to wait for re-approval.
     const onlyAvailabilityChanged =
       Object.keys(input).length === 1 && Object.prototype.hasOwnProperty.call(input, "isAvailable");
@@ -103,12 +103,12 @@ class PropertyService {
     });
   }
 
-  async delete(propertyId: string, landlordId: string) {
+  async delete(propertyId: string, agentId: string) {
     const property = await prisma.property.findUnique({
       where: { id: propertyId },
       include: { images: true },
     });
-    if (!property || property.landlordId !== landlordId) {
+    if (!property || property.agentId !== agentId) {
       throw AppError.notFound("Listing not found");
     }
 
@@ -128,7 +128,7 @@ class PropertyService {
     return property;
   }
 
-  /** Public search â€” only ever returns APPROVED, available-by-default listings. */
+  /** Public search — only ever returns APPROVED, available-by-default listings. */
   async list(filters: ListFilters) {
     const where: Prisma.PropertyWhereInput = {
       status: ListingStatus.APPROVED,
@@ -159,9 +159,9 @@ class PropertyService {
     return { items, total, page: filters.page, pageSize: filters.pageSize, totalPages: Math.ceil(total / filters.pageSize) };
   }
 
-  async listForLandlord(landlordId: string) {
+  async listForAgent(agentId: string) {
     return prisma.property.findMany({
-      where: { landlordId },
+      where: { agentId },
       include: { images: true, university: { select: { id: true, name: true } }, _count: { select: { bookings: true } } },
       orderBy: { createdAt: "desc" },
     });
@@ -176,7 +176,7 @@ class PropertyService {
   }
 
   async moderate(propertyId: string, status: "APPROVED" | "REJECTED" | "SUSPENDED", rejectionReason?: string) {
-    const property = await prisma.property.findUnique({ where: { id: propertyId }, include: { landlord: true } });
+    const property = await prisma.property.findUnique({ where: { id: propertyId }, include: { agent: true } });
     if (!property) throw AppError.notFound("Listing not found");
 
     const updated = await prisma.property.update({
@@ -185,10 +185,10 @@ class PropertyService {
     });
 
     await notificationService.notify({
-      userId: property.landlord.userId,
+      userId: property.agent.userId,
       type: "LISTING_STATUS",
       title:
-        status === "APPROVED" ? "Listing approved âœ…" : status === "REJECTED" ? "Listing rejected" : "Listing suspended",
+        status === "APPROVED" ? "Listing approved ?" : status === "REJECTED" ? "Listing rejected" : "Listing suspended",
       body:
         status === "APPROVED"
           ? `"${property.title}" is now live and visible to students.`
@@ -223,23 +223,25 @@ class PropertyService {
     return favourites.map((f) => f.property);
   }
 
-  /** Public, unauthenticated counts for the landing page's stats section â€” deliberately minimal (no revenue/PII), safe to expose to anyone. */
+  /** Public, unauthenticated counts for the landing page's stats section — deliberately minimal (no revenue/PII), safe to expose to anyone. */
   async getPublicStats() {
-    const [studentsRegistered, verifiedProperties, verifiedLandlords, successfulBookings] = await Promise.all([
+    const [studentsRegistered, verifiedProperties, verifiedAgents, successfulBookings] = await Promise.all([
       prisma.student.count(),
       prisma.property.count({ where: { status: "APPROVED" } }),
-      prisma.landlord.count({ where: { isVerified: true } }),
+      prisma.agent.count({ where: { isVerified: true } }),
       prisma.booking.count({ where: { status: { in: ["APPROVED", "COMPLETED"] } } }),
     ]);
-    return { studentsRegistered, verifiedProperties, verifiedLandlords, successfulBookings };
+    return { studentsRegistered, verifiedProperties, verifiedAgents, successfulBookings };
   }
 
-  private async assertOwnership(propertyId: string, landlordId: string) {
+  private async assertOwnership(propertyId: string, agentId: string) {
     const property = await prisma.property.findUnique({ where: { id: propertyId } });
     if (!property) throw AppError.notFound("Listing not found");
-    if (property.landlordId !== landlordId) throw AppError.forbidden("You do not own this listing");
+    if (property.agentId !== agentId) throw AppError.forbidden("You do not own this listing");
     return property;
   }
 }
 
 export const propertyService = new PropertyService();
+
+

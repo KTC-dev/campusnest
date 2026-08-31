@@ -1,7 +1,7 @@
-import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
+﻿import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { LandlordMobileShell } from "@/components/LandlordMobileShell";
+import { AgentMobileShell } from "@/components/AgentMobileShell";
 import { StudentMobileShell } from "@/components/StudentMobileShell";
 import { Upload } from "@/components/Upload";
 import { authService } from "@/services/auth.service";
@@ -31,7 +31,7 @@ interface ProfileFormState {
 
 function getInitialFormState(profile?: UserProfile): ProfileFormState {
     const student = profile?.student;
-    const landlord = profile?.landlord;
+    const agent = profile?.agent;
     const admin = profile?.admin;
 
     if (profile?.role === "STUDENT") {
@@ -47,15 +47,15 @@ function getInitialFormState(profile?: UserProfile): ProfileFormState {
         };
     }
 
-    if (profile?.role === "LANDLORD") {
+    if (profile?.role === "AGENT") {
         return {
-            firstName: landlord?.firstName ?? "",
-            lastName: landlord?.lastName ?? "",
-            phone: landlord?.phone ?? "",
+            firstName: agent?.firstName ?? "",
+            lastName: agent?.lastName ?? "",
+            phone: agent?.phone ?? "",
             faculty: "",
             level: "",
-            avatarUrl: landlord?.avatarUrl ?? "",
-            businessName: landlord?.businessName ?? "",
+            avatarUrl: agent?.avatarUrl ?? "",
+            businessName: agent?.businessName ?? "",
             universityId: "",
         };
     }
@@ -102,8 +102,8 @@ export default function ProfilePage() {
     const [isPersonalInfoExpanded, setIsPersonalInfoExpanded] = useState(false);
 
     const displayName = useMemo(() => {
-        const firstName = profile?.student?.firstName || profile?.landlord?.firstName || profile?.admin?.firstName || "";
-        const lastName = profile?.student?.lastName || profile?.landlord?.lastName || profile?.admin?.lastName || "";
+        const firstName = profile?.student?.firstName || profile?.agent?.firstName || profile?.admin?.firstName || "";
+        const lastName = profile?.student?.lastName || profile?.agent?.lastName || profile?.admin?.lastName || "";
         return `${firstName} ${lastName}`.trim() || user?.email.split("@")[0] || "Edurus";
     }, [profile, user?.email]);
 
@@ -164,23 +164,25 @@ export default function ProfilePage() {
         mutation.mutate(payload);
     }
 
-    const isLandlord = profile?.role === "LANDLORD";
-    const landlordVerificationStatus = profile?.landlord?.isVerified ? "VERIFIED" : "PENDING";
-    const Shell = user?.role === "LANDLORD" ? LandlordMobileShell : StudentMobileShell;
+    const isAgent = profile?.role === "AGENT";
+    const Shell = user?.role === "AGENT" ? AgentMobileShell : StudentMobileShell;
 
     if (isLoading) {
         return (
             <Shell>
-                <div className="page-enter space-y-4 p-4">
-                    <div className="flex flex-col items-center gap-4">
-                        <Skeleton variant="circle" height={96} width={96} />
-                        <Skeleton variant="text" className="h-5 w-32" />
+                <div className="page-enter space-y-3 p-4">
+                    <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-white p-3">
+                        <Skeleton variant="circle" height={40} width={40} />
+                        <div className="flex-1 space-y-2">
+                            <Skeleton variant="text" className="h-4 w-32" />
+                            <Skeleton variant="text" className="h-3 w-20" />
+                        </div>
                     </div>
                     <Card variant="outlined" padding="md">
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             <Skeleton variant="text" className="h-4 w-24" />
-                            <Skeleton variant="rectangle" className="h-12 w-full rounded-2xl" />
-                            <Skeleton variant="rectangle" className="h-12 w-full rounded-2xl" />
+                            <Skeleton variant="rectangle" className="h-11 w-full rounded-2xl" />
+                            <Skeleton variant="rectangle" className="h-11 w-full rounded-2xl" />
                         </div>
                     </Card>
                 </div>
@@ -190,254 +192,227 @@ export default function ProfilePage() {
 
     return (
         <Shell>
-            <div className="page-enter space-y-5 pb-28">
-                <div className="flex flex-col items-center text-center">
-                    <div className="relative">
-                        <div className="relative flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border-2 border-primary-500 p-0.5 shadow-premium sm:h-32 sm:w-32">
-                            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 opacity-10" />
-                            {form.avatarUrl ? (
-                                <img src={form.avatarUrl} alt={`${displayName} profile picture`} className="relative h-full w-full rounded-full object-cover" />
-                            ) : (
-                                <div className="relative flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-primary-600 to-primary-800 text-2xl font-semibold text-white">
-                                    {initials}
-                                </div>
-                            )}
+            <div className="page-enter space-y-3 pb-28">
+                <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-white p-3">
+                    <div className="relative h-11 w-11 flex-shrink-0 overflow-hidden rounded-full">
+                        {form.avatarUrl ? (
+                            <img src={form.avatarUrl} alt={`${displayName} profile picture`} className="h-full w-full rounded-full object-cover" />
+                        ) : (
+                            <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-primary-600 to-primary-800 text-sm font-semibold text-white">
+                                {initials}
+                            </div>
+                        )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                        <p className="truncate font-display text-sm font-semibold text-text.primary">{displayName}</p>
+                        <div className="mt-0.5 flex items-center gap-1.5">
+                            <Badge size="sm" className="bg-primary-700/10 text-primary-700 px-2 py-0.5 rounded-full text-[11px] font-semibold">{profile?.role?.toLowerCase()}</Badge>
+                            {profile?.agent?.isVerified && <VerifiedBadge size={16} showText />}
                         </div>
-                        <button
-                            type="button"
-                            onClick={() => avatarInputRef.current?.click()}
-                            aria-label="Change profile picture"
-                            className="absolute -bottom-1 -right-1 flex h-11 w-11 items-center justify-center rounded-full bg-primary-700 text-white shadow-brand transition-transform duration-200 hover:bg-primary-800 hover:shadow-brand-lg active:scale-95"
-                        >
-                            <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4">
-                                <path fill="currentColor" d="M12 5.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9Zm0 1.5a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm7.5-.75h-1.88l-.76-1.52A2.25 2.25 0 0 0 15.84 3.5H8.16c-.86 0-1.65.49-2.03 1.23l-.76 1.52H3.5A2.25 2.25 0 0 0 1.25 8.5v8A2.25 2.25 0 0 0 3.5 18.75h17A2.25 2.25 0 0 0 22.75 16.5v-8A2.25 2.25 0 0 0 19.5 6.25Zm1.25 10.25a.75.75 0 0 1-.75.75h-17a.75.75 0 0 1-.75-.75v-8A.75.75 0 0 1 3.5 7.75h2.2a.75.75 0 0 0 .67-.42l.97-1.94c.13-.27.4-.44.7-.44h7.72c.3 0 .57.17.7.44l.97 1.94c.13.25.38.42.67.42h2.2a.75.75 0 0 1 .75.75v8Z" />
-                            </svg>
-                        </button>
-                        <input
-                            ref={avatarInputRef}
-                            type="file"
-                            accept="image/jpeg,image/png,image/webp"
-                            className="hidden"
-                            onChange={(event) => {
-                                const file = event.target.files?.[0];
-                                if (!file) return;
-                                const reader = new FileReader();
-                                reader.onload = () => {
-                                    const avatarUrl = reader.result as string;
-                                    setForm((current) => ({ ...current, avatarUrl }));
-                                    mutation.mutate({ avatarUrl });
-                                };
-                                reader.readAsDataURL(file);
-                            }}
-                        />
                     </div>
-                    <h1 className="mt-4 font-display text-xl font-semibold text-text.primary">{displayName}</h1>
-                    <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
-                        <Badge size="sm" className="bg-primary-700/10 text-primary-700 px-2.5 py-1 rounded-full text-xs font-semibold">{profile?.role?.toLowerCase()}</Badge>
-                        {profile?.landlord?.isVerified && <VerifiedBadge size={20} />}
-                    </div>
-                </div>
-
-                <Card variant="strong" padding="md" className="border border-border/60">
                     <button
                         type="button"
-                        onClick={() => setIsPersonalInfoExpanded((prev) => !prev)}
-                        className="flex w-full items-center justify-between gap-3"
+                        onClick={() => avatarInputRef.current?.click()}
+                        aria-label="Edit profile picture"
+                        className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl text-text.secondary transition-colors duration-200 hover:bg-border/60 hover:text-text.primary"
                     >
-                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text.secondary">Personal information</p>
-                        <svg
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className={`text-text.secondary transition-transform duration-200 ${isPersonalInfoExpanded ? "rotate-180" : ""}`}
-                        >
-                            <polyline points="6 9 12 15 18 9" />
+                        <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4">
+                            <path fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                         </svg>
                     </button>
-                    {isPersonalInfoExpanded && (
-                        <>
-                            <div className="mt-4 grid grid-cols-2 gap-3">
-                                <Input label="First name" name="firstName" value={form.firstName} onChange={handleChange} className="col-span-1" />
-                                <Input label="Last name" name="lastName" value={form.lastName} onChange={handleChange} className="col-span-1" />
-                            </div>
-                            <div className="mt-3">
-                                <Input label="Phone number" name="phone" value={form.phone} onChange={handleChange} />
-                            </div>
-                            <div className="mt-3 grid grid-cols-2 gap-3">
-                                <Input label="Faculty" name="faculty" value={form.faculty} onChange={handleChange} className="col-span-1" />
-                                <Input label="Level" name="level" value={form.level} onChange={handleChange} className="col-span-1" />
-                            </div>
-                            <div className="mt-3">
-                                <label className="text-xs font-semibold uppercase tracking-[0.12em] text-text.secondary">University</label>
-                                <select
-                                    name="universityId"
-                                    value={form.universityId}
-                                    onChange={handleChange}
-                                    className="mt-1.5 h-12 w-full rounded-2xl border border-border bg-cream-50 px-4 text-sm text-text.primary outline-none transition-all duration-200 focus:border-primary-400 focus:shadow-brand focus:ring-2 focus:ring-primary-500/20"
-                                >
-                                    <option value="">Select a university</option>
-                                    {universities.map((university: University) => (
-                                        <option key={university.id} value={university.id}>
-                                            {university.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            {isLandlord && (
-                                <div className="mt-3">
-                                    <Input label="Business name" name="businessName" value={form.businessName} onChange={handleChange} />
-                                </div>
-                            )}
-                        </>
-                    )}
-                </Card>
+                    <input
+                        ref={avatarInputRef}
+                        type="file"
+                        onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                                const avatarUrl = reader.result as string;
+                                setForm((current) => ({ ...current, avatarUrl }));
+                                mutation.mutate({ avatarUrl });
+                            };
+                            reader.readAsDataURL(file);
+                        }}
+                        className="hidden"
+                    />
+                </div>
 
-                {isLandlord && (
-                    <Card variant="strong" padding="md" className="border border-border/60">
-                        <div className="flex items-center justify-between gap-3">
-                            <div>
-                                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text.secondary">Verification status</p>
-                                <p className="mt-1 text-sm text-text.primary">
-                                    {profile?.landlord?.isVerified ? "Your landlord account is verified." : "Submit your documents to unlock the verified landlord badge."}
-                                </p>
-                            </div>
-                            <Badge variant={profile?.landlord?.isVerified ? "success" : "warning"} size="sm">{landlordVerificationStatus}</Badge>
-                        </div>
-                        {!profile?.landlord?.isVerified && (
-                            <div className="mt-4 space-y-3">
-                                <div className="grid gap-3 sm:grid-cols-3">
-                                    <Upload
-                                        label="ID document"
-                                        helperText="Government-issued ID"
-                                        accept="image/jpeg,image/png,image/webp,application/pdf"
-                                        maxSizeMb={10}
-                                        onChange={(files) => {
-                                            const [idDocument] = files;
-                                            setVerificationDocs((current) => ({ ...current, idDocument: idDocument ?? "" }));
-                                        }}
-                                        onFileAdded={async (file) => {
-                                            const reader = new FileReader();
-                                            const base64 = await new Promise<string>((resolve, reject) => {
-                                                reader.onload = () => resolve(reader.result as string);
-                                                reader.onerror = reject;
-                                                reader.readAsDataURL(file);
-                                            });
-                                            return base64;
-                                        }}
-                                    />
-                                    <Upload
-                                        label="Selfie"
-                                        helperText="Clear selfie"
-                                        accept="image/jpeg,image/png,image/webp"
-                                        maxSizeMb={10}
-                                        onChange={(files) => {
-                                            const [selfie] = files;
-                                            setVerificationDocs((current) => ({ ...current, selfie: selfie ?? "" }));
-                                        }}
-                                        onFileAdded={async (file) => {
-                                            const reader = new FileReader();
-                                            const base64 = await new Promise<string>((resolve, reject) => {
-                                                reader.onload = () => resolve(reader.result as string);
-                                                reader.onerror = reject;
-                                                reader.readAsDataURL(file);
-                                            });
-                                            return base64;
-                                        }}
-                                    />
-                                    <Upload
-                                        label="Proof of ownership"
-                                        helperText="Ownership document"
-                                        accept="image/jpeg,image/png,image/webp,application/pdf"
-                                        maxSizeMb={10}
-                                        onChange={(files) => {
-                                            const [proofOfOwnership] = files;
-                                            setVerificationDocs((current) => ({ ...current, proofOfOwnership: proofOfOwnership ?? "" }));
-                                        }}
-                                        onFileAdded={async (file) => {
-                                            const reader = new FileReader();
-                                            const base64 = await new Promise<string>((resolve, reject) => {
-                                                reader.onload = () => resolve(reader.result as string);
-                                                reader.onerror = reject;
-                                                reader.readAsDataURL(file);
-                                            });
-                                            return base64;
-                                        }}
-                                    />
+                <div className="space-y-2">
+                    <Card variant="strong" padding="sm" className="p-0 overflow-hidden border border-border/60">
+                        <button
+                            type="button"
+                            onClick={() => setIsPersonalInfoExpanded((prev) => !prev)}
+                            className="flex w-full items-center gap-3 px-4 py-3 text-left"
+                        >
+                            <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-primary-700/10 text-primary-700">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
+                                </svg>
+                            </span>
+                            <span className="flex-1 text-sm font-semibold text-text.primary">Personal Information</span>
+                            <svg
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className={`text-text.secondary transition-transform duration-200 ${isPersonalInfoExpanded ? "rotate-180" : ""}`}
+                            >
+                                <polyline points="6 9 12 15 18 9" />
+                            </svg>
+                        </button>
+                        {isPersonalInfoExpanded && (
+                            <div className="space-y-3 border-t border-border/60 px-4 py-3">
+                                <div className="grid grid-cols-2 gap-3">
+                                    <Input label="First name" name="firstName" value={form.firstName} onChange={handleChange} className="col-span-1" />
+                                    <Input label="Last name" name="lastName" value={form.lastName} onChange={handleChange} className="col-span-1" />
                                 </div>
-                                <Button
-                                    variant="secondary"
-                                    size="md"
-                                    fullWidth
-                                    disabled={verificationMutation.isPending || !verificationDocs.idDocument || !verificationDocs.selfie || !verificationDocs.proofOfOwnership}
-                                    loading={verificationMutation.isPending}
-                                    onClick={() => verificationMutation.mutate(verificationDocs)}
-                                >
-                                    Submit verification docs
-                                </Button>
+                                <div className="mt-0">
+                                    <Input label="Phone number" name="phone" value={form.phone} onChange={handleChange} />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <Input label="Faculty" name="faculty" value={form.faculty} onChange={handleChange} className="col-span-1" />
+                                    <Input label="Level" name="level" value={form.level} onChange={handleChange} className="col-span-1" />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-semibold uppercase tracking-[0.12em] text-text.secondary">University</label>
+                                    <select
+                                        name="universityId"
+                                        value={form.universityId}
+                                        onChange={handleChange}
+                                        className="mt-1.5 h-12 w-full rounded-2xl border border-border bg-cream-50 px-4 text-sm text-text.primary outline-none transition-all duration-200 focus:border-primary-400 focus:shadow-brand focus:ring-2 focus:ring-primary-500/20"
+                                    >
+                                        <option value="">Select a university</option>
+                                        {universities.map((university: University) => (
+                                            <option key={university.id} value={university.id}>
+                                                {university.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                {isAgent && (
+                                    <div>
+                                        <Input label="Business name" name="businessName" value={form.businessName} onChange={handleChange} />
+                                    </div>
+                                )}
                             </div>
                         )}
                     </Card>
+
+                    <NavItem icon="help" label="Help" onClick={() => navigate("/help")} />
+                    <NavItem icon="info" label="About" onClick={() => navigate("/about")} />
+                    <NavItem icon="shield" label="Security" onClick={() => navigate("/settings")} />
+                    <NavItem icon="bell" label="Notifications" onClick={() => navigate("/notifications")} />
+                    <NavItem icon="settings" label="Settings" onClick={() => navigate("/settings")} />
+                </div>
+
+                {isAgent && (
+                    <Card variant="strong" padding="sm" className="p-0 overflow-hidden border border-border/60">
+                        <div className="px-4 py-3">
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text.secondary">Verification</p>
+                                    <p className="mt-1 text-sm text-text.primary">
+                                        {profile?.agent?.isVerified ? "Verified. The badge is visible on your profile." : "Submit your ID, selfie, and proof of ownership to unlock the verified badge."}
+                                    </p>
+                                </div>
+                                {profile?.agent?.isVerified && <VerifiedBadge size={20} showText />}
+                            </div>
+                            {!profile?.agent?.isVerified && (
+                                <div className="mt-3 space-y-3">
+                                    <div className="grid gap-3 sm:grid-cols-3">
+                                        <Upload
+                                            label="ID document"
+                                            helperText="Government-issued ID"
+                                            accept="image/jpeg,image/png,image/webp,application/pdf"
+                                            maxSizeMb={10}
+                                            onChange={(files) => {
+                                                const [idDocument] = files;
+                                                setVerificationDocs((current) => ({ ...current, idDocument: idDocument ?? "" }));
+                                            }}
+                                            onFileAdded={async (file) => {
+                                                const reader = new FileReader();
+                                                const base64 = await new Promise<string>((resolve, reject) => {
+                                                    reader.onload = () => resolve(reader.result as string);
+                                                    reader.onerror = reject;
+                                                    reader.readAsDataURL(file);
+                                                });
+                                                return base64;
+                                            }}
+                                        />
+                                        <Upload
+                                            label="Selfie"
+                                            helperText="Clear selfie"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            maxSizeMb={10}
+                                            onChange={(files) => {
+                                                const [selfie] = files;
+                                                setVerificationDocs((current) => ({ ...current, selfie: selfie ?? "" }));
+                                            }}
+                                            onFileAdded={async (file) => {
+                                                const reader = new FileReader();
+                                                const base64 = await new Promise<string>((resolve, reject) => {
+                                                    reader.onload = () => resolve(reader.result as string);
+                                                    reader.onerror = reject;
+                                                    reader.readAsDataURL(file);
+                                                });
+                                                return base64;
+                                            }}
+                                        />
+                                        <Upload
+                                            label="Proof of ownership"
+                                            helperText="Ownership document"
+                                            accept="image/jpeg,image/png,image/webp,application/pdf"
+                                            maxSizeMb={10}
+                                            onChange={(files) => {
+                                                const [proofOfOwnership] = files;
+                                                setVerificationDocs((current) => ({ ...current, proofOfOwnership: proofOfOwnership ?? "" }));
+                                            }}
+                                            onFileAdded={async (file) => {
+                                                const reader = new FileReader();
+                                                const base64 = await new Promise<string>((resolve, reject) => {
+                                                    reader.onload = () => resolve(reader.result as string);
+                                                    reader.onerror = reject;
+                                                    reader.readAsDataURL(file);
+                                                });
+                                                return base64;
+                                            }}
+                                        />
+                                    </div>
+                                    <Button
+                                        variant="secondary"
+                                        size="md"
+                                        fullWidth
+                                        disabled={verificationMutation.isPending || !verificationDocs.idDocument || !verificationDocs.selfie || !verificationDocs.proofOfOwnership}
+                                        loading={verificationMutation.isPending}
+                                        onClick={() => verificationMutation.mutate(verificationDocs)}
+                                    >
+                                        Submit agent verification docs
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                    </Card>
                 )}
 
-                <Card variant="strong" padding="md" className="border border-border/60">
-                    <button
-                        onClick={() => navigate("/help")}
-                        className="flex w-full items-center justify-between gap-3"
-                    >
-                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text.secondary">Help</p>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text.secondary">
-                            <polyline points="9 18 15 12 9 6" />
-                        </svg>
-                    </button>
-                </Card>
-
-                <Card variant="strong" padding="md" className="border border-border/60">
-                    <div className="flex w-full items-center justify-between gap-3">
-                        <button type="button" onClick={() => navigate("/about")} className="flex items-center gap-3">
-                            <div>
-                                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text.secondary">About</p>
-                            </div>
-                        </button>
-                        <button type="button" onClick={() => navigate("/settings")} className="flex items-center gap-2 rounded-full bg-cream-50 px-3 py-2 text-xs font-semibold text-text.primary hover:shadow-sm">
-                            Settings
-                        </button>
-                    </div>
-                </Card>
-
-                <Card variant="strong" padding="md" className="border border-border/60 opacity-60">
-                    <div className="flex w-full items-center justify-between gap-3">
-                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text.secondary">Security</p>
-                        <span className="text-xs text-text.secondary">Coming soon</span>
-                    </div>
-                </Card>
-
-                <Card variant="strong" padding="md" className="border border-border/60 opacity-60">
-                    <div className="flex w-full items-center justify-between gap-3">
-                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text.secondary">Notifications</p>
-                        <span className="text-xs text-text.secondary">Coming soon</span>
-                    </div>
-                </Card>
-
-                <Card variant="strong" padding="md" className="border border-border/60 opacity-60">
-                    <div className="flex w-full items-center justify-between gap-3">
-                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-text.secondary">Settings</p>
-                        <span className="text-xs text-text.secondary">Coming soon</span>
-                    </div>
-                </Card>
                 <button
                     type="button"
                     onClick={() => {
                         logout();
                         navigate("/");
                     }}
-                    className="flex w-full items-center justify-center gap-2 rounded-2xl border-error/40 bg-error/8 py-3.5 text-sm font-semibold text-error transition-all duration-200 hover:bg-error/10 active:scale-[0.98]"
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl border border-border/60 bg-white px-4 py-3 text-sm font-medium text-text.secondary transition-all duration-200 hover:border-border hover:text-text.primary active:scale-[0.98]"
                 >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
                     Log out
                 </button>
             </div>
@@ -462,3 +437,57 @@ export default function ProfilePage() {
         </Shell>
     );
 }
+
+function NavItem({ icon, label, onClick }: { icon: string; label: string; onClick: () => void }) {
+    const iconPaths: Record<string, React.ReactNode> = {
+        help: (
+            <circle cx="12" cy="12" r="10" />
+        ),
+        info: (
+            <circle cx="12" cy="12" r="10" />
+        ),
+        shield: (
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        ),
+        bell: (
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+        ),
+        settings: (
+            <circle cx="12" cy="12" r="3" />
+        ),
+    };
+
+    const iconExtra: Record<string, React.ReactNode> = {
+        help: (
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" strokeLinecap="round" strokeLinejoin="round" />
+        ),
+        info: (
+            <>
+                <line x1="12" y1="16" x2="12" y2="12" strokeLinecap="round" strokeLinejoin="round" />
+                <line x1="12" y1="8" x2="12.01" y2="8" strokeLinecap="round" strokeLinejoin="round" />
+            </>
+        ),
+        settings: (
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        ),
+    };
+
+    return (
+        <Card variant="strong" padding="sm" className="p-0 overflow-hidden border border-border/60">
+            <button onClick={onClick} className="flex w-full items-center gap-3 px-4 py-3 text-left">
+                <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-border/60 text-text.secondary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        {iconPaths[icon]}
+                        {iconExtra[icon]}
+                    </svg>
+                </span>
+                <span className="flex-1 text-sm font-semibold text-text.primary">{label}</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text.secondary">
+                    <polyline points="9 18 15 12 9 6" />
+                </svg>
+            </button>
+        </Card>
+    );
+}
+
+

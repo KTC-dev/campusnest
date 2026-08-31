@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { BottomNav, IconHome, IconBrowse, IconRoommates, IconMessages, IconProfile } from "@/components/ui/BottomNav";
+import { BottomNav, IconHome, IconBrowse, IconRoommates, IconMessages, IconProfile, IconSettings } from "@/components/ui/BottomNav";
 
 type StudentMobileShellProps = {
     children: ReactNode;
@@ -10,6 +10,7 @@ const navItems = [
     { label: "Browse", to: "/properties", icon: <IconBrowse /> },
     { label: "Roommates", to: "/roommates", icon: <IconRoommates /> },
     { label: "Messages", to: "/conversations", icon: <IconMessages /> },
+    { label: "Settings", to: "/settings", icon: <IconSettings /> },
     { label: "Profile", to: "/profile", icon: <IconProfile /> },
 ];
 

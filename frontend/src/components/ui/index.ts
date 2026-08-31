@@ -6,4 +6,4 @@ export { Input } from "./Input";
 export { EmptyState } from "./EmptyState";
 export { LoadingState, CardSkeleton, ListSkeleton, PropertyCardSkeleton, PageLoader } from "./LoadingState";
 export { ErrorState } from "./ErrorState";
-export { BottomNav, IconHome, IconBrowse, IconRoommates, IconMessages, IconProfile, IconAddProperty, IconProperties } from "./BottomNav";
+export { BottomNav, IconHome, IconBrowse, IconRoommates, IconMessages, IconProfile, IconAddProperty, IconProperties, IconSettings } from "./BottomNav";

@@ -12,7 +12,12 @@ class SessionService {
     }
 
     async revokeAllExcept(userId: string, keepId: string | null) {
-        await prisma.refreshToken.updateMany({ where: { userId, id: { not: keepId } }, data: { revoked: true } });
+        // If keepId is null, revoke all tokens for userId. Otherwise revoke all except keepId.
+        if (!keepId) {
+            await prisma.refreshToken.updateMany({ where: { userId }, data: { revoked: true } });
+            return;
+        }
+        await prisma.refreshToken.updateMany({ where: { userId, id: { not: keepId } as any }, data: { revoked: true } });
     }
 }
 

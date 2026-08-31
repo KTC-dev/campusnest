@@ -9,7 +9,7 @@ function formatNaira(price: string) {
     );
 }
 
-export function LandlordPropertyCard({ property }: { property: Property }) {
+export function AgentPropertyCard({ property }: { property: Property }) {
     const primaryImage = property.images.find((image) => image.isPrimary) ?? property.images[0];
 
     return (
