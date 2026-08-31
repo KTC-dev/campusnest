@@ -17,8 +17,8 @@ export const bookingService = {
     return data.data;
   },
 
-  async listForLandlord() {
-    const { data } = await api.get<ApiResponse<Booking[]>>("/bookings/landlord");
+  async listForAgent() {
+    const { data } = await api.get<ApiResponse<Booking[]>>("/bookings/agent");
     return data.data;
   },
 

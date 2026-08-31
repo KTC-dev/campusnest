@@ -8,14 +8,14 @@ import { getFriendlyErrorMessage } from "@/utils/error";
 import { useAuthStore } from "@/store/authStore";
 import type { VerificationRequest, VerificationStatus } from "@/types";
 
-type Tab = "overview" | "moderation" | "students" | "landlords" | "bookings" | "verifications";
+type Tab = "overview" | "moderation" | "students" | "agents" | "bookings" | "verifications";
 type DecisionMode = "approve" | "reject" | null;
 
 const tabs: { id: Tab; label: string; shortLabel: string; icon: string }[] = [
     { id: "overview", label: "Overview", shortLabel: "Overview", icon: "◉" },
     { id: "moderation", label: "Pending listings", shortLabel: "Listings", icon: "▣" },
     { id: "students", label: "Students", shortLabel: "Students", icon: "◌" },
-    { id: "landlords", label: "Landlords", shortLabel: "Landlords", icon: "⌂" },
+    { id: "agents", label: "Agents", shortLabel: "Agents", icon: "⌂" },
     { id: "bookings", label: "Bookings", shortLabel: "Bookings", icon: "↳" },
     { id: "verifications", label: "Verifications", shortLabel: "Verifications", icon: "✓" },
 ];
@@ -310,7 +310,7 @@ function VerificationDecisionModal({ mode, item, onClose, onConfirm, isSubmittin
         >
             <div className="space-y-4">
                 <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
-                    <p className="text-sm font-semibold text-slate-900">{item.landlord?.businessName ?? `${item.landlord?.firstName ?? "Landlord"} ${item.landlord?.lastName ?? ""}`.trim()}</p>
+                    <p className="text-sm font-semibold text-slate-900">{item.agent?.businessName ?? `${item.agent?.firstName ?? "Agent"} ${item.agent?.lastName ?? ""}`.trim()}</p>
                     <p className="mt-1 text-sm text-slate-500">{item.user?.email ?? "Email not available"}</p>
                 </div>
                 <label className="block text-sm font-medium text-slate-700">
@@ -381,7 +381,7 @@ function OverviewTab() {
         <IconStat icon="▦" label="Pending Listings" value={pendingProperties.length} tone="bg-sky-100 text-sky-700" />
         <IconStat icon="✓" label="Approved Listings" value={approvedListings} tone="bg-emerald-100 text-emerald-700" />
         <IconStat icon="◌" label="Total Students" value={stats?.totalStudents ?? "—"} tone="bg-brand-100 text-brand-800" />
-        <IconStat icon="⌂" label="Total Landlords" value={stats?.totalLandlords ?? "—"} tone="bg-fuchsia-100 text-fuchsia-700" />
+        <IconStat icon="⌂" label="Total Agents" value={stats?.totalAgents ?? "—"} tone="bg-fuchsia-100 text-fuchsia-700" />
         <IconStat icon="↳" label="Active Bookings" value={stats?.approvedBookings ?? "—"} tone="bg-slate-100 text-slate-700" />
       </div>
 
@@ -454,7 +454,7 @@ function ModerationTab() {
                 <div>
                   <p className="text-lg font-semibold text-slate-950">{property.title}</p>
                   <p className="mt-1 text-sm text-slate-500">
-                    {property.location} · {property.landlord?.firstName} {property.landlord?.lastName}
+                    {property.location} · {property.agent?.firstName} {property.agent?.lastName}
                   </p>
                 </div>
                 <span className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${listingStatusTone(property.status)}`}>{property.status}</span>
@@ -557,13 +557,13 @@ function StudentsTab() {
   );
 }
 
-function LandlordsTab() {
+function AgentsTab() {
   const queryClient = useQueryClient();
-  const { data, isLoading } = useQuery({ queryKey: ["admin-landlords"], queryFn: () => adminService.listLandlords() });
+  const { data, isLoading } = useQuery({ queryKey: ["admin-agents"], queryFn: () => adminService.listAgents() });
 
   async function toggleActive(userId: string, isActive: boolean) {
     await adminService.setUserActive(userId, !isActive);
-    queryClient.invalidateQueries({ queryKey: ["admin-landlords"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-agents"] });
   }
 
   if (isLoading) return <p className="text-sm text-slate-500">Loading…</p>;
@@ -571,21 +571,21 @@ function LandlordsTab() {
   return (
     <>
       <div className="grid gap-3 md:hidden">
-        {data?.items.map((landlord) => (
-          <div key={landlord.id} className="rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm">
+        {data?.items.map((agent) => (
+          <div key={agent.id} className="rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-base font-semibold text-slate-950">{landlord.businessName || `${landlord.firstName} ${landlord.lastName}`}</p>
-                <p className="text-sm text-slate-500">{landlord.user.email}</p>
+                <p className="text-base font-semibold text-slate-950">{agent.businessName || `${agent.firstName} ${agent.lastName}`}</p>
+                <p className="text-sm text-slate-500">{agent.user.email}</p>
               </div>
-              <span className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${landlord.isVerified ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{landlord.isVerified ? "verified" : "pending"}</span>
+              <span className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${agent.isVerified ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{agent.isVerified ? "verified" : "pending"}</span>
             </div>
             <div className="mt-3 space-y-2">
-              <PeopleRow label="Listings" value={String(landlord._count.properties)} />
-              <PeopleRow label="Joined" value={formatDay(landlord.user.createdAt)} />
+              <PeopleRow label="Listings" value={String(agent._count.properties)} />
+              <PeopleRow label="Joined" value={formatDay(agent.user.createdAt)} />
             </div>
-            <button onClick={() => toggleActive(landlord.id, landlord.user.isActive)} className="mt-4 w-full rounded-full bg-brand-900 px-4 py-3 text-sm font-semibold text-white">
-              {landlord.user.isActive ? "Deactivate" : "Reactivate"}
+            <button onClick={() => toggleActive(agent.id, agent.user.isActive)} className="mt-4 w-full rounded-full bg-brand-900 px-4 py-3 text-sm font-semibold text-white">
+              {agent.user.isActive ? "Deactivate" : "Reactivate"}
             </button>
           </div>
         ))}
@@ -604,14 +604,14 @@ function LandlordsTab() {
             </tr>
           </thead>
           <tbody>
-            {data?.items.map((landlord) => (
-              <tr key={landlord.id} className="border-t border-slate-100">
-                <td className="px-4 py-4 font-medium text-slate-900">{landlord.businessName || `${landlord.firstName} ${landlord.lastName}`}</td>
-                <td className="px-4 py-4 text-slate-600">{landlord.user.email}</td>
-                <td className="px-4 py-4 text-slate-600">{landlord._count.properties}</td>
-                <td className="px-4 py-4 text-slate-600">{formatDay(landlord.user.createdAt)}</td>
-                <td className="px-4 py-4"><span className={`rounded-full px-3 py-1 text-xs font-semibold ${landlord.isVerified ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{landlord.isVerified ? "verified" : "pending"}</span></td>
-                <td className="px-4 py-4 text-right"><button onClick={() => toggleActive(landlord.id, landlord.user.isActive)} className="rounded-full border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700">{landlord.user.isActive ? "Deactivate" : "Reactivate"}</button></td>
+            {data?.items.map((agent) => (
+              <tr key={agent.id} className="border-t border-slate-100">
+                <td className="px-4 py-4 font-medium text-slate-900">{agent.businessName || `${agent.firstName} ${agent.lastName}`}</td>
+                <td className="px-4 py-4 text-slate-600">{agent.user.email}</td>
+                <td className="px-4 py-4 text-slate-600">{agent._count.properties}</td>
+                <td className="px-4 py-4 text-slate-600">{formatDay(agent.user.createdAt)}</td>
+                <td className="px-4 py-4"><span className={`rounded-full px-3 py-1 text-xs font-semibold ${agent.isVerified ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{agent.isVerified ? "verified" : "pending"}</span></td>
+                <td className="px-4 py-4 text-right"><button onClick={() => toggleActive(agent.id, agent.user.isActive)} className="rounded-full border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700">{agent.user.isActive ? "Deactivate" : "Reactivate"}</button></td>
               </tr>
             ))}
           </tbody>
@@ -681,19 +681,19 @@ function VerificationCard({ item, onView, onApprove, onReject }: { item: Verific
       <div className="p-4 sm:p-5">
         <div className="flex items-start gap-4">
           <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[22px] bg-gradient-to-br from-brand-900 to-forest-800 text-lg font-bold text-white">
-            {getInitials(item.landlord?.firstName, item.landlord?.lastName, item.user?.email)}
+            {getInitials(item.agent?.firstName, item.agent?.lastName, item.user?.email)}
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <h3 className="truncate text-lg font-semibold text-slate-950">{item.landlord?.businessName ?? `${item.landlord?.firstName ?? "Unknown"} ${item.landlord?.lastName ?? ""}`.trim()}</h3>
+                <h3 className="truncate text-lg font-semibold text-slate-950">{item.agent?.businessName ?? `${item.agent?.firstName ?? "Unknown"} ${item.agent?.lastName ?? ""}`.trim()}</h3>
                 <p className="mt-1 text-sm text-slate-500">{item.user?.email ?? "Email unavailable"}</p>
               </div>
               <span className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ring-1 ${statusTone(item.status)}`}>{item.status.replace("_", " ")}</span>
             </div>
             <div className="mt-3 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
               <p>Phone: Not provided</p>
-              <p>Business: {item.landlord?.businessName ?? "Not provided"}</p>
+              <p>Business: {item.agent?.businessName ?? "Not provided"}</p>
               <p>Registered: {formatDay(item.createdAt)}</p>
               <p>University: Not provided in current API</p>
             </div>
@@ -734,7 +734,7 @@ function VerificationDetailsModal({ item, onClose, onApprove, onReject, onOpenDo
   return (
     <Dialog
       title="Verification details"
-      description="Review the landlord, inspect each document, and approve or reject without leaving the dashboard."
+      description="Review the agent, inspect each document, and approve or reject without leaving the dashboard."
       onClose={onClose}
       footer={
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
@@ -752,17 +752,17 @@ function VerificationDetailsModal({ item, onClose, onApprove, onReject, onOpenDo
           <div className="rounded-[24px] border border-slate-200 bg-white p-4">
             <div className="flex items-start gap-4">
               <div className="flex h-16 w-16 items-center justify-center rounded-[22px] bg-gradient-to-br from-brand-900 to-forest-800 text-lg font-bold text-white">
-                {getInitials(item.landlord?.firstName, item.landlord?.lastName, item.user?.email)}
+                {getInitials(item.agent?.firstName, item.agent?.lastName, item.user?.email)}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-xl font-semibold text-slate-950">{item.landlord?.businessName ?? `${item.landlord?.firstName ?? "Unknown"} ${item.landlord?.lastName ?? ""}`.trim()}</h3>
+                  <h3 className="text-xl font-semibold text-slate-950">{item.agent?.businessName ?? `${item.agent?.firstName ?? "Unknown"} ${item.agent?.lastName ?? ""}`.trim()}</h3>
                   <span className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ring-1 ${statusTone(item.status)}`}>{item.status.replace("_", " ")}</span>
                 </div>
                 <div className="mt-3 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
                   <p><span className="font-semibold text-slate-900">Email:</span> {item.user?.email ?? "Not available"}</p>
                   <p><span className="font-semibold text-slate-900">Phone:</span> Not provided in current API</p>
-                  <p><span className="font-semibold text-slate-900">Business:</span> {item.landlord?.businessName ?? "Not provided"}</p>
+                  <p><span className="font-semibold text-slate-900">Business:</span> {item.agent?.businessName ?? "Not provided"}</p>
                   <p><span className="font-semibold text-slate-900">University:</span> Not provided in current API</p>
                   <p><span className="font-semibold text-slate-900">Registration date:</span> {formatDate(item.createdAt)}</p>
                   <p><span className="font-semibold text-slate-900">Property count:</span> Not provided in current API</p>
@@ -783,7 +783,7 @@ function VerificationDetailsModal({ item, onClose, onApprove, onReject, onOpenDo
             <div className="mt-4 space-y-3">
               <HistoryRow label="Submitted" value={formatDate(item.createdAt)} tone="bg-sky-100 text-sky-700" />
               <HistoryRow label="Last updated" value={formatDate(item.reviewedAt ?? item.createdAt)} tone="bg-brand-100 text-brand-800" />
-              <HistoryRow label="Ownership confirmation" value={item.submitterConfirmation ? "Confirmed by landlord" : "Not confirmed"} tone={item.submitterConfirmation ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"} />
+              <HistoryRow label="Ownership confirmation" value={item.submitterConfirmation ? "Confirmed by agent" : "Not confirmed"} tone={item.submitterConfirmation ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"} />
               <HistoryRow label="Admin notes" value={item.adminNotes ?? "No notes yet"} tone="bg-slate-100 text-slate-700" />
             </div>
           </div>
@@ -839,7 +839,7 @@ function OverviewTab() {
                 <IconStat icon="▦" label="Pending Listings" value={pendingProperties.length} tone="bg-sky-100 text-sky-700" />
                 <IconStat icon="✓" label="Approved Listings" value={approvedListings} tone="bg-emerald-100 text-emerald-700" />
                 <IconStat icon="◌" label="Total Students" value={stats?.totalStudents ?? "—"} tone="bg-brand-100 text-brand-800" />
-                <IconStat icon="⌂" label="Total Landlords" value={stats?.totalLandlords ?? "—"} tone="bg-fuchsia-100 text-fuchsia-700" />
+                <IconStat icon="⌂" label="Total Agents" value={stats?.totalAgents ?? "—"} tone="bg-fuchsia-100 text-fuchsia-700" />
                 <IconStat icon="↳" label="Active Bookings" value={stats?.approvedBookings ?? "—"} tone="bg-slate-100 text-slate-700" />
             </div>
 
@@ -957,7 +957,7 @@ function ModerationTab() {
                                 <div>
                                     <p className="text-lg font-semibold text-slate-950">{property.title}</p>
                                     <p className="mt-1 text-sm text-slate-500">
-                                        {property.location} · {property.landlord?.firstName} {property.landlord?.lastName}
+                                        {property.location} · {property.agent?.firstName} {property.agent?.lastName}
                                     </p>
                                 </div>
                                 <span className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${listingStatusTone(property.status)}`}>{property.status}</span>
@@ -1070,13 +1070,13 @@ function StudentsTab() {
     );
 }
 
-function LandlordsTab() {
+function AgentsTab() {
     const queryClient = useQueryClient();
-    const { data, isLoading } = useQuery({ queryKey: ["admin-landlords"], queryFn: () => adminService.listLandlords() });
+    const { data, isLoading } = useQuery({ queryKey: ["admin-agents"], queryFn: () => adminService.listAgents() });
 
     async function toggleActive(userId: string, isActive: boolean) {
         await adminService.setUserActive(userId, !isActive);
-        queryClient.invalidateQueries({ queryKey: ["admin-landlords"] });
+        queryClient.invalidateQueries({ queryKey: ["admin-agents"] });
     }
 
     if (isLoading) return <p className="text-sm text-slate-500">Loading…</p>;
@@ -1084,21 +1084,21 @@ function LandlordsTab() {
     return (
         <>
             <div className="grid gap-3 md:hidden">
-                {data?.items.map((landlord) => (
-                    <div key={landlord.id} className="rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm">
+                {data?.items.map((agent) => (
+                    <div key={agent.id} className="rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm">
                         <div className="flex items-start justify-between gap-3">
                             <div>
-                                <p className="text-base font-semibold text-slate-950">{landlord.businessName || `${landlord.firstName} ${landlord.lastName}`}</p>
-                                <p className="text-sm text-slate-500">{landlord.user.email}</p>
+                                <p className="text-base font-semibold text-slate-950">{agent.businessName || `${agent.firstName} ${agent.lastName}`}</p>
+                                <p className="text-sm text-slate-500">{agent.user.email}</p>
                             </div>
-                            <span className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${landlord.isVerified ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{landlord.isVerified ? "verified" : "pending"}</span>
+                            <span className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${agent.isVerified ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{agent.isVerified ? "verified" : "pending"}</span>
                         </div>
                         <div className="mt-3 space-y-2">
-                            <PeopleRow label="Listings" value={String(landlord._count.properties)} />
-                            <PeopleRow label="Joined" value={formatDay(landlord.user.createdAt)} />
+                            <PeopleRow label="Listings" value={String(agent._count.properties)} />
+                            <PeopleRow label="Joined" value={formatDay(agent.user.createdAt)} />
                         </div>
-                        <button onClick={() => toggleActive(landlord.id, landlord.user.isActive)} className="mt-4 w-full rounded-full bg-brand-900 px-4 py-3 text-sm font-semibold text-white">
-                            {landlord.user.isActive ? "Deactivate" : "Reactivate"}
+                        <button onClick={() => toggleActive(agent.id, agent.user.isActive)} className="mt-4 w-full rounded-full bg-brand-900 px-4 py-3 text-sm font-semibold text-white">
+                            {agent.user.isActive ? "Deactivate" : "Reactivate"}
                         </button>
                     </div>
                 ))}
@@ -1117,14 +1117,14 @@ function LandlordsTab() {
                         </tr>
                     </thead>
                     <tbody>
-                        {data?.items.map((landlord) => (
-                            <tr key={landlord.id} className="border-t border-slate-100">
-                                <td className="px-4 py-4 font-medium text-slate-900">{landlord.businessName || `${landlord.firstName} ${landlord.lastName}`}</td>
-                                <td className="px-4 py-4 text-slate-600">{landlord.user.email}</td>
-                                <td className="px-4 py-4 text-slate-600">{landlord._count.properties}</td>
-                                <td className="px-4 py-4 text-slate-600">{formatDay(landlord.user.createdAt)}</td>
-                                <td className="px-4 py-4"><span className={`rounded-full px-3 py-1 text-xs font-semibold ${landlord.isVerified ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{landlord.isVerified ? "verified" : "pending"}</span></td>
-                                <td className="px-4 py-4 text-right"><button onClick={() => toggleActive(landlord.id, landlord.user.isActive)} className="rounded-full border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700">{landlord.user.isActive ? "Deactivate" : "Reactivate"}</button></td>
+                        {data?.items.map((agent) => (
+                            <tr key={agent.id} className="border-t border-slate-100">
+                                <td className="px-4 py-4 font-medium text-slate-900">{agent.businessName || `${agent.firstName} ${agent.lastName}`}</td>
+                                <td className="px-4 py-4 text-slate-600">{agent.user.email}</td>
+                                <td className="px-4 py-4 text-slate-600">{agent._count.properties}</td>
+                                <td className="px-4 py-4 text-slate-600">{formatDay(agent.user.createdAt)}</td>
+                                <td className="px-4 py-4"><span className={`rounded-full px-3 py-1 text-xs font-semibold ${agent.isVerified ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{agent.isVerified ? "verified" : "pending"}</span></td>
+                                <td className="px-4 py-4 text-right"><button onClick={() => toggleActive(agent.id, agent.user.isActive)} className="rounded-full border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700">{agent.user.isActive ? "Deactivate" : "Reactivate"}</button></td>
                             </tr>
                         ))}
                     </tbody>
@@ -1194,19 +1194,19 @@ function VerificationCard({ item, onView, onApprove, onReject }: { item: Verific
             <div className="p-4 sm:p-5">
                 <div className="flex items-start gap-4">
                     <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[22px] bg-gradient-to-br from-brand-900 to-forest-800 text-lg font-bold text-white">
-                        {getInitials(item.landlord?.firstName, item.landlord?.lastName, item.user?.email)}
+                        {getInitials(item.agent?.firstName, item.agent?.lastName, item.user?.email)}
                     </div>
                     <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-start justify-between gap-3">
                             <div className="min-w-0">
-                                <h3 className="truncate text-lg font-semibold text-slate-950">{item.landlord?.businessName ?? `${item.landlord?.firstName ?? "Unknown"} ${item.landlord?.lastName ?? ""}`.trim()}</h3>
+                                <h3 className="truncate text-lg font-semibold text-slate-950">{item.agent?.businessName ?? `${item.agent?.firstName ?? "Unknown"} ${item.agent?.lastName ?? ""}`.trim()}</h3>
                                 <p className="mt-1 text-sm text-slate-500">{item.user?.email ?? "Email unavailable"}</p>
                             </div>
                             <span className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ring-1 ${statusTone(item.status)}`}>{item.status.replace("_", " ")}</span>
                         </div>
                         <div className="mt-3 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
                             <p>Phone: Not provided</p>
-                            <p>Business: {item.landlord?.businessName ?? "Not provided"}</p>
+                            <p>Business: {item.agent?.businessName ?? "Not provided"}</p>
                             <p>Registered: {formatDay(item.createdAt)}</p>
                             <p>University: Not provided in current API</p>
                         </div>
@@ -1247,7 +1247,7 @@ function VerificationDetailsModal({ item, onClose, onApprove, onReject, onOpenDo
     return (
         <Dialog
             title="Verification details"
-            description="Review the landlord, inspect each document, and approve or reject without leaving the dashboard."
+            description="Review the agent, inspect each document, and approve or reject without leaving the dashboard."
             onClose={onClose}
             footer={
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
@@ -1265,17 +1265,17 @@ function VerificationDetailsModal({ item, onClose, onApprove, onReject, onOpenDo
                     <div className="rounded-[24px] border border-slate-200 bg-white p-4">
                         <div className="flex items-start gap-4">
                             <div className="flex h-16 w-16 items-center justify-center rounded-[22px] bg-gradient-to-br from-brand-900 to-forest-800 text-lg font-bold text-white">
-                                {getInitials(item.landlord?.firstName, item.landlord?.lastName, item.user?.email)}
+                                {getInitials(item.agent?.firstName, item.agent?.lastName, item.user?.email)}
                             </div>
                             <div className="min-w-0 flex-1">
                                 <div className="flex flex-wrap items-center gap-2">
-                                    <h3 className="text-xl font-semibold text-slate-950">{item.landlord?.businessName ?? `${item.landlord?.firstName ?? "Unknown"} ${item.landlord?.lastName ?? ""}`.trim()}</h3>
+                                    <h3 className="text-xl font-semibold text-slate-950">{item.agent?.businessName ?? `${item.agent?.firstName ?? "Unknown"} ${item.agent?.lastName ?? ""}`.trim()}</h3>
                                     <span className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ring-1 ${statusTone(item.status)}`}>{item.status.replace("_", " ")}</span>
                                 </div>
                                 <div className="mt-3 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
                                     <p><span className="font-semibold text-slate-900">Email:</span> {item.user?.email ?? "Not available"}</p>
                                     <p><span className="font-semibold text-slate-900">Phone:</span> Not provided in current API</p>
-                                    <p><span className="font-semibold text-slate-900">Business:</span> {item.landlord?.businessName ?? "Not provided"}</p>
+                                    <p><span className="font-semibold text-slate-900">Business:</span> {item.agent?.businessName ?? "Not provided"}</p>
                                     <p><span className="font-semibold text-slate-900">University:</span> Not provided in current API</p>
                                     <p><span className="font-semibold text-slate-900">Registration date:</span> {formatDate(item.createdAt)}</p>
                                     <p><span className="font-semibold text-slate-900">Property count:</span> Not provided in current API</p>
@@ -1296,7 +1296,7 @@ function VerificationDetailsModal({ item, onClose, onApprove, onReject, onOpenDo
                         <div className="mt-4 space-y-3">
                             <HistoryRow label="Submitted" value={formatDate(item.createdAt)} tone="bg-sky-100 text-sky-700" />
                             <HistoryRow label="Last updated" value={formatDate(item.reviewedAt ?? item.createdAt)} tone="bg-brand-100 text-brand-800" />
-                            <HistoryRow label="Ownership confirmation" value={item.submitterConfirmation ? "Confirmed by landlord" : "Not confirmed"} tone={item.submitterConfirmation ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"} />
+                            <HistoryRow label="Ownership confirmation" value={item.submitterConfirmation ? "Confirmed by agent" : "Not confirmed"} tone={item.submitterConfirmation ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"} />
                             <HistoryRow label="Admin notes" value={item.adminNotes ?? "No notes yet"} tone="bg-slate-100 text-slate-700" />
                         </div>
                     </div>
@@ -1421,7 +1421,7 @@ function TabContent({ tab }: { tab: Tab }) {
     if (tab === "overview") return <OverviewTab />;
     if (tab === "moderation") return <ModerationTab />;
     if (tab === "students") return <StudentsTab />;
-    if (tab === "landlords") return <LandlordsTab />;
+    if (tab === "agents") return <AgentsTab />;
     if (tab === "bookings") return <BookingsTab />;
     return <VerificationTab />;
 }

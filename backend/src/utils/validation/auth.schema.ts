@@ -22,7 +22,7 @@ export const registerStudentSchema = z.object({
   params: z.object({}).optional(),
 });
 
-export const registerLandlordSchema = z.object({
+export const registerAgentSchema = z.object({
   body: z.object({
     email: z.string().email(),
     password: passwordRule,

@@ -23,7 +23,7 @@ export function PropertyFiltersBar({ filters, amenities, onChange }: PropertyFil
   return (
     <aside className="space-y-6 rounded-2xl border border-slate-100 bg-white p-5">
       <div>
-        <p className="text-sm font-semibold text-slate-700">Price range (â‚¦/year)</p>
+        <p className="text-sm font-semibold text-slate-700">Price range (?/year)</p>
         <div className="mt-2 flex items-center gap-2">
           <input
             type="number"
@@ -32,7 +32,7 @@ export function PropertyFiltersBar({ filters, amenities, onChange }: PropertyFil
             onChange={(e) => set("minPrice", e.target.value ? Number(e.target.value) : undefined)}
             className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm"
           />
-          <span className="text-slate-400">â€“</span>
+          <span className="text-slate-400">–</span>
           <input
             type="number"
             placeholder="Max"
@@ -108,6 +108,59 @@ export function PropertyFiltersBar({ filters, amenities, onChange }: PropertyFil
           </div>
         </div>
       )}
+
+      <label className="flex items-center gap-2 text-sm text-slate-600">
+        <input
+          type="checkbox"
+          checked={filters.verifiedOnly ?? false}
+          onChange={(e) => set("verifiedOnly", e.target.checked)}
+          className="rounded border-slate-300 accent-brand-500"
+        />
+        Edurus verified only
+      </label>
+
+      <div>
+        <p className="text-sm font-semibold text-slate-700">Bedrooms</p>
+        <div className="mt-2 flex items-center gap-2">
+          <input
+            type="number"
+            placeholder="Min"
+            value={filters.minBedrooms ?? ""}
+            onChange={(e) => set("minBedrooms", e.target.value ? Number(e.target.value) : undefined)}
+            className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm"
+          />
+          <span className="text-slate-400">–</span>
+          <input
+            type="number"
+            placeholder="Max"
+            value={filters.maxBedrooms ?? ""}
+            onChange={(e) => set("maxBedrooms", e.target.value ? Number(e.target.value) : undefined)}
+            className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm"
+          />
+        </div>
+      </div>
+
+      <div>
+        <p className="text-sm font-semibold text-slate-700">Utilities & features</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {[
+            { key: "hasBorehole", label: "?? Borehole" },
+            { key: "hasGenerator", label: "? Generator" },
+            { key: "hasInverter", label: "?? Inverter" },
+            { key: "hasSecurity", label: "??? Security" },
+            { key: "furnished", label: "??? Furnished" },
+          ].map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => set(key as keyof PropertyFilters, filters[key as keyof PropertyFilters] ? undefined : true)}
+              className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${filters[key as keyof PropertyFilters] ? "border-brand-500 bg-brand-50 text-brand-600" : "border-slate-300 text-slate-600"
+                }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <label className="flex items-center gap-2 text-sm text-slate-600">
         <input

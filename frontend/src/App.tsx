@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+﻿import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { useAuthStore } from "@/store/authStore";
@@ -8,7 +8,7 @@ import RegisterPage from "@/pages/RegisterPage";
 import PropertyListingPage from "@/pages/PropertyListingPage";
 import PropertyDetailsPage from "@/pages/PropertyDetailsPage";
 import StudentDashboard from "@/pages/StudentDashboard";
-import LandlordDashboard from "@/pages/LandlordDashboard";
+import AgentDashboard from "@/pages/AgentDashboard";
 import MyPropertiesPage from "@/pages/MyPropertiesPage";
 import ListingFormPage from "@/pages/ListingFormPage";
 import RoommateMatchesPage from "@/pages/RoommateMatchesPage";
@@ -21,9 +21,14 @@ import PrivacyPage from "@/pages/PrivacyPage";
 import TermsPage from "@/pages/TermsPage";
 import HelpPage from "@/pages/HelpPage";
 import ProfilePage from "@/pages/ProfilePage";
+import SettingsPage from "@/pages/SettingsPage";
 import ConversationsPage from "@/pages/ConversationsPage";
 import VerificationPage from "@/pages/VerificationPage";
 import NotFoundPage from "@/pages/NotFoundPage";
+import NotificationsPage from "@/pages/NotificationsPage";
+import CreateAccommodationRequestPage from "@/pages/CreateAccommodationRequestPage";
+import MyAccommodationRequestsPage from "@/pages/MyAccommodationRequestsPage";
+import AgentRequestsPage from "@/pages/AgentRequestsPage";
 
 // A single /dashboard route renders the right dashboard for the logged-in
 // role. This keeps the URL stable across roles and matches how the app's
@@ -31,7 +36,7 @@ import NotFoundPage from "@/pages/NotFoundPage";
 function RoleDashboard() {
   const user = useAuthStore((s) => s.user);
   if (user?.role === "ADMIN") return <Navigate to="/admin" replace />;
-  if (user?.role === "LANDLORD") return <LandlordDashboard />;
+  if (user?.role === "AGENT") return <AgentDashboard />;
   return <StudentDashboard />;
 }
 
@@ -53,21 +58,26 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<RoleDashboard />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/conversations" element={<ConversationsPage />} />
           <Route path="/conversations/:id" element={<ConversationsPage />} />
           <Route path="/dashboard/listings/new" element={<ListingFormPage />} />
           <Route path="/dashboard/listings/:id/edit" element={<ListingFormPage />} />
         </Route>
 
-        <Route element={<ProtectedRoute allowedRoles={["LANDLORD"]} />}>
+        <Route element={<ProtectedRoute allowedRoles={["AGENT"]} />}>
           <Route path="/dashboard/properties" element={<MyPropertiesPage />} />
           <Route path="/verification" element={<VerificationPage />} />
+          <Route path="/dashboard/requests" element={<AgentRequestsPage />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={["STUDENT"]} />}>
           <Route path="/roommates" element={<RoommateMatchesPage />} />
           <Route path="/roommates/profile" element={<RoommateProfilePage />} />
           <Route path="/roommates/:id" element={<RoommateProfileViewPage />} />
+          <Route path="/accommodation-requests" element={<MyAccommodationRequestsPage />} />
+          <Route path="/accommodation-requests/new" element={<CreateAccommodationRequestPage />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>

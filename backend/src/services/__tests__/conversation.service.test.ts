@@ -7,7 +7,7 @@ const { mockPrisma, mockUploadService, mockNotificationService } = vi.hoisted(()
         messageAttachment: { create: vi.fn() },
         property: { findUnique: vi.fn() },
         student: { findUnique: vi.fn() },
-        landlord: { findUnique: vi.fn() },
+        agent: { findUnique: vi.fn() },
         user: { findUnique: vi.fn() },
         notification: { create: vi.fn() },
     },
@@ -33,11 +33,11 @@ describe("conversationService.createConversation", () => {
             title: "Luxury Self-Contain",
             location: "Federal University Otuoke",
             price: "350000",
-            landlordId: "landlord-1",
-            landlord: { userId: "landlord-user-1" },
+            agentId: "agent-1",
+            agent: { userId: "agent-user-1" },
         });
         mockPrisma.student.findUnique.mockResolvedValue({ id: "student-profile-1", userId: "student-1" });
-        mockPrisma.landlord.findUnique.mockResolvedValue({ id: "landlord-profile-1", userId: "landlord-user-1" });
+        mockPrisma.agent.findUnique.mockResolvedValue({ id: "agent-profile-1", userId: "agent-user-1" });
         mockPrisma.conversation.create.mockResolvedValue({ id: "conversation-1" });
         mockPrisma.message.create.mockResolvedValue({ id: "message-1" });
 
@@ -56,7 +56,7 @@ describe("conversationService.archiveConversation", () => {
         mockPrisma.conversation.findUnique.mockResolvedValue({
             id: "conversation-1",
             student: { userId: "student-1" },
-            landlord: { userId: "landlord-1" },
+            agent: { userId: "agent-1" },
         });
         mockPrisma.conversation.update.mockResolvedValue({ id: "conversation-1", isArchived: true });
 
@@ -68,3 +68,4 @@ describe("conversationService.archiveConversation", () => {
         }));
     });
 });
+

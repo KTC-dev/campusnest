@@ -47,7 +47,7 @@ export function StatsSection() {
         <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <Counter target={data?.studentsRegistered ?? 0} label="Students registered" />
           <Counter target={data?.verifiedProperties ?? 0} label="Verified properties" />
-          <Counter target={data?.verifiedLandlords ?? 0} label="Trusted landlords" />
+          <Counter target={data?.verifiedAgents ?? 0} label="Trusted agents" />
           <Counter target={data?.successfulBookings ?? 0} label="Successful bookings" />
         </div>
       </div>

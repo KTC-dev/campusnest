@@ -18,7 +18,7 @@ describe("propertyService.update", () => {
     it("does not forward amenityIds as a Prisma property field", async () => {
         const { propertyService } = await import("../property.service");
 
-        mockPrisma.property.findUnique.mockResolvedValue({ id: "prop1", landlordId: "landlord1" });
+        mockPrisma.property.findUnique.mockResolvedValue({ id: "prop1", agentId: "agent1" });
         mockPrisma.property.update.mockResolvedValue({
             id: "prop1",
             title: "Updated title",
@@ -34,10 +34,10 @@ describe("propertyService.update", () => {
             rejectionReason: null,
             images: [],
             amenities: [],
-            landlord: {},
+            agent: {},
         });
 
-        await propertyService.update("prop1", "landlord1", {
+        await propertyService.update("prop1", "agent1", {
             title: "Updated title",
             amenityIds: ["amenity-1"],
         });

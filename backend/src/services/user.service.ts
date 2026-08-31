@@ -19,7 +19,7 @@ class UserService {
             where: { id: userId },
             include: {
                 student: true,
-                landlord: true,
+                agent: true,
                 admin: true,
             },
         });
@@ -35,7 +35,7 @@ class UserService {
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
             student: user.student,
-            landlord: user.landlord,
+            agent: user.agent,
             admin: user.admin,
         };
     }
@@ -53,8 +53,8 @@ class UserService {
         if (Object.keys(roleSpecificData).length > 0) {
             if (user.role === Role.STUDENT) {
                 await prisma.student.update({ where: { userId }, data: roleSpecificData });
-            } else if (user.role === Role.LANDLORD) {
-                await prisma.landlord.update({ where: { userId }, data: roleSpecificData });
+            } else if (user.role === Role.AGENT) {
+                await prisma.agent.update({ where: { userId }, data: roleSpecificData });
             } else if (user.role === Role.ADMIN) {
                 await prisma.admin.update({ where: { userId }, data: roleSpecificData });
             }
@@ -76,7 +76,7 @@ class UserService {
             if (input.universityId !== undefined) data.universityId = input.universityId;
         }
 
-        if (role === Role.LANDLORD) {
+        if (role === Role.AGENT) {
             if (input.firstName !== undefined) data.firstName = input.firstName;
             if (input.lastName !== undefined) data.lastName = input.lastName;
             if (input.phone !== undefined) data.phone = input.phone;

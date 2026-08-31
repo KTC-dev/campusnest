@@ -18,6 +18,12 @@ export default function RoommateProfileViewPage() {
   });
 
   async function startRoommateChat() {
+    const myProfile = await roommateService.getMyProfile();
+    if (!myProfile) {
+      addToast({ type: "warning", title: "Create your profile first", message: "Set up your roommate profile before starting a chat." });
+      navigate("/roommates/profile");
+      return;
+    }
     try {
       const conversation = await conversationService.create({ roommateStudentId: id! });
       navigate(`/conversations/${conversation.id}`);
@@ -53,7 +59,7 @@ export default function RoommateProfileViewPage() {
         <section className="mobile-card-compact p-4">
           <div className="flex items-center justify-between gap-3">
             <Link to="/roommates" className="text-sm font-semibold text-brand-900">
-              ← Back to matches
+              ? Back to matches
             </Link>
           </div>
         </section>
@@ -68,7 +74,7 @@ export default function RoommateProfileViewPage() {
                 {student.firstName} {student.lastName}
               </h2>
               <p className="text-sm text-slate-500">
-                {student.faculty} • {student.level} • {student.university?.name}
+                {student.faculty} � {student.level} � {student.university?.name}
               </p>
               {student.isVerified && (
                 <span className="mt-1 inline-block rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
@@ -86,7 +92,7 @@ export default function RoommateProfileViewPage() {
               <div>
                 <p className="text-xs text-slate-500 mb-1">Budget</p>
                 <p className="font-medium text-slate-900">
-                  ₦{Number(roommateProfile.budgetMin).toLocaleString()} – ₦{Number(roommateProfile.budgetMax).toLocaleString()}/yr
+                  ?{Number(roommateProfile.budgetMin).toLocaleString()} � ?{Number(roommateProfile.budgetMax).toLocaleString()}/yr
                 </p>
               </div>
               <div>

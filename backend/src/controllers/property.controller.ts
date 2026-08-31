@@ -7,10 +7,10 @@ import { prisma } from "../config/prisma";
 // Small local helpers rather than a shared "attachProfile" middleware:
 // only property/booking/roommate routes need the profile id, and keeping
 // the lookup here makes the dependency obvious at the call site.
-async function requireLandlordId(userId: string) {
-  const landlord = await prisma.landlord.findUnique({ where: { userId } });
-  if (!landlord) throw AppError.forbidden("Landlord profile not found");
-  return landlord.id;
+async function requireAgentId(userId: string) {
+  const agent = await prisma.agent.findUnique({ where: { userId } });
+  if (!agent) throw AppError.forbidden("Agent profile not found");
+  return agent.id;
 }
 
 async function requireStudentId(userId: string) {
@@ -20,7 +20,7 @@ async function requireStudentId(userId: string) {
 }
 
 export const createProperty = catchAsync(async (req: Request, res: Response) => {
-  const landlordId = await requireLandlordId(req.user!.id);
+  const agentId = await requireAgentId(req.user!.id);
 
   // A listing is scoped to whichever university it serves. Phase 1 seeds a
   // single university (FUO), so we default to it here; once a second
@@ -30,7 +30,7 @@ export const createProperty = catchAsync(async (req: Request, res: Response) => 
 
   if (!req.body?.ownerConfirmation) throw AppError.badRequest("You must confirm you have the right to advertise this property");
 
-  const property = await propertyService.create(landlordId, university.id, {
+  const property = await propertyService.create(agentId, university.id, {
     ...req.body,
     isAvailable: req.body?.isAvailable ?? true,
   });
@@ -38,14 +38,14 @@ export const createProperty = catchAsync(async (req: Request, res: Response) => 
 });
 
 export const updateProperty = catchAsync(async (req: Request, res: Response) => {
-  const landlordId = await requireLandlordId(req.user!.id);
-  const property = await propertyService.update(req.params.id, landlordId, req.body);
+  const agentId = await requireAgentId(req.user!.id);
+  const property = await propertyService.update(req.params.id, agentId, req.body);
   res.status(200).json({ success: true, data: property });
 });
 
 export const deleteProperty = catchAsync(async (req: Request, res: Response) => {
-  const landlordId = await requireLandlordId(req.user!.id);
-  await propertyService.delete(req.params.id, landlordId);
+  const agentId = await requireAgentId(req.user!.id);
+  await propertyService.delete(req.params.id, agentId);
   res.status(200).json({ success: true, data: null });
 });
 
@@ -60,8 +60,8 @@ export const listProperties = catchAsync(async (req: Request, res: Response) => 
 });
 
 export const listMyProperties = catchAsync(async (req: Request, res: Response) => {
-  const landlordId = await requireLandlordId(req.user!.id);
-  const properties = await propertyService.listForLandlord(landlordId);
+  const agentId = await requireAgentId(req.user!.id);
+  const properties = await propertyService.listForAgent(agentId);
   res.status(200).json({ success: true, data: properties });
 });
 
@@ -97,3 +97,4 @@ export const getPublicStats = catchAsync(async (_req: Request, res: Response) =>
   const stats = await propertyService.getPublicStats();
   res.status(200).json({ success: true, data: stats });
 });
+

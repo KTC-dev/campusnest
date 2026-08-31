@@ -3,7 +3,7 @@ import { useState } from "react";
 const testimonials = [
   {
     quote:
-      "I found a self-contain 10 minutes from campus in one afternoon. Seeing that the landlord was verified before I even messaged them made the whole thing feel a lot less risky.",
+      "I found a self-contain 10 minutes from campus in one afternoon. Seeing that the agent was verified before I even messaged them made the whole thing feel a lot less risky.",
     name: "Blessing A.",
     role: "300L, Computer Science",
   },
@@ -15,9 +15,9 @@ const testimonials = [
   },
   {
     quote:
-      "As a landlord, I like that I can manage requests and respond from one dashboard instead of juggling WhatsApp messages from multiple students.",
+      "As an agent, I like that I can manage requests and respond from one dashboard instead of juggling WhatsApp messages from multiple students.",
     name: "Mrs. Ibim",
-    role: "Landlord, Otuoke",
+    role: "Agent, Otuoke",
   },
 ];
 
@@ -30,7 +30,7 @@ export function TestimonialsSection() {
       <div className="text-center">
         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-brand-600">Testimonials</p>
         <h2 className="mt-2 font-display text-3xl font-semibold text-brand-950 sm:text-4xl">
-          Trusted by students and landlords alike.
+          Trusted by students and agents alike.
         </h2>
       </div>
 

@@ -15,12 +15,13 @@ router.post("/", requireRole(Role.STUDENT), createBookingRateLimit, validate(cre
 router.get("/mine", requireRole(Role.STUDENT), bookingController.listMyBookings);
 router.patch("/:id/cancel", requireRole(Role.STUDENT), bookingController.cancelBooking);
 
-router.get("/landlord", requireRole(Role.LANDLORD), bookingController.listPropertyBookingsForLandlord);
+router.get("/agent", requireRole(Role.AGENT), bookingController.listPropertyBookingsForAgent);
 router.patch(
   "/:id/respond",
-  requireRole(Role.LANDLORD),
+  requireRole(Role.AGENT),
   validate(respondToBookingSchema),
   bookingController.respondToBooking
 );
 
 export default router;
+

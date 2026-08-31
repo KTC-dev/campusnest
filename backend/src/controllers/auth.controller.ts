@@ -10,8 +10,8 @@ export const registerStudent = catchAsync(async (req: Request, res: Response) =>
   res.status(201).json({ success: true, data: tokens });
 });
 
-export const registerLandlord = catchAsync(async (req: Request, res: Response) => {
-  const tokens = await authService.registerLandlord(req.body);
+export const registerAgent = catchAsync(async (req: Request, res: Response) => {
+  const tokens = await authService.registerAgent(req.body);
   res.status(201).json({ success: true, data: tokens });
 });
 

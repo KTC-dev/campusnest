@@ -1,4 +1,4 @@
-export type Role = "STUDENT" | "LANDLORD" | "ADMIN";
+export type Role = "STUDENT" | "AGENT" | "ADMIN";
 
 export interface AuthUser {
   id: string;
@@ -29,7 +29,7 @@ export interface UserProfile {
     avatarUrl?: string | null;
     universityId?: string | null;
   } | null;
-  landlord?: {
+  agent?: {
     id: string;
     firstName?: string | null;
     lastName?: string | null;
@@ -76,6 +76,30 @@ export interface Property {
   description: string;
   price: string;
   location: string;
+  estimatedMoveInCost?: string | null;
+  agentFee?: string | null;
+  legalFee?: string | null;
+  cautionFee?: string | null;
+  serviceCharge?: string | null;
+  electricityNote?: string | null;
+  waterNote?: string | null;
+  internetNote?: string | null;
+  securityNote?: string | null;
+  rulesNotes?: string | null;
+  furnished?: boolean | null;
+  hasGenerator?: boolean | null;
+  hasInverter?: boolean | null;
+  hasSolar?: boolean | null;
+  hasBorehole?: boolean | null;
+  hasSecurity?: boolean | null;
+  hasGate?: boolean | null;
+  hasWifi?: boolean | null;
+  allowsCooking?: boolean | null;
+  allowsVisitors?: boolean | null;
+  allowsGenerator?: boolean | null;
+  allowsAppliances?: boolean | null;
+  hasCurfew?: boolean | null;
+  propertyCondition?: string | null;
   distanceFromCampusKm: string;
   bedrooms: number;
   bathrooms: number;
@@ -91,7 +115,7 @@ export interface Property {
   };
   images: { id: string; url: string; isPrimary: boolean }[];
   amenities: { amenity: Amenity }[];
-  landlord?: {
+  agent?: {
     firstName: string;
     lastName: string;
     businessName?: string | null;
@@ -99,6 +123,13 @@ export interface Property {
     phone: string;
   };
   _count?: { bookings: number };
+  averageRating?: number;
+  reviewCount?: number;
+  latitude?: string | null;
+  longitude?: string | null;
+  formattedAddress?: string | null;
+  placeId?: string | null;
+  locationVisibility?: string | null;
 }
 
 export interface PropertyListResult {
@@ -118,6 +149,14 @@ export interface PropertyFilters {
   amenityIds?: string[];
   availableOnly?: boolean;
   page?: number;
+  verifiedOnly?: boolean;
+  hasBorehole?: boolean;
+  hasGenerator?: boolean;
+  hasInverter?: boolean;
+  hasSecurity?: boolean;
+  furnished?: boolean;
+  minBedrooms?: number;
+  maxBedrooms?: number;
 }
 
 export type BookingStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" | "COMPLETED";
@@ -277,7 +316,7 @@ export interface PropertyConversationContext {
   price: string;
   university?: { id: string; name: string };
   images: { id: string; url: string; isPrimary: boolean }[];
-  landlord: { firstName: string; lastName: string; businessName?: string | null; isVerified: boolean; phone: string };
+  agent: { firstName: string; lastName: string; businessName?: string | null; isVerified: boolean; phone: string };
 }
 
 export interface RoommateConversationContext {
@@ -311,7 +350,7 @@ export interface ConversationSummary {
   roommateMatchId?: string | null;
   primaryStudentId?: string | null;
   secondaryStudentId?: string | null;
-  landlordId?: string | null;
+  agentId?: string | null;
   unreadCount: number;
   isArchived: boolean;
   lastMessageId?: string | null;
@@ -324,10 +363,10 @@ export interface ConversationSummary {
   messages?: ConversationMessage[];
   primaryStudent?: ConversationParticipantSummary | null;
   secondaryStudent?: ConversationParticipantSummary | null;
-  landlord?: ConversationParticipantSummary | null;
+  agent?: ConversationParticipantSummary | null;
   property?: PropertyConversationContext | null;
   roommateMatch?: RoommateConversationContext | null;
-  context?: { type: ConversationType; property?: PropertyConversationContext | null; roommateMatch?: RoommateConversationContext | null; landlord?: ConversationParticipantSummary | null };
+  context?: { type: ConversationType; property?: PropertyConversationContext | null; roommateMatch?: RoommateConversationContext | null; agent?: ConversationParticipantSummary | null };
 }
 
 export interface ConversationMessagesPage {
@@ -336,13 +375,15 @@ export interface ConversationMessagesPage {
   nextCursor?: string | null;
 }
 
-export type NotificationType = "BOOKING_UPDATE" | "MESSAGE" | "LISTING_STATUS" | "ROOMMATE_MATCH" | "SYSTEM";
+export type NotificationType = "BOOKING_UPDATE" | "MESSAGE" | "LISTING_STATUS" | "ROOMMATE_MATCH" | "ROOMMATE_MATCH_REQUEST" | "ROOMMATE_MATCH_ACCEPTED" | "ROOMMATE_MATCH_DECLINED" | "SYSTEM" | "PROPERTY_INQUIRY" | "INSPECTION_CONFIRMED" | "VERIFICATION_APPROVED" | "PROPERTY_APPROVED" | "SECURITY_ALERT" | "ACCOUNT_WARNING" | "REQUEST_CREATED" | "REQUEST_RESPONSE" | "REVIEW_SUBMITTED";
 
 export interface Notification {
   id: string;
   type: NotificationType;
   title: string;
   body: string;
+  actionUrl?: string | null;
+  isSecurity: boolean;
   readAt?: string | null;
   createdAt: string;
 }
@@ -365,7 +406,7 @@ export interface CreatePropertyPayload {
 export interface AdminStats {
   totalUsers: number;
   totalStudents: number;
-  totalLandlords: number;
+  totalAgents: number;
   totalProperties: number;
   pendingApprovals: number;
   totalBookings: number;
@@ -394,7 +435,7 @@ export interface AdminStudentRow {
   user: { email: string; isActive: boolean; createdAt: string };
 }
 
-export interface AdminLandlordRow {
+export interface AdminAgentRow {
   id: string;
   firstName: string;
   lastName: string;
@@ -418,7 +459,7 @@ export interface VerificationUserSummary {
   role: Role;
 }
 
-export interface VerificationLandlordSummary {
+export interface VerificationAgentSummary {
   id: string;
   firstName?: string | null;
   lastName?: string | null;
@@ -429,7 +470,7 @@ export interface VerificationLandlordSummary {
 export interface VerificationRequest {
   id: string;
   userId: string;
-  landlordId?: string | null;
+  agentId?: string | null;
   idDocumentUrl: string;
   selfieUrl?: string | null;
   proofOfOwnershipUrl?: string | null;
@@ -439,13 +480,13 @@ export interface VerificationRequest {
   createdAt: string;
   reviewedAt?: string | null;
   user?: VerificationUserSummary;
-  landlord?: VerificationLandlordSummary | null;
+  agent?: VerificationAgentSummary | null;
 }
 
 export interface PublicStats {
   studentsRegistered: number;
   verifiedProperties: number;
-  verifiedLandlords: number;
+  verifiedAgents: number;
   successfulBookings: number;
 }
 
@@ -534,4 +575,128 @@ export interface CompatibilityBreakdown {
   noiseTolerance: CompatibilityBreakdownItem;
 }
 
-export type NotificationTypeWithRoommate = "BOOKING_UPDATE" | "MESSAGE" | "LISTING_STATUS" | "ROOMMATE_MATCH" | "ROOMMATE_MATCH_REQUEST" | "ROOMMATE_MATCH_ACCEPTED" | "ROOMMATE_MATCH_DECLINED" | "SYSTEM" | "PROPERTY_INQUIRY" | "INSPECTION_CONFIRMED" | "VERIFICATION_APPROVED" | "PROPERTY_APPROVED";
+export type NotificationTypeWithRoommate = "BOOKING_UPDATE" | "MESSAGE" | "LISTING_STATUS" | "ROOMMATE_MATCH" | "ROOMMATE_MATCH_REQUEST" | "ROOMMATE_MATCH_ACCEPTED" | "ROOMMATE_MATCH_DECLINED" | "SYSTEM" | "PROPERTY_INQUIRY" | "INSPECTION_CONFIRMED" | "VERIFICATION_APPROVED" | "PROPERTY_APPROVED" | "SECURITY_ALERT" | "ACCOUNT_WARNING" | "REQUEST_CREATED" | "REQUEST_RESPONSE" | "REVIEW_SUBMITTED";
+
+
+
+
+
+
+export type RoomTypePreference =
+  | "SELF_CONTAIN"
+  | "SHARED"
+  | "ONE_BEDROOM"
+  | "TWO_BEDROOM"
+  | "HOSTEL"
+  | "ANY";
+
+export type RequestStatus = "OPEN" | "IN_PROGRESS" | "CLOSED";
+
+export interface AccommodationRequest {
+  id: string;
+  studentId: string;
+  universityId: string;
+  preferredLocation: string;
+  budgetMin?: string | null;
+  budgetMax?: string | null;
+  roomType: RoomTypePreference;
+  genderPreference: Gender;
+  moveInDate?: string | null;
+  numberOfOccupants?: number | null;
+  roommateRequired: boolean;
+  preferences?: string | null;
+  additionalNotes?: string | null;
+  status: RequestStatus;
+  respondedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  university?: {
+    id: string;
+    name: string;
+    city: string;
+  };
+  student?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    phone?: string;
+  };
+}
+
+export interface CreateAccommodationRequestPayload {
+  universityId: string;
+  preferredLocation: string;
+  budgetMin?: number;
+  budgetMax?: number;
+  roomType: RoomTypePreference;
+  genderPreference?: Gender;
+  moveInDate?: string;
+  numberOfOccupants?: number;
+  roommateRequired?: boolean;
+  preferences?: string;
+  additionalNotes?: string;
+}
+
+export interface AccommodationRequestFilters {
+  page?: number;
+  pageSize?: number;
+  status?: RequestStatus;
+  universityId?: string;
+  roomType?: RoomTypePreference;
+  minBudget?: number;
+  maxBudget?: number;
+}
+
+export interface AccommodationRequestResult {
+  requests: AccommodationRequest[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface Review {
+  id: string;
+  studentId: string;
+  propertyId: string;
+  rating: number;
+  comment?: string | null;
+  isApproved: boolean;
+  isFlagged: boolean;
+  flaggedReason?: string | null;
+  helpfulCount: number;
+  unhelpfulCount: number;
+  agentResponse?: string | null;
+  agentRespondedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  student?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+  property?: {
+    id: string;
+    title: string;
+    location: string;
+  };
+}
+
+export interface ReviewSummary {
+  averageRating: number;
+  totalReviews: number;
+}
+
+export interface ReviewResult {
+  reviews: Review[];
+  total: number;
+  page: number;
+  pageSize: number;
+  averageRating: number;
+}
+
+export interface CreateReviewPayload {
+  propertyId: string;
+  rating: number;
+  comment?: string;
+}
+

@@ -23,26 +23,26 @@ beforeEach(() => {
 
 describe("bookingService.create", () => {
   it("rejects a booking on a property that isn't approved and available", async () => {
-    mockPrisma.property.findUnique.mockResolvedValue({ status: "PENDING", isAvailable: true, landlord: { userId: "l1" } });
+    mockPrisma.property.findUnique.mockResolvedValue({ status: "PENDING", isAvailable: true, agent: { userId: "l1" } });
 
     await expect(bookingService.create("s1", "prop1", new Date())).rejects.toThrow("Listing not available");
   });
 
   it("rejects a booking on an unavailable property", async () => {
-    mockPrisma.property.findUnique.mockResolvedValue({ status: "APPROVED", isAvailable: false, landlord: { userId: "l1" } });
+    mockPrisma.property.findUnique.mockResolvedValue({ status: "APPROVED", isAvailable: false, agent: { userId: "l1" } });
 
     await expect(bookingService.create("s1", "prop1", new Date())).rejects.toThrow("no longer available");
   });
 
   it("rejects a duplicate active request from the same student", async () => {
-    mockPrisma.property.findUnique.mockResolvedValue({ status: "APPROVED", isAvailable: true, landlord: { userId: "l1" } });
+    mockPrisma.property.findUnique.mockResolvedValue({ status: "APPROVED", isAvailable: true, agent: { userId: "l1" } });
     mockPrisma.booking.findFirst.mockResolvedValue({ id: "existing" });
 
     await expect(bookingService.create("s1", "prop1", new Date())).rejects.toThrow("already have an active booking");
   });
 
-  it("creates a booking and notifies the landlord", async () => {
-    mockPrisma.property.findUnique.mockResolvedValue({ status: "APPROVED", isAvailable: true, landlord: { userId: "landlord-user-1" } });
+  it("creates a booking and notifies the agent", async () => {
+    mockPrisma.property.findUnique.mockResolvedValue({ status: "APPROVED", isAvailable: true, agent: { userId: "agent-user-1" } });
     mockPrisma.booking.findFirst.mockResolvedValue(null);
     mockPrisma.booking.create.mockResolvedValue({ id: "b1", property: { title: "Cozy self-contain" } });
 
@@ -50,7 +50,7 @@ describe("bookingService.create", () => {
 
     expect(result.id).toBe("b1");
     expect(notificationService.notify).toHaveBeenCalledWith(
-      expect.objectContaining({ userId: "landlord-user-1", type: "BOOKING_UPDATE" })
+      expect.objectContaining({ userId: "agent-user-1", type: "BOOKING_UPDATE" })
     );
   });
 });
@@ -60,18 +60,18 @@ describe("bookingService.respond", () => {
     id: "b1",
     propertyId: "prop1",
     status: "PENDING",
-    property: { landlordId: "landlord1", title: "Cozy self-contain" },
+    property: { agentId: "agent1", title: "Cozy self-contain" },
     student: { user: { id: "student-user-1" } },
   };
 
-  it("rejects responding to a booking the landlord doesn't own", async () => {
+  it("rejects responding to a booking the agent doesn't own", async () => {
     mockPrisma.booking.findUnique.mockResolvedValue(baseBooking);
     await expect(bookingService.respond("someone-else", "b1", "APPROVED")).rejects.toThrow("do not own");
   });
 
   it("rejects responding to an already-resolved booking", async () => {
     mockPrisma.booking.findUnique.mockResolvedValue({ ...baseBooking, status: "APPROVED" });
-    await expect(bookingService.respond("landlord1", "b1", "APPROVED")).rejects.toThrow("already been resolved");
+    await expect(bookingService.respond("agent1", "b1", "APPROVED")).rejects.toThrow("already been resolved");
   });
 
   it("on approval, marks the property unavailable and auto-rejects other pending requests in one transaction", async () => {
@@ -83,7 +83,7 @@ describe("bookingService.respond", () => {
       })
     );
 
-    const result = await bookingService.respond("landlord1", "b1", "APPROVED");
+    const result = await bookingService.respond("agent1", "b1", "APPROVED");
 
     expect(result.status).toBe("APPROVED");
     expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);

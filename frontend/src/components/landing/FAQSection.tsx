@@ -4,17 +4,17 @@ const faqs = [
   {
     question: "How do I book a room?",
     answer:
-      "Browse verified listings, open one you like, and tap “Request to book.” Pick a move-in date and add an optional note. The landlord approves or declines from their dashboard, and you’ll see the status update in yours.",
+      "Browse verified listings, open one you like, and tap “Request to book.” Pick a move-in date and add an optional note. The agent approves or declines from their dashboard, and you’ll see the status update in yours.",
   },
   {
     question: "Are listings verified?",
     answer:
-      "Yes. Every listing enters a review queue before it becomes visible to students, and an admin verifies the listing before approval. You can also see whether the landlord account itself is verified on the listing page.",
+      "Yes. Every listing enters a review queue before it becomes visible to students, and an admin verifies the listing before approval. You can also see whether the agent account itself is verified on the listing page.",
   },
   {
-    question: "How do I become a landlord?",
+    question: "How do I become an agent?",
     answer:
-      "Sign up and choose “Landlord” during registration. Once your account is created, you can list a property — it will go live once approved. Verified landlord status appears on all of your listings.",
+      "Sign up and choose “Agent” during registration. Once your account is created, you can list a property — it will go live once approved. Verified agent status appears on all of your listings.",
   },
   {
     question: "Can I find roommates?",
@@ -24,7 +24,7 @@ const faqs = [
   {
     question: "Is there a fee to use Edurus?",
     answer:
-      "Browsing and booking requests are free for students. Any landlord listing fees, if introduced, will be communicated clearly before you list, and nothing is charged without your knowledge.",
+      "Browsing and booking requests are free for students. Any agent listing fees, if introduced, will be communicated clearly before you list, and nothing is charged without your knowledge.",
   },
   {
     question: "What if a listing turns out to be fraudulent?",

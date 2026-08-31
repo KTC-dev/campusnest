@@ -19,3 +19,8 @@ export const markAllNotificationsRead = catchAsync(async (req: Request, res: Res
   await notificationService.markAllRead(req.user!.id);
   res.status(200).json({ success: true, data: null });
 });
+
+export const deleteNotification = catchAsync(async (req: Request, res: Response) => {
+  await notificationService.deleteNotification(req.user!.id, req.params.id);
+  res.status(200).json({ success: true, data: null });
+});

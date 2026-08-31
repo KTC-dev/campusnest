@@ -22,8 +22,8 @@ export const listStudents = catchAsync(async (req: Request, res: Response) => {
   res.status(200).json({ success: true, data: result });
 });
 
-export const listLandlords = catchAsync(async (req: Request, res: Response) => {
-  const result = await adminService.listLandlords(req.query as any);
+export const listAgents = catchAsync(async (req: Request, res: Response) => {
+  const result = await adminService.listAgents(req.query as any);
   res.status(200).json({ success: true, data: result });
 });
 

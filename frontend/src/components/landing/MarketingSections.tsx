@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 const whyChoose = [
   { icon: "✓", title: "Verified Properties", body: "Every listing is manually reviewed, so you can browse with confidence." },
-  { icon: "⏱", title: "Trusted Landlords", body: "See verified landlord profiles and clear listing details before you reach out." },
+  { icon: "⏱", title: "Trusted Agents", body: "See verified agent profiles and clear listing details before you reach out." },
   { icon: "♡", title: "Roommate Matching", body: "Get compatibility-based roommate suggestions based on real lifestyle habits." },
   { icon: "⌖", title: "Near Campus", body: "Filter by distance so your home stays convenient for class, study, and errands." },
   { icon: "🔒", title: "Secure Booking", body: "Submit requests, track updates, and avoid awkward back-and-forth with built-in clarity." },
@@ -53,7 +53,7 @@ export function HowItWorksSection() {
               { title: "Register", body: "Create your student profile in minutes." },
               { title: "Search", body: "Find homes that match your budget and preferences." },
               { title: "Book", body: "Send a request and track its status clearly." },
-              { title: "Move in", body: "Settle in with confidence and a trusted landlord." },
+              { title: "Move in", body: "Settle in with confidence and a trusted agent." },
             ].map((step, i) => (
               <div key={step.title} className="flex gap-4 rounded-2xl bg-white/80 p-4">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-900 text-sm font-semibold text-white">
@@ -69,10 +69,10 @@ export function HowItWorksSection() {
         </div>
 
         <div className="rounded-[28px] border border-brand-900/10 bg-white p-8 shadow-sm">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-brand-900">For landlords</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-brand-900">For agents</p>
           <div className="mt-6 space-y-4">
             {[
-              { title: "Register", body: "Create a verified landlord profile." },
+              { title: "Register", body: "Create a verified agent profile." },
               { title: "Verify", body: "Build trust with applicants from the start." },
               { title: "Upload", body: "List each room or apartment with clear details." },
               { title: "Receive bookings", body: "Approve requests and manage everything from one place." },
@@ -143,19 +143,19 @@ export function RoommateMatchingSection() {
   );
 }
 
-const landlordBenefits = [
+const agentBenefits = [
   "Reach students who are actively looking for housing near campus",
   "Manage listings, requests, and occupancy in one streamlined dashboard",
-  "Add a more trustworthy profile with verified landlord status",
+  "Add a more trustworthy profile with verified agent status",
   "Reduce back-and-forth with clearer booking visibility",
 ];
 
-export function BecomeLandlordSection() {
+export function BecomeAgentSection() {
   return (
     <section className="mx-auto max-w-7xl px-5 py-16 sm:px-6 lg:px-8 lg:py-20">
       <div className="grid items-center gap-8 rounded-[32px] border border-brand-900/10 bg-cream-50 p-8 shadow-sm md:grid-cols-[1fr_0.9fr] md:p-10 lg:p-12">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-brand-600">Become a landlord</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-brand-600">Become an agent</p>
           <h2 className="mt-2 font-display text-3xl font-semibold text-brand-950 sm:text-4xl">
             List with clarity and reach students who are ready.
           </h2>
@@ -163,14 +163,14 @@ export function BecomeLandlordSection() {
             Present your property professionally, manage requests thoughtfully, and build trust before the first conversation.
           </p>
           <Link
-            to="/register?role=landlord"
+            to="/register?role=agent"
             className="mt-8 inline-flex rounded-full bg-brand-900 px-6 py-3 font-semibold text-white transition-colors hover:bg-brand-950"
           >
             Start listing
           </Link>
         </div>
         <ul className="space-y-3 rounded-[24px] border border-brand-900/10 bg-white p-6 shadow-sm">
-          {landlordBenefits.map((b) => (
+          {agentBenefits.map((b) => (
             <li key={b} className="flex items-start gap-3 text-sm leading-7 text-slate-700">
               <span className="mt-1 text-brand-900">✓</span>
               {b}
@@ -181,3 +181,4 @@ export function BecomeLandlordSection() {
     </section>
   );
 }
+

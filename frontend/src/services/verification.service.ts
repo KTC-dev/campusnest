@@ -11,7 +11,12 @@ export type VerificationRequest = VerificationRequestType;
 
 export const verificationService = {
     async submit(payload: VerificationSubmissionPayload) {
-        const { data } = await api.post<ApiResponse<VerificationRequest>>("/landlords/verification", payload);
+        const { data } = await api.post<ApiResponse<VerificationRequest>>("/agents/verification", payload);
+        return data.data;
+    },
+
+    async getMyVerification() {
+        const { data } = await api.get<ApiResponse<VerificationRequest>>("/agents/verification/my");
         return data.data;
     },
 

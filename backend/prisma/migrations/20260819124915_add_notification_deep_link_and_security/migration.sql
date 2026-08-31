@@ -1,0 +1,17 @@
+-- AlterEnum
+-- This migration adds more than one value to an enum.
+-- With PostgreSQL versions 11 and earlier, this is not possible
+-- in a single migration. This can be worked around by creating
+-- multiple migrations, each migration adding only one value to
+-- the enum.
+
+
+ALTER TYPE "NotificationType" ADD VALUE 'SECURITY_ALERT';
+ALTER TYPE "NotificationType" ADD VALUE 'ACCOUNT_WARNING';
+
+-- AlterTable
+ALTER TABLE "notifications" ADD COLUMN     "actionUrl" TEXT,
+ADD COLUMN     "isSecurity" BOOLEAN NOT NULL DEFAULT false;
+
+-- AlterTable
+ALTER TABLE "user_preferences" ADD COLUMN     "securityNotifEnabled" BOOLEAN NOT NULL DEFAULT true;
